@@ -40,6 +40,7 @@ supabase/
 - `/experience` — ritual onboarding + mood logger + kamera mini.
 - `/camera` — layar demo computer vision.
 - `/studio` — log percakapan sesudah ritual bercermin.
+- `/stats` — kalender mood 14 hari terakhir.
 
 ### Menjalankan secara lokal
 
@@ -74,6 +75,7 @@ atau payment. Alur cepat:
 - `GET /api/moods?profileId=...` — melihat riwayat mood (maksimum 50 entri per profil).
 - `POST /api/chat` — mengirim pesan ke Mirror dengan kontekstualisasi profil onboarding.
 - `GET /api/chat/logs?profileId=...` — membaca 30 log percakapan terakhir dari Supabase.
+- `GET /api/moods/summary?days=14` — ringkasan mood harian untuk halaman `/stats`.
 
 Semua endpoint menggunakan kredensial publik Supabase (RLS dibuka khusus sandbox ini).
 

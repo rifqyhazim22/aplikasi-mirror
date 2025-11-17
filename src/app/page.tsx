@@ -49,6 +49,12 @@ export default function HomePage() {
             Uji kamera 🔮
           </Link>
           <Link
+            href="/stats"
+            className="rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white"
+          >
+            Lihat mood timeline 📅
+          </Link>
+          <Link
             href="https://github.com/rifqyhazim22/aplikasi-mirror"
             target="_blank"
             className="rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white"
