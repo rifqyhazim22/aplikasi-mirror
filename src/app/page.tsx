@@ -41,6 +41,12 @@ export default function HomePage() {
             Masuk ke sandbox onboarding
           </Link>
           <Link
+            href="/studio"
+            className="rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white"
+          >
+            Uji chat Mirror
+          </Link>
+          <Link
             href="https://github.com/rifqyhazim22/aplikasi-mirror"
             target="_blank"
             className="rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white"
@@ -68,6 +74,7 @@ export default function HomePage() {
         <ul className="list-disc space-y-2 pl-6">
           <li>Onboarding 2 langkah (profil & preferensi) dengan penyimpanan Supabase.</li>
           <li>API Next.js sederhana untuk CRUD profile + mood entries tanpa autentikasi.</li>
+          <li>Studio percakapan yang memanggil OpenAI sesuai konteks profil pilihan.</li>
           <li>Halaman demo yang bisa kamu pakai mempresentasikan value Mirror ke siapa pun.</li>
         </ul>
       </section>

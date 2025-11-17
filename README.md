@@ -15,12 +15,15 @@ src/
  ├─ app/
  │   ├─ page.tsx               // Landing hero
  │   ├─ experience/            // Sandbox onboarding + mood logger
+ │   ├─ studio/                // Demo chat empatik (OpenAI)
  │   └─ api/
  │       ├─ profiles/route.ts  // Endpoint profil Supabase
- │       └─ moods/route.ts     // Mood entry Supabase
+ │       ├─ moods/route.ts     // Mood entry Supabase
+ │       └─ chat/route.ts      // Chat completion berbasiskan profil
  └─ lib/
      ├─ supabase.ts           // Helper createClient
-     └─ database.types.ts     // Definisi skema ringan
+     ├─ database.types.ts     // Definisi skema ringan
+     └─ openai.ts             // Client OpenAI reusable
 
 supabase/
  └─ bootstrap.sql             // SQL untuk bikin tabel & kebijakan sandbox
@@ -44,6 +47,7 @@ supabase/
 - `GET /api/profiles` — menampilkan 10 profil terbaru untuk demonstrasi.
 - `POST /api/moods` — mencatat mood entry terkait profil.
 - `GET /api/moods?profileId=...` — melihat riwayat mood (maksimum 50 entri per profil).
+- `POST /api/chat` — mengirim pesan ke Mirror dengan kontekstualisasi profil onboarding.
 
 Semua endpoint menggunakan kredensial publik Supabase (RLS dibuka khusus sandbox ini).
 
@@ -57,12 +61,13 @@ Semua endpoint menggunakan kredensial publik Supabase (RLS dibuka khusus sandbox
 NEXT_PUBLIC_SUPABASE_URL=https://gutibpbuoigchxltzxbb.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=... // isi dengan anon key terbaru
 OPENAI_API_KEY=... // key proyek Mirror
+OPENAI_RESPONDER_MODEL=gpt-4o-mini // opsional, fallback ke gpt-4o-mini
 ```
 
 Tidak ada payment maupun autentikasi di fase ini; fokus ke value primer & demonstrasi teknologi.
 
 ### Catatan pengembangan
 
-- Fokus hanya pada pengalaman onboarding + penyimpanan data. Anda bebas menambahkan halaman baru untuk simulasi chat/mood visualization.
+- Fokus hanya pada pengalaman onboarding + penyimpanan data + demo chat. Anda bebas memodifikasi prompter Mirror maupun UI.
 - Karena RLS dinonaktifkan, **jangan** menggunakan project Supabase ini untuk data sensitif.
 - Setiap iterasi berikutnya sebaiknya langsung push & deploy supaya eksperimen cepat divalidasi.
