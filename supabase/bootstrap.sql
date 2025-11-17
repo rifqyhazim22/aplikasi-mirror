@@ -29,12 +29,32 @@ create table if not exists public.mood_entry (
 alter table public.profile enable row level security;
 alter table public.mood_entry enable row level security;
 
-create policy if not exists "sandbox profile access" on public.profile
-  for all
-  using (true)
-  with check (true);
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'public'
+      and tablename = 'profile'
+      and policyname = 'sandbox profile access'
+  ) then
+    create policy "sandbox profile access" on public.profile
+      for all
+      using (true)
+      with check (true);
+  end if;
+end $$;
 
-create policy if not exists "sandbox mood access" on public.mood_entry
-  for all
-  using (true)
-  with check (true);
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'public'
+      and tablename = 'mood_entry'
+      and policyname = 'sandbox mood access'
+  ) then
+    create policy "sandbox mood access" on public.mood_entry
+      for all
+      using (true)
+      with check (true);
+  end if;
+end $$;
