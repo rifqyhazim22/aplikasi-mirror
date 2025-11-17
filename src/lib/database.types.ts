@@ -57,6 +57,37 @@ export type Database = {
         };
         Relationships: [];
       };
+      conversation_log: {
+        Row: {
+          id: string;
+          profile_id: string;
+          role: string;
+          content: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          profile_id: string;
+          role: string;
+          content: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          profile_id?: string;
+          role?: string;
+          content?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "conversation_log_profile_id_fkey";
+            columns: ["profile_id"];
+            referencedRelation: "profile";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       mood_entry: {
         Row: {
           id: string;

@@ -26,8 +26,17 @@ create table if not exists public.mood_entry (
   created_at timestamptz default now()
 );
 
+create table if not exists public.conversation_log (
+  id uuid primary key default gen_random_uuid(),
+  profile_id uuid references public.profile(id) on delete cascade,
+  role text not null,
+  content text not null,
+  created_at timestamptz default now()
+);
+
 alter table public.profile enable row level security;
 alter table public.mood_entry enable row level security;
+alter table public.conversation_log enable row level security;
 
 do $$
 begin
@@ -53,6 +62,21 @@ begin
       and policyname = 'sandbox mood access'
   ) then
     create policy "sandbox mood access" on public.mood_entry
+      for all
+      using (true)
+      with check (true);
+  end if;
+end $$;
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'public'
+      and tablename = 'conversation_log'
+      and policyname = 'sandbox conversation access'
+  ) then
+    create policy "sandbox conversation access" on public.conversation_log
       for all
       using (true)
       with check (true);

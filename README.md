@@ -19,14 +19,15 @@ src/
  │   └─ api/
  │       ├─ profiles/route.ts  // Endpoint profil Supabase
  │       ├─ moods/route.ts     // Mood entry Supabase
- │       └─ chat/route.ts      // Chat completion berbasiskan profil
+ │       ├─ chat/route.ts      // Chat completion berbasiskan profil
+ │       └─ chat/logs/route.ts // Riwayat percakapan per profil
  └─ lib/
      ├─ supabase.ts           // Helper createClient
      ├─ database.types.ts     // Definisi skema ringan
      └─ openai.ts             // Client OpenAI reusable
 
 supabase/
- └─ bootstrap.sql             // SQL untuk bikin tabel & kebijakan sandbox
+ └─ bootstrap.sql             // SQL untuk bikin tabel & kebijakan sandbox (profile, mood_entry, conversation_log)
 ```
 
 ### Menjalankan secara lokal
@@ -48,13 +49,14 @@ supabase/
 - `POST /api/moods` — mencatat mood entry terkait profil.
 - `GET /api/moods?profileId=...` — melihat riwayat mood (maksimum 50 entri per profil).
 - `POST /api/chat` — mengirim pesan ke Mirror dengan kontekstualisasi profil onboarding.
+- `GET /api/chat/logs?profileId=...` — membaca 30 log percakapan terakhir dari Supabase.
 
 Semua endpoint menggunakan kredensial publik Supabase (RLS dibuka khusus sandbox ini).
 
 ### Setup Supabase
 
 1. Buka SQL Editor pada project Supabase baru.
-2. Jalankan `supabase/bootstrap.sql` untuk membuat tabel `profile` & `mood_entry` beserta kebijakan.
+2. Jalankan `supabase/bootstrap.sql` untuk membuat tabel `profile`, `mood_entry`, dan `conversation_log` beserta kebijakan.
 3. Salin URL & anon key Supabase ke `.env.local` sesuai contoh di `.env.example`.
 
 ```

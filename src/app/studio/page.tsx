@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 
 type RecentProfile = {
   id: string;
@@ -13,6 +13,13 @@ type RecentProfile = {
 type ChatMessage = {
   role: "user" | "assistant";
   content: string;
+};
+
+type ChatLogResponse = {
+  id: string;
+  role: ChatMessage["role"];
+  content: string;
+  createdAt: string;
 };
 
 const promptPresets = [
@@ -28,6 +35,7 @@ export default function StudioPage() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [info, setInfo] = useState<string | null>(null);
+  const [logsLoading, setLogsLoading] = useState(false);
 
   const activeProfile = useMemo(
     () => profiles.find((profile) => profile.id === selectedProfileId) ?? null,
@@ -50,19 +58,45 @@ export default function StudioPage() {
     loadProfiles();
   }, []);
 
+  const fetchLogs = useCallback(
+    async (profileId: string) => {
+      if (!profileId) {
+        setChat([]);
+        return;
+      }
+      setLogsLoading(true);
+      try {
+        const response = await fetch(`/api/chat/logs?profileId=${profileId}`);
+        if (!response.ok) {
+          throw new Error("Gagal memuat log");
+        }
+        const payload = (await response.json()) as ChatLogResponse[];
+        if (payload.length > 0) {
+          setChat(payload.map((entry) => ({ role: entry.role, content: entry.content })));
+          setInfo(null);
+        } else if (activeProfile) {
+          setChat([
+            {
+              role: "assistant",
+              content: `Hai ${activeProfile.nickname}! Aku siap jadi teman curhatmu. Ceritakan saja apa yang ingin kamu uji di sesi demo ini.`,
+            },
+          ]);
+        } else {
+          setChat([]);
+        }
+      } catch (error) {
+        console.error(error);
+        setInfo("Belum bisa memuat log percakapan.");
+      } finally {
+        setLogsLoading(false);
+      }
+    },
+    [activeProfile],
+  );
+
   useEffect(() => {
-    if (activeProfile) {
-      setChat([
-        {
-          role: "assistant",
-          content: `Hai ${activeProfile.nickname}! Aku siap jadi teman curhatmu. Ceritakan saja apa yang ingin kamu uji di sesi demo ini.`,
-        },
-      ]);
-      setInfo(null);
-    } else {
-      setChat([]);
-    }
-  }, [activeProfile]);
+    fetchLogs(selectedProfileId);
+  }, [selectedProfileId, fetchLogs]);
 
   const handleSend = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -90,6 +124,7 @@ export default function StudioPage() {
       }
       const payload = (await response.json()) as { reply: string };
       setChat((prev) => [...prev, { role: "assistant", content: payload.reply }]);
+      fetchLogs(activeProfile.id);
     } catch (error) {
       console.error(error);
       setInfo("Mirror tidak merespons. Coba lagi sebentar.");
@@ -157,7 +192,9 @@ export default function StudioPage() {
           <p className="text-xs uppercase tracking-[0.4em] text-white/50">Log percakapan</p>
           <div className="h-80 overflow-y-auto rounded-3xl border border-white/5 bg-white/5 p-4">
             {chat.length === 0 ? (
-              <p className="text-sm text-white/60">Pilih profil dulu untuk memulai.</p>
+              <p className="text-sm text-white/60">
+                {logsLoading ? "Memuat log percakapan..." : "Pilih profil dulu untuk memulai."}
+              </p>
             ) : (
               <div className="flex flex-col gap-4">
                 {chat.map((message, index) => (
@@ -173,6 +210,7 @@ export default function StudioPage() {
                   </div>
                 ))}
                 {loading && <p className="text-xs text-white/60">Mirror sedang menulis...</p>}
+                {logsLoading && <p className="text-xs text-white/60">Memperbarui log...</p>}
               </div>
             )}
           </div>

@@ -17,6 +17,7 @@ const requestSchema = z.object({
 });
 
 type ProfileRow = Database["public"]["Tables"]["profile"]["Row"];
+type ConversationInsert = Database["public"]["Tables"]["conversation_log"]["Insert"];
 
 const responderModel = process.env.OPENAI_RESPONDER_MODEL ?? "gpt-4o-mini";
 
@@ -35,8 +36,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Profil tidak ditemukan" }, { status: 404 });
     }
 
-    const conversation: ChatCompletionMessageParam[] = buildMessages(profile, payload.history, payload.message);
+    const conversation: ChatCompletionMessageParam[] = buildMessages(
+      profile,
+      payload.history,
+      payload.message,
+    );
     const openai = getOpenAIClient();
+
+    const userLog: ConversationInsert = {
+      profile_id: profile.id,
+      role: "user",
+      content: payload.message,
+    };
+
+    const { error: logUserError } = await supabase
+      .from("conversation_log")
+      .insert([userLog]);
+
+    if (logUserError) {
+      console.error("Gagal menyimpan log user", logUserError);
+    }
 
     const completion = await openai.chat.completions.create({
       model: responderModel,
@@ -52,6 +71,20 @@ export async function POST(request: Request) {
         { message: "Mirror belum bisa menjawab. Coba ulang." },
         { status: 502 },
       );
+    }
+
+    const assistantLog: ConversationInsert = {
+      profile_id: profile.id,
+      role: "assistant",
+      content: reply,
+    };
+
+    const { error: logAssistantError } = await supabase
+      .from("conversation_log")
+      .insert([assistantLog]);
+
+    if (logAssistantError) {
+      console.error("Gagal menyimpan log assistant", logAssistantError);
     }
 
     return NextResponse.json({
