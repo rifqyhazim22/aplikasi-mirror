@@ -118,7 +118,7 @@ export default function ExperiencePage() {
         throw new Error("Mirror lagi kesulitan menyimpan data");
       }
       setStatus("success");
-      setMessage("Profil tersimpan. Kamu bisa lanjut demonstrasi chat 🎉");
+      setMessage("Profil tersimpan. Kamera Mirror siap membaca sinyal dan lanjut ke chat 🎉");
       fetchProfiles();
     } catch (error) {
       console.error(error);
@@ -167,12 +167,15 @@ export default function ExperiencePage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-8 px-6 py-16 text-white">
       <header className="space-y-3">
-        <p className="text-sm uppercase tracking-[0.4em] text-white/60">Sandbox</p>
-        <h1 className="text-4xl font-semibold">Onboarding Empatik</h1>
+        <p className="text-sm uppercase tracking-[0.4em] text-white/60">Ritual Mirror</p>
+        <h1 className="text-4xl font-semibold">Onboarding + sensor kamera</h1>
         <p className="text-white/75">
-          Form ini menyimulasikan langkah awal Mirror ketika mengetahui preferensi pengguna.
-          Tidak ada login maupun payment, semua fokus ke data primer yang langsung tersimpan di
-          Supabase.
+          Ini adalah versi demo dari ritual bercermin Mirror: pengguna menyebutkan panggilan kesayangan,
+          memberi izin kamera, dan membiarkan computer vision mengartikan mood sebelum percakapan dimulai.
+        </p>
+        <p className="text-sm text-white/60">
+          Gunakan bahasa yang hangat ketika memandu penguji: jelaskan bahwa feed kamera hanya dianalisis
+          sesaat untuk mengenali ekspresi—tidak ada foto yang disimpan—lalu data tekstualnya disimpan di Supabase.
         </p>
       </header>
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -188,6 +191,7 @@ export default function ExperiencePage() {
           </div>
           <div>
             <p className="text-sm text-white/70">Topik utama yang ingin kamu fokuskan</p>
+            <p className="text-xs text-white/50">Sambil memilih, jelaskan posisi kamera dan ritual bercermin yang ingin diuji.</p>
             <div className="mt-3 flex flex-wrap gap-3">
               {focusOptions.map((option) => {
                 const active = form.focusAreas.includes(option);
@@ -261,7 +265,7 @@ export default function ExperiencePage() {
                 checked={form.consentData}
                 onChange={(event) => updateField("consentData", event.target.checked)}
               />
-              Saya paham data disimpan di Supabase untuk kepentingan demo.
+              Saya paham data teks & preferensi disimpan di Supabase untuk pengembangan Mirror.
             </label>
             <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
               <input
@@ -269,7 +273,7 @@ export default function ExperiencePage() {
                 checked={form.consentCamera}
                 onChange={(event) => updateField("consentCamera", event.target.checked)}
               />
-              Izinkan Mirror membaca ekspresi (opsional)
+              Izinkan Mirror memakai kamera untuk membaca ekspresi lewat computer vision (opsional).
             </label>
           </div>
         </section>
@@ -340,8 +344,8 @@ export default function ExperiencePage() {
         <div className="flex flex-col gap-2">
           <h2 className="text-xl font-semibold text-white">Catat mood demo</h2>
           <p className="text-sm text-white/70">
-            Kirim mood entry cepat untuk profil yang dipilih. Ini membantu saat presentasi karena
-            kamu bisa menunjukkan Supabase menerima lebih dari sekadar onboarding.
+            Kirim mood entry cepat untuk profil yang dipilih sambil jelaskan bahwa kamera/computer vision
+            Mirror memantau perubahan ekspresi dan menerjemahkannya ke jurnal digital.
           </p>
         </div>
         <form onSubmit={handleMoodSubmit} className="grid gap-4 sm:grid-cols-3">

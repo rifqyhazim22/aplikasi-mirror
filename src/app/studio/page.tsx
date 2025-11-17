@@ -136,11 +136,12 @@ export default function StudioPage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-8 px-6 py-16 text-white">
       <header className="space-y-3">
-        <p className="text-sm uppercase tracking-[0.4em] text-white/60">Studio</p>
-        <h1 className="text-4xl font-semibold">Demo chat empatik Mirror</h1>
+        <p className="text-sm uppercase tracking-[0.4em] text-white/60">Studio Kamera</p>
+        <h1 className="text-4xl font-semibold">Percakapan setelah sesi bercermin</h1>
         <p className="text-white/75">
-          Pilih profil onboarding lalu langsung ajak Mirror berdiskusi. Semua berjalan lewat Next.js
-          API Route + OpenAI sehingga gampang dimodifikasi.
+          Setelah kamera menangkap ekspresi dan preferensi di laman onboarding, Studio ini menunjukkan
+          bagaimana Mirror merespons dengan gaya teman cermin. Jelaskan bahwa log di bawah adalah rekaman
+          dari kombinasi computer vision + prompt empatik Mirror.
         </p>
       </header>
 
@@ -159,6 +160,9 @@ export default function StudioPage() {
               </option>
             ))}
           </select>
+          <p className="text-xs text-white/50">
+            Ingatkan audiens bahwa profil ini sudah melalui ritual kamera sehingga log yang muncul terasa hidup.
+          </p>
           {!profiles.length && (
             <p className="text-sm text-white/60">
               Belum ada profil? buka halaman onboarding terlebih dahulu.
