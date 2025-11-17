@@ -137,7 +137,7 @@ export default function StudioPage() {
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-8 px-6 py-16 text-white">
       <header className="space-y-3">
         <p className="text-sm uppercase tracking-[0.4em] text-white/60">Studio Kamera</p>
-        <h1 className="text-4xl font-semibold">Percakapan setelah sesi bercermin</h1>
+        <h1 className="text-4xl font-semibold">Percakapan setelah sesi bercermin 💬🪞</h1>
         <p className="text-white/75">
           Setelah kamera menangkap ekspresi dan preferensi di laman onboarding, Studio ini menunjukkan
           bagaimana Mirror merespons dengan gaya teman cermin. Jelaskan bahwa log di bawah adalah rekaman

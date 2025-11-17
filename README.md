@@ -4,23 +4,28 @@ Repository ini memuat build eksperimen Mirror yang difokuskan ke demonstrasi val
 
 ### Stack
 
-- **Next.js 16 App Router** + Tailwind CSS v4.
-- **Supabase** untuk menyimpan profil & mood entries (RLS dibuat terbuka untuk sandbox).
-- **pnpm** sebagai package manager.
+- **Next.js 16 App Router** + Tailwind CSS v4 (liquid glass + emoji heavy UI).
+- **Supabase** untuk menyimpan profil, mood entry, dan log percakapan (RLS sandbox).
+- **OpenAI API** untuk suara Mirror yang empatik.
+- **Widget kamera** (WebRTC + analisis brightness ringan) sebagai demo computer vision.
+- **Capacitor 7** sebagai jalur bungkus ke APK / desktop shell.
 
 ### Struktur penting
 
 ```
-src/
+ src/
  ├─ app/
  │   ├─ page.tsx               // Landing hero
- │   ├─ experience/            // Sandbox onboarding + mood logger
+ │   ├─ experience/            // Sandbox onboarding + mood logger + kamera mini
+ │   ├─ camera/                // Demo kamera liquid glass
  │   ├─ studio/                // Demo chat empatik (OpenAI)
  │   └─ api/
  │       ├─ profiles/route.ts  // Endpoint profil Supabase
  │       ├─ moods/route.ts     // Mood entry Supabase
  │       ├─ chat/route.ts      // Chat completion berbasiskan profil
  │       └─ chat/logs/route.ts // Riwayat percakapan per profil
+ ├─ components/
+ │   └─ camera-liquid.tsx     // Widget kamera + analisis brightness
  └─ lib/
      ├─ supabase.ts           // Helper createClient
      ├─ database.types.ts     // Definisi skema ringan
@@ -29,6 +34,12 @@ src/
 supabase/
  └─ bootstrap.sql             // SQL untuk bikin tabel & kebijakan sandbox (profile, mood_entry, conversation_log)
 ```
+
+### Halaman penting
+
+- `/experience` — ritual onboarding + mood logger + kamera mini.
+- `/camera` — layar demo computer vision.
+- `/studio` — log percakapan sesudah ritual bercermin.
 
 ### Menjalankan secara lokal
 
@@ -41,6 +52,19 @@ supabase/
 1. Pastikan env di Vercel sama persis dengan `.env.example`.
 2. Jalankan `pnpm build` untuk memastikan tidak ada error.
 3. Deploy menggunakan `vercel` CLI atau hubungkan repo ke Vercel dashboard.
+
+### Jalur APK / desktop via Capacitor
+
+`capacitor.config.ts` menargetkan web build dan fallback ke URL Vercel sehingga demo bisa dibungkus tanpa login
+atau payment. Alur cepat:
+
+1. `pnpm cap add android` (atau `ios`, `electron`).
+2. Set `MIRROR_APP_URL` sebelum `pnpm cap sync` untuk menentukan URL yang dimuat webview.
+3. `pnpm next build && pnpm next export` lalu `pnpm cap copy` jika ingin menyalin aset lokal ke `out/`.
+4. Bangun `.apk`/`.app` melalui Android Studio/Xcode/Electron untuk distribusi internal.
+
+> Karena API bergantung pada Supabase + OpenAI, koneksi internet tetap diperlukan. Mode offline penuh,
+> kuis psikologi lengkap, kalender mood, dan integrasi psikolog manusia masih berada di backlog.
 
 ### Endpoint yang tersedia
 
@@ -70,6 +94,8 @@ Tidak ada payment maupun autentikasi di fase ini; fokus ke value primer & demons
 
 ### Catatan pengembangan
 
-- Fokus hanya pada pengalaman onboarding + penyimpanan data + demo chat. Anda bebas memodifikasi prompter Mirror maupun UI.
+- Fokus fase ini: ritual onboarding + kamera demo + chat + mood logger (tanpa login/pembayaran).
 - Karena RLS dinonaktifkan, **jangan** menggunakan project Supabase ini untuk data sensitif.
-- Setiap iterasi berikutnya sebaiknya langsung push & deploy supaya eksperimen cepat divalidasi.
+- Jalur APK/desktop sudah disiapkan via Capacitor, namun tetap memerlukan koneksi internet.
+- Yang belum dipenuhi dari pedoman Word 2025: deteksi emosi lanjutan, kuis MBTI/Enneagram penuh,
+  kalender mood visual, insight CBT terstruktur, dan integrasi psikolog manusia.

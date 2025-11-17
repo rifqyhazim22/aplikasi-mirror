@@ -2,12 +2,17 @@
 
 :root {
   color-scheme: dark;
+  --mirror-purple: #8c38ff;
+  --mirror-magenta: #ff5ccb;
+  --mirror-cyan: #23d5ab;
 }
 
 body {
   min-height: 100vh;
-  background: radial-gradient(circle at 10% -10%, #5b2f97 0%, #120020 45%, #050109 100%);
-  color: #f2eeff;
+  background: radial-gradient(circle at 5% 0%, rgba(255, 92, 203, 0.25), transparent 40%),
+    radial-gradient(circle at 90% 10%, rgba(35, 213, 171, 0.3), transparent 55%),
+    linear-gradient(135deg, #04000f 0%, #150035 50%, #1b0029 100%);
+  color: #f8f2ff;
   font-family: "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
@@ -18,6 +23,17 @@ a {
 .glass-card {
   border-radius: 32px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(9, 1, 16, 0.55);
-  box-shadow: 0 20px 70px rgba(5, 0, 10, 0.45);
+  background: rgba(14, 4, 28, 0.65);
+  box-shadow: 0 20px 70px rgba(6, 1, 14, 0.6);
+  backdrop-filter: blur(30px);
+}
+
+.liquid-card {
+  border-radius: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(135deg, rgba(255, 92, 203, 0.15), rgba(35, 213, 171, 0.08));
+  box-shadow:
+    inset 0 0 40px rgba(255, 255, 255, 0.08),
+    0 25px 60px rgba(8, 0, 15, 0.45);
+  backdrop-filter: blur(35px);
 }

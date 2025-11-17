@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { z } from "zod";
+import { CameraLiquidWidget } from "@/components/camera-liquid";
 
 const focusOptions = ["Stress akademik", "Hubungan", "Karier", "Self-growth"] as const;
 const moodBaselineOptions = ["tenang", "bersemangat", "lelah"] as const;
@@ -212,6 +213,18 @@ export default function ExperiencePage() {
               })}
             </div>
           </div>
+        </section>
+
+        <section className="glass-card space-y-4 p-6">
+          <div className="flex flex-col gap-2">
+            <p className="text-sm uppercase tracking-[0.4em] text-white/60">Scanner kamera</p>
+            <h2 className="text-2xl font-semibold text-white">Liquid mirror demo 💧</h2>
+            <p className="text-sm text-white/70">
+              Tampilkan widget ini di depan kamera pengguna untuk memperlihatkan bagaimana Mirror membaca
+              intensitas cahaya & ekspresi sebagai sinyal awal. Ini CV versi ringan untuk demo terbuka.
+            </p>
+          </div>
+          <CameraLiquidWidget compact />
         </section>
 
         <section className="glass-card space-y-6 p-6">
