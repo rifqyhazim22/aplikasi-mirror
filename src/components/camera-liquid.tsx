@@ -54,6 +54,7 @@ type WidgetVariant = "full" | "compact";
 export function CameraLiquidWidget({ variant = "full" }: { variant?: WidgetVariant }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const [permission, setPermission] = useState<"idle" | "granted" | "denied">("idle");
   const [mood, setMood] = useState<MoodInfo>(defaultMood);
   const [box, setBox] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
@@ -61,23 +62,10 @@ export function CameraLiquidWidget({ variant = "full" }: { variant?: WidgetVaria
   const lastSentRef = useRef<number>(0);
 
   useEffect(() => {
-    let stream: MediaStream;
     const init = async () => {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-        const videoElement = videoRef.current;
-        if (videoElement) {
-          videoElement.srcObject = stream;
-          // Be explicit about playback to avoid Safari/Chrome blocking autoplay video feeds.
-          videoElement.onloadedmetadata = () => {
-            videoElement.play().catch((error) => {
-              console.warn("Mirror cam gagal autoplay, menunggu interaksi", error);
-            });
-          };
-          await videoElement.play().catch(() => {
-            // Some browsers require onloadedmetadata before play succeeds; ignore here.
-          });
-        }
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+        streamRef.current = stream;
         tf.setBackend("webgl");
         await tf.ready();
         modelRef.current = await blazeface.load();
@@ -89,11 +77,29 @@ export function CameraLiquidWidget({ variant = "full" }: { variant?: WidgetVaria
     };
     init();
     return () => {
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (permission !== "granted") return;
+    const videoElement = videoRef.current;
+    const stream = streamRef.current;
+    if (!videoElement || !stream) return;
+    videoElement.srcObject = stream;
+    const playVideo = () =>
+      videoElement
+        .play()
+        .catch((error) => console.warn("Mirror cam gagal autoplay, menunggu interaksi", error));
+    if (videoElement.readyState >= 2) {
+      playVideo();
+    } else {
+      videoElement.onloadedmetadata = playVideo;
+    }
+  }, [permission]);
 
   useEffect(() => {
     if (permission !== "granted") return;
