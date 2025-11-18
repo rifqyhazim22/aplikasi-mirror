@@ -235,54 +235,129 @@ export default function StudioPage() {
         )}
       </section>
 
-      <section className="glass-card space-y-4 p-6">
-        <p className="text-xs uppercase tracking-[0.4em] text-white/50">Sensor emosi</p>
-        {sensorLoading ? (
-          <p className="text-sm text-white/60">Menyelaraskan data kamera & mood...</p>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
-              <p className="text-xs uppercase tracking-[0.3em] text-white/50">Computer vision</p>
-              {sensors.camera ? (
-                <>
-                  <p className="mt-2 text-lg font-semibold text-white capitalize">
-                    {sensors.camera.emotion}
-                  </p>
-                  <p className="text-xs text-white/60">
-                    Confidence {sensors.camera.confidence ?? 0}% •{" "}
-                    {new Date(sensors.camera.createdAt).toLocaleTimeString("id-ID", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
-                </>
-              ) : (
-                <p className="mt-2 text-xs text-white/60">
-                  Belum ada log kamera terbaru. Nyalakan mirror cam untuk memperbarui data.
-                </p>
-              )}
-            </div>
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
-              <p className="text-xs uppercase tracking-[0.3em] text-white/50">Mood entry</p>
-              {sensors.mood ? (
-                <>
-                  <p className="mt-2 text-lg font-semibold text-white">{sensors.mood.mood}</p>
-                  <p className="text-xs text-white/60">
-                    {sensors.mood.source ?? "demo"} •{" "}
-                    {new Date(sensors.mood.createdAt).toLocaleString("id-ID")}
-                  </p>
-                  {sensors.mood.note && (
-                    <p className="mt-1 text-xs text-white/60">Catatan: {sensors.mood.note}</p>
-                  )}
-                </>
-              ) : (
-                <p className="mt-2 text-xs text-white/60">
-                  Belum ada mood entry. Isi form onboarding atau catat mood cepat.
-                </p>
-              )}
-            </div>
+      <section className="grid gap-6 lg:grid-cols-[1fr,1fr]">
+        <div className="glass-card p-6 space-y-4">
+          <p className="text-xs uppercase tracking-[0.4em] text-white/50">Mirror Cam</p>
+          <div className="rounded-[32px] border border-white/10 bg-white/5 p-4">
+            <iframe
+              title="Cam preview"
+              src="/camera"
+              className="h-[22rem] w-full rounded-[28px] border border-white/10"
+            />
           </div>
-        )}
+        </div>
+        <div className="flex flex-col gap-6">
+          <section className="glass-card space-y-4 p-6">
+            <p className="text-xs uppercase tracking-[0.4em] text-white/50">Sensor emosi</p>
+            {sensorLoading ? (
+              <p className="text-sm text-white/60">Menyelaraskan data kamera & mood...</p>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
+                  <p className="text-xs uppercase tracking-[0.3em] text-white/50">Computer vision</p>
+                  {sensors.camera ? (
+                    <>
+                      <p className="mt-2 text-lg font-semibold text-white capitalize">
+                        {sensors.camera.emotion}
+                      </p>
+                      <p className="text-xs text-white/60">
+                        Confidence {sensors.camera.confidence ?? 0}% •{" "}
+                        {new Date(sensors.camera.createdAt).toLocaleTimeString("id-ID", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="mt-2 text-xs text-white/60">
+                      Belum ada log kamera terbaru. Nyalakan mirror cam untuk memperbarui data.
+                    </p>
+                  )}
+                </div>
+                <div className="rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
+                  <p className="text-xs uppercase tracking-[0.3em] text-white/50">Mood entry</p>
+                  {sensors.mood ? (
+                    <>
+                      <p className="mt-2 text-lg font-semibold text-white">{sensors.mood.mood}</p>
+                      <p className="text-xs text-white/60">
+                        {sensors.mood.source ?? "demo"} •{" "}
+                        {new Date(sensors.mood.createdAt).toLocaleString("id-ID")}
+                      </p>
+                      {sensors.mood.note && (
+                        <p className="mt-1 text-xs text-white/60">Catatan: {sensors.mood.note}</p>
+                      )}
+                    </>
+                  ) : (
+                    <p className="mt-2 text-xs text-white/60">
+                      Belum ada mood entry. Isi form onboarding atau catat mood cepat.
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+          </section>
+          <section className="glass-card grid gap-6 p-6 md:grid-cols-3">
+            <div className="space-y-3">
+              <p className="text-xs uppercase tracking-[0.4em] text-white/50">Preset cepat</p>
+              <div className="flex flex-wrap gap-3">
+                {promptPresets.map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => setInput(preset)}
+                    className="rounded-full border border-white/10 px-4 py-2 text-xs text-white/75 hover:border-white/40"
+                  >
+                    {preset}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="md:col-span-2 space-y-2">
+              <p className="text-xs uppercase tracking-[0.4em] text-white/50">Log percakapan</p>
+              <div className="h-80 overflow-y-auto rounded-3xl border border-white/5 bg-white/5 p-4">
+                {chat.length === 0 ? (
+                  <p className="text-sm text-white/60">
+                    {logsLoading ? "Memuat log percakapan..." : "Pilih profil dulu untuk memulai."}
+                  </p>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    {chat.map((message, index) => (
+                      <div
+                        key={`${message.role}-${index}`}
+                        className={`max-w-[90%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ${
+                          message.role === "assistant"
+                            ? "self-start bg-white/90 text-purple-900"
+                            : "self-end bg-purple-600/70"
+                        }`}
+                      >
+                        {message.content}
+                      </div>
+                    ))}
+                    {loading && <p className="text-xs text-white/60">Mirror sedang menulis...</p>}
+                    {logsLoading && <p className="text-xs text-white/60">Memperbarui log...</p>}
+                  </div>
+                )}
+              </div>
+              <form onSubmit={handleSend} className="flex flex-col gap-3 sm:flex-row">
+                <input
+                  className="w-full rounded-full border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/30"
+                  placeholder="Tulis pesanmu"
+                  value={input}
+                  onChange={(event) => setInput(event.target.value)}
+                  disabled={!activeProfile}
+                />
+                <button
+                  type="submit"
+                  disabled={!activeProfile || !input.trim() || loading}
+                  className="white-pill rounded-full bg-white px-6 py-3 text-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {loading ? "Mengirim..." : "Kirim"}
+                </button>
+              </form>
+              {info && <p className="text-sm text-rose-300">{info}</p>}
+            </div>
+          </section>
+        </div>
       </section>
 
       <section className="glass-card grid gap-6 p-6 md:grid-cols-3">
