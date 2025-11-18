@@ -2,21 +2,21 @@ import Link from "next/link";
 
 const highlightFeatures = [
   {
-    title: "Ritual bercermin 2.0",
+    title: "Check-in santai",
     description:
-      "Nama panggilan, fokus cerita, dan perjanjian kamera mengikuti dokumen Mirror Word lama, kini tampil dalam liquid glass.",
+      "Masuk pake nickname lucu, pilih fokus cerita, lalu Mirror kenalin mood kamu kayak journaling interaktif.",
     emoji: "🪞",
   },
   {
-    title: "Kamera + computer vision",
+    title: "Kamera nggak serem",
     description:
-      "Widget kamera besar meniru perangkat Mirror fisik. TensorFlow (BlazeFace) membaca mikro-ekspresi lalu disimpan ke Supabase.",
+      "Video cuma dibaca di device-mu. Mirror nge-scan ekspresi & cahaya buat nyari vibe, bukan buat simpen foto.",
     emoji: "📸",
   },
   {
-    title: "AI empatik tanpa paywall",
+    title: "Teman curhat 24/7",
     description:
-      "Data Supabase langsung dipakai modul chat/insight/quiz. Semua endpoint terbuka agar bisa diuji sebelum kembali memakai payment.",
+      "Abis onboarding, langsung lanjut chat. AI-nya ngeblend data onboarding + kamera biar terasa kayak bestie yang ngerti batasan.",
     emoji: "🤝",
   },
 ];
@@ -35,29 +35,27 @@ export default function HomePage() {
     <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-10 px-6 py-16 text-white sm:py-24">
       <section className="grid gap-10 lg:grid-cols-[1.1fr,0.9fr]">
         <header className="space-y-6">
-          <p className="emoji-heading">Mirror Demo Lab</p>
+          <p className="emoji-heading">Mirror playground</p>
           <h1 className="text-4xl font-semibold leading-tight text-white sm:text-6xl">
-            Mirror adalah cermin digital yang membaca bahasa tubuhmu, menerjemahkannya lewat computer vision,
-            lalu membalas dengan empati. 💜
+            Cermin digital buat Gen Z: buka kamera, ngomong jujur soal mood, Mirror jawab sebagai teman baikmu. 💜
           </h1>
           <p className="max-w-3xl text-lg text-white/80 sm:text-xl">
-            Setelah evaluasi, seluruh backend dipindah ke Next.js API + Supabase sehingga demo ini bisa
-            dipush cepat ke Vercel dan di-build menjadi APK/desktop melalui Capacitor. Tidak ada paywall,
-            semua modul terbuka untuk validasi value primer: kamera, cermin, computer vision, dan ritual Mirror Word.
+            Ini bukan deck investor—ini versi yang bisa kamu pakai langsung buat daily check-in. Tinggal kasih izin kamera,
+            pilih mood fokus, terus Mirror bakal baca ekspresi + teks kamu untuk bikin chat yang relate.
           </p>
           <div className="flex flex-wrap gap-3 text-xs text-white/70">
-            <span className="mirror-pill px-4 py-2">🪞 Mirror persona</span>
-            <span className="mirror-pill px-4 py-2">📷 Micro-expression</span>
-            <span className="mirror-pill px-4 py-2">🧠 Prompt OpenAI</span>
-            <span className="mirror-pill px-4 py-2">🌊 Liquid glass aesthetic</span>
-            <span className="mirror-pill px-4 py-2">📱 Multi-platform ready</span>
+            <span className="mirror-pill px-4 py-2">🪞 Nickname & vibes</span>
+            <span className="mirror-pill px-4 py-2">📷 Micro-expression tracker</span>
+            <span className="mirror-pill px-4 py-2">🧠 Empathic AI</span>
+            <span className="mirror-pill px-4 py-2">🌊 Liquid glass look</span>
+            <span className="mirror-pill px-4 py-2">📱 Siap jadi apk</span>
           </div>
           <div className="flex flex-wrap gap-4">
             <Link
               href="/experience"
               className="white-pill rounded-full bg-white px-7 py-3 text-sm transition hover:-translate-y-0.5"
             >
-              Masuk ke ritual onboarding
+              Mulai ritual sekarang
             </Link>
             <Link
               href="/camera"
@@ -76,25 +74,24 @@ export default function HomePage() {
         </header>
 
         <div className="glass-card flex flex-col gap-4 p-6 sm:p-8">
-          <p className="emoji-heading">Narasi Mirror Word</p>
-          <h2 className="text-2xl font-semibold text-white">“Tatap kamera seperti kamu menatap cermin.”</h2>
+          <p className="emoji-heading">Cara pakainya</p>
+          <h2 className="text-2xl font-semibold text-white">“Tatap kamera, tarik napas, cerita jujur.”</h2>
           <p className="text-sm text-white/70">
-            Kami mempertahankan gaya tutur Mirror generasi lama namun menambahkan konteks teknologi:
-            jelaskan bahwa kamera aktif hanya di perangkat pengguna, hanya brightness & bounding box
-            yang diproses, kemudian Mirror menggunakan OpenAI untuk menyusun respons empatik.
+            Udah nggak ada bahasa pitch lagi. Kamu tinggal jelasin ke pengguna bahwa Mirror cuma baca vibe
+            lewat brightness & bounding box di device mereka. Abis itu semuanya jadi teks Supabase + prompt AI.
           </p>
           <div className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-white/80">
-            <p className="font-semibold text-white">Flow demo cepat:</p>
+            <p className="font-semibold text-white">Flow favorit pengguna:</p>
             <ol className="mt-3 list-decimal space-y-2 pl-4 text-white/70">
-              <li>Onboarding + perkenalan cermin.</li>
-              <li>Aktifkan kamera besar, jelaskan CV.</li>
-              <li>Catat mood ke Supabase untuk timeline.</li>
-              <li>Buka Studio/Insight untuk menunjukkan AI.</li>
+              <li>Isi ritual onboarding sambil bercermin.</li>
+              <li>Nyalakan kamera besar biar berasa kayak selfie filter.</li>
+              <li>Catat mood singkat, terus buka chat Studio.</li>
+              <li>Liat timeline & insight buat track healing journey-mu.</li>
             </ol>
           </div>
           <p className="text-xs text-white/50">
-            Build ini siap untuk di-wrap ke mobile/desktop. Setelah PWA stabil, kita tinggal generate APK
-            lewat Capacitor tanpa mengubah flow front-end.
+            Build ini tinggal kamu bungkus jadi apk/desktop via Capacitor, jadi bisa dites offline event atau
+            dibagikan ke teman tanpa harus ngobrolin backend lagi.
           </p>
         </div>
       </section>
@@ -111,14 +108,13 @@ export default function HomePage() {
 
       <section className="glass-card grid gap-6 p-8 text-white/80 lg:grid-cols-2">
         <div className="space-y-3">
-          <h2 className="text-2xl font-semibold text-white">Rujukan dokumen Mirror Word ➜ kode</h2>
+          <h2 className="text-2xl font-semibold text-white">Satu kodebase untuk semua ritual</h2>
           <p>
-            Semua teks onboarding & insight mengambil tone yang sama: Mirror menenangkan, menanyakan
-            kamera, lalu menyebut diri “teman cermin”. Kita sengaja menjaga konsistensi karena tujuan
-            build ini adalah demo yang langsung menggambarkan value proposition.
+            Bahasa di setiap halaman udah disesuaikan buat Gen Z tester. Kamu tinggal ganti copy detil kalau mau,
+            tapi flow besar (onboarding → kamera → chat → stats) tetap sama.
           </p>
           <p className="text-sm text-white/70">
-            Bila nanti modul pembayaran kembali dinyalakan, flow ini tidak perlu dirombak lagi.
+            Kalau nanti balik lagi ke mode premium, tinggal tambahin gate / payment tanpa harus rombak UI.
           </p>
         </div>
         <div className="space-y-4">

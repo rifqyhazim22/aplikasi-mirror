@@ -38,10 +38,10 @@ export default function InsightsPage() {
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-8 px-6 py-16 text-white">
       <header className="space-y-3 text-center">
         <p className="text-sm uppercase tracking-[0.4em] text-white/60">Insight CBT</p>
-        <h1 className="text-4xl font-semibold">Saran emosional Mirror 🧠💜</h1>
+        <h1 className="text-4xl font-semibold">Saran santai buat grounding 🧠💜</h1>
         <p className="text-white/75">
-          Menggabungkan hasil kuis MBTI/Enneagram dan log mood 7 hari terakhir untuk memunculkan rekomendasi CBT
-          ringan yang bisa dibacakan saat demo.
+          Mirror ngambil kombinasi kuis + mood log terus ngasih tips pendek. Cocok buat nutup sesi demo atau buat remind
+          diri sendiri sebelum tidur.
         </p>
       </header>
 

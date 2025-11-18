@@ -57,10 +57,10 @@ export default function StatsPage() {
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-8 px-6 py-16 text-white">
       <header className="space-y-3 text-center">
         <p className="emoji-heading">Mood Timeline</p>
-        <h1 className="text-4xl font-semibold">Kalender emosi Mirror 📅💜</h1>
+        <h1 className="text-4xl font-semibold">Kalender emosi ala bullet journal digital 📅💜</h1>
         <p className="text-white/75">
-          Ringkasan 14 hari terakhir dari mood entry (self-report maupun kamera). Gunakan halaman ini
-          untuk menunjukkan bahwa data Supabase transparan dan siap dipakai modul AI lain tanpa login/paywall.
+          Semua mood entry & log kamera diringkas biar kamu bisa cerita ke diri sendiri, “oh, minggu lalu lebih chill
+          ternyata”. Data ini terbuka, bisa jadi bahan chat Mirror, bisa juga dipake buat refleksi personal.
         </p>
       </header>
 

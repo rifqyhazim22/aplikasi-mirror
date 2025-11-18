@@ -46,7 +46,7 @@ supabase/
 
 ### Menjalankan secara lokal
 
-1. Duplikasi `.env.example` menjadi `.env.local` lalu isi dengan kredensial Supabase & OpenAI.
+1. Duplikasi `.env.example` menjadi `.env.local` lalu isi dengan kredensial Supabase & OpenAI. Gunakan `SUPABASE_SERVICE_ROLE_KEY` pada environment server (Vercel) supaya penulisan data tidak mentok RLS.
 2. Install dependencies `pnpm install`.
 3. Jalankan `pnpm dev` dan buka `http://localhost:3000`.
 
@@ -92,9 +92,10 @@ Semua endpoint menggunakan kredensial publik Supabase (RLS dibuka khusus sandbox
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://gutibpbuoigchxltzxbb.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=... // isi dengan anon key terbaru
-OPENAI_API_KEY=... // key proyek Mirror
-OPENAI_RESPONDER_MODEL=gpt-4o-mini // opsional, fallback ke gpt-4o-mini
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...        # anon key (boleh dipublikasi)
+SUPABASE_SERVICE_ROLE_KEY=...            # service role (jangan expose ke client)
+OPENAI_API_KEY=...                       # key proyek Mirror
+OPENAI_RESPONDER_MODEL=gpt-4o-mini       # opsional, fallback ke gpt-4o-mini
 ```
 
 Tidak ada payment maupun autentikasi di fase ini; fokus ke value primer & demonstrasi teknologi.

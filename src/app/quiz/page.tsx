@@ -47,8 +47,8 @@ export default function QuizPage() {
         <p className="text-sm uppercase tracking-[0.4em] text-white/60">Personality Lab</p>
         <h1 className="text-4xl font-semibold">Mini quiz Mirror ✨</h1>
         <p className="text-white/75">
-          Jawab 3 langkah ringan untuk menghasilkan profil MBTI + Enneagram siap pakai. Tidak ada login atau pembayaran
-          — hasil langsung tersimpan di Supabase untuk demo Studio.
+          Isian cepat supaya Mirror tahu kamu tipe apa. 3 langkah aja—tanpa email, tanpa sales pitch. Hasilnya langsung
+          nyambung ke chat Studio.
         </p>
       </header>
 

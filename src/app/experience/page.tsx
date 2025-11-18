@@ -170,12 +170,11 @@ export default function ExperiencePage() {
       <header className="space-y-4">
         <p className="emoji-heading">Ritual Mirror</p>
         <h1 className="text-4xl font-semibold leading-tight sm:text-5xl">
-          Onboarding hangat + kolom kamera besar seperti cermin 💗🪞
+          Onboarding seru buat ngaca sambil jujur soal mood 💗🪞
         </h1>
         <p className="text-lg text-white/80">
-          Kita membawa bahasa narasi dari dokumen Mirror Word: sapaan manis, memastikan izin kamera,
-          lalu menjelaskan bahwa AI membaca ekspresi secara real time sebelum menyusun prompt empatik.
-          Gunakan halaman ini untuk walkthrough investor maupun pengguna yang ingin mencicip ritual.
+          Jelaskan ke temanmu: “Mirror cuma butuh izin kamera sebentar, habis itu dia baca ekspresi & cerita kamu
+          supaya chat-nya nyambung”. Tidak ada pitch, nggak ada paywall—cuma ritual manis sebelum curhat.
         </p>
         <div className="flex flex-wrap gap-3 text-xs text-white/70">
           <span className="mirror-pill px-4 py-2">🪞 Persona Mirror</span>
@@ -190,10 +189,10 @@ export default function ExperiencePage() {
           <section className="glass-card space-y-6 p-6 sm:p-8">
             <div className="space-y-1">
               <p className="emoji-heading">Langkah 1</p>
-              <h2 className="text-2xl font-semibold text-white">Identitas cermin & izin hangat 😌</h2>
-              <p className="text-sm text-white/70">
-                Sapaan Mirror dimulai dengan menanyakan nama panggilan. Setelah itu pilih 1-3 fokus cerita
-                yang paling relevan dengan sesi demo hari ini.
+            <h2 className="text-2xl font-semibold text-white">Kenalin diri + pilih fokus 😌</h2>
+            <p className="text-sm text-white/70">
+              Mirror panggil kamu sesuai nickname kesayangan. Pilih fokus maks 3 biar obrolan tetap rapih,
+              kayak lagi pilih topik curhat buat sahabatmu.
               </p>
             </div>
             <div className="grid gap-5 sm:grid-cols-2">

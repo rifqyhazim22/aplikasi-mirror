@@ -5,12 +5,11 @@ export default function CameraPage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-8 px-6 py-16 text-white">
       <header className="space-y-3 text-center">
-        <p className="emoji-heading">Liquid glass lab</p>
-        <h1 className="text-4xl font-semibold">Demo kamera + CV Mirror 💜📸</h1>
+        <p className="emoji-heading">Liquid glass cam</p>
+        <h1 className="text-4xl font-semibold">Nyalain kamera, liat vibemu kebaca 💜📸</h1>
         <p className="text-white/75">
-          Gunakan halaman ini ketika ingin menonjolkan sisi computer vision Mirror. Kamera hanya digunakan
-          di perangkat ini dan tidak ada frame yang dikirim ke server. Jelaskan hal tersebut sebelum demo supaya
-          pengguna merasa aman.
+          Halaman ini buat nunjukkin “Hei, Mirror baca ekspresi kamu di sini aja”. Ingatkan penguji bahwa feed
+          nggak pernah dikirim ke server—jadi aman buat freestyle ekspresi lucu.
         </p>
       </header>
       <CameraLiquidWidget variant="full" />
