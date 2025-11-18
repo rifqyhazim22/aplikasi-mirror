@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type CameraLog = {
   id: string;
@@ -53,6 +53,29 @@ export default function StatsPage() {
     fetchSummary();
   }, []);
 
+  const chartData = useMemo(() => {
+    if (!summary.length) return [];
+    return summary.map((item) => ({
+      date: item.date,
+      label: new Date(item.date).toLocaleDateString("id-ID", { weekday: "short" }),
+      count: item.count,
+      mood: item.moods[0] ?? "-",
+    }));
+  }, [summary]);
+
+  const maxCount = useMemo(
+    () => Math.max(...chartData.map((item) => item.count), 1),
+    [chartData],
+  );
+
+  const topMood = useMemo(() => {
+    const flat = summary.flatMap((item) => item.moods);
+    if (!flat.length) return "belum ada";
+    const map = new Map<string, number>();
+    flat.forEach((mood) => map.set(mood, (map.get(mood) ?? 0) + 1));
+    return Array.from(map.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "belum ada";
+  }, [summary]);
+
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-8 px-6 py-16 text-white">
       <header className="space-y-3 text-center">
@@ -71,6 +94,35 @@ export default function StatsPage() {
       ) : summary.length === 0 ? (
         <p className="text-center text-white/50">Belum ada data mood dalam 14 hari terakhir.</p>
       ) : (
+        <>
+        <section className="glass-card space-y-6 p-6">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="emoji-heading text-left">Vibe tracker</p>
+              <h2 className="text-2xl font-semibold text-white">Grafik mood 14 hari</h2>
+            </div>
+            <div className="rounded-3xl border border-white/10 bg-white/5 px-4 py-2 text-sm">
+              <p className="text-white">Top mood: <span className="font-semibold">{topMood}</span></p>
+              <p className="text-xs text-white/60">Total entri: {chartData.reduce((sum, day) => sum + day.count, 0)}</p>
+            </div>
+          </div>
+          <div className="flex items-end gap-3">
+            {chartData.map((day) => (
+              <div key={day.date} className="flex-1 text-center text-xs text-white/60">
+                <div className="relative mx-auto flex h-32 w-4 items-end justify-center rounded-full bg-white/10">
+                  <span
+                    className="block w-full rounded-full bg-gradient-to-t from-pink-400 via-purple-400 to-cyan-300"
+                    style={{ height: `${Math.max((day.count / maxCount) * 100, 5)}%` }}
+                  />
+                </div>
+                <p className="mt-1 text-xs text-white/60">
+                  {day.label}
+                </p>
+                <p className="text-[10px] text-white/40">{day.mood}</p>
+              </div>
+            ))}
+          </div>
+        </section>
         <div className="grid gap-8 lg:grid-cols-[1.1fr,0.9fr]">
           <section className="glass-card space-y-5 p-6">
             <div className="flex flex-col gap-2">
@@ -156,6 +208,7 @@ export default function StatsPage() {
             </p>
           </section>
         </div>
+        </>
       )}
     </main>
   );

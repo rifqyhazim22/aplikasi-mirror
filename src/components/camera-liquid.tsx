@@ -65,6 +65,9 @@ export function CameraLiquidWidget({ variant = "full" }: { variant?: WidgetVaria
   const modelRef = useRef<blazeface.BlazeFaceModel | null>(null);
   const lastSentRef = useRef<number>(0);
   const [isCameraOn, setIsCameraOn] = useState(true);
+  const [brightnessHistory, setBrightnessHistory] = useState<number[]>([]);
+  const [lastCapture, setLastCapture] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState<number | null>(null);
 
   const stopStream = () => {
     if (streamRef.current) {
@@ -170,6 +173,7 @@ export function CameraLiquidWidget({ variant = "full" }: { variant?: WidgetVaria
         description: copy.text,
         confidence: Math.round(emotion.confidence * 100),
       });
+      setBrightnessHistory((prev) => [...prev.slice(-19), Math.round(avg)]);
       const now = Date.now();
       if (now - lastSentRef.current > 10000) {
         lastSentRef.current = now;
@@ -186,6 +190,31 @@ export function CameraLiquidWidget({ variant = "full" }: { variant?: WidgetVaria
     return () => clearInterval(interval);
   }, [permission]);
 
+  const captureFrame = () => {
+    const canvas = canvasRef.current;
+    const video = videoRef.current;
+    if (!canvas || !video) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    canvas.width = video.videoWidth || canvas.width;
+    canvas.height = video.videoHeight || canvas.height;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    setLastCapture(canvas.toDataURL("image/png"));
+  };
+
+  useEffect(() => {
+    if (countdown === null) return;
+    const timer = setTimeout(() => {
+      if (countdown <= 1) {
+        captureFrame();
+        setCountdown(null);
+      } else {
+        setCountdown((prev) => (prev ?? 1) - 1);
+      }
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [countdown]);
+
   const handleToggleCamera = () => {
     setIsCameraOn((prev) => {
       const next = !prev;
@@ -194,11 +223,18 @@ export function CameraLiquidWidget({ variant = "full" }: { variant?: WidgetVaria
         setPermission("paused");
         setMood(defaultMood);
         setBox(null);
+        setBrightnessHistory([]);
+        setLastCapture(null);
       } else {
         setPermission("idle");
       }
       return next;
     });
+  };
+
+  const startCountdown = () => {
+    if (permission !== "granted" || countdown !== null) return;
+    setCountdown(3);
   };
 
   const frameHeight = variant === "full" ? "h-[26rem]" : "h-72";
@@ -243,6 +279,11 @@ export function CameraLiquidWidget({ variant = "full" }: { variant?: WidgetVaria
               className="mirror-video h-full w-full object-cover"
             />
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+            {countdown !== null && (
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-6xl font-semibold text-white drop-shadow-lg">
+                {countdown === 0 ? "✨" : countdown}
+              </div>
+            )}
             {box && (
               <div
                 className="pointer-events-none absolute rounded-3xl border-2 border-cyan-200/80 shadow-[0_0_40px_rgba(51,255,216,0.4)]"
@@ -295,6 +336,51 @@ export function CameraLiquidWidget({ variant = "full" }: { variant?: WidgetVaria
           </div>
           <p className="mt-1 text-right text-xs text-white/50">
             {permission === "granted" ? `${mood.confidence}% confidence` : "Menunggu kamera"}
+          </p>
+        </div>
+      </div>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <p className="text-xs uppercase tracking-[0.35em] text-white/50">Brightness trend</p>
+          <div className="mt-3 flex h-24 items-end gap-1">
+            {brightnessHistory.length === 0 ? (
+              <p className="text-xs text-white/60">Belum ada data. Kamera perlu aktif beberapa detik.</p>
+            ) : (
+              brightnessHistory.map((value, index) => (
+                <span
+                  key={`${value}-${index}`}
+                  className="block w-2 rounded-full bg-gradient-to-t from-cyan-400 via-purple-400 to-pink-400"
+                  style={{ height: `${Math.max((value / 255) * 100, 5)}%` }}
+                />
+              ))
+            )}
+          </div>
+          <p className="mt-2 text-xs text-white/60">
+            Rata-rata brightness ~{brightnessHistory.length ? Math.round(brightnessHistory.at(-1) ?? 0) : 0}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-4 space-y-2">
+          <p className="text-xs uppercase tracking-[0.35em] text-white/50">Freeze frame</p>
+          <button
+            type="button"
+            onClick={startCountdown}
+            disabled={permission !== "granted" || countdown !== null}
+            className="white-pill rounded-full bg-white px-4 py-2 text-xs text-purple-900 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {countdown !== null ? `Menangkap dalam ${countdown}` : "Ambil snapshot"}
+          </button>
+          {lastCapture && (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={lastCapture} alt="Snapshot Mirror" className="h-32 w-full rounded-2xl object-cover" />
+            </>
+          )}
+        </div>
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
+          <p className="text-xs uppercase tracking-[0.35em] text-white/50">Tips demo</p>
+          <p>
+            Pakai grafik brightness buat jelasin perubahan ekspresi. Snapshot bisa kamu tunjukkan ke tim riset tanpa
+            menyimpan apa pun ke server.
           </p>
         </div>
       </div>
