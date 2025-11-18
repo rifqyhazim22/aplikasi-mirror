@@ -55,7 +55,7 @@ export default function HomePage() {
           <div className="flex flex-wrap gap-4">
             <Link
               href="/experience"
-              className="rounded-full bg-white px-7 py-3 text-sm font-semibold text-purple-900 transition hover:-translate-y-0.5"
+              className="white-pill rounded-full bg-white px-7 py-3 text-sm transition hover:-translate-y-0.5"
             >
               Masuk ke ritual onboarding
             </Link>

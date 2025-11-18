@@ -229,7 +229,7 @@ export default function StudioPage() {
             <button
               type="submit"
               disabled={!activeProfile || !input.trim() || loading}
-              className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-purple-900 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
+              className="white-pill rounded-full bg-white px-6 py-3 text-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
             >
               {loading ? "Mengirim..." : "Kirim"}
             </button>

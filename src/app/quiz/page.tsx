@@ -62,7 +62,7 @@ export default function QuizPage() {
               value={nickname}
               onChange={(event) => setNickname(event.target.value)}
             />
-            <button type="button" onClick={() => setStep(2)} className="rounded-full bg-white px-5 py-2 text-sm font-semibold text-purple-900">
+            <button type="button" onClick={() => setStep(2)} className="white-pill rounded-full bg-white px-5 py-2 text-sm">
               Lanjut ➡️
             </button>
           </section>
@@ -77,7 +77,9 @@ export default function QuizPage() {
                 <button
                   key={option}
                   type="button"
-                  className={`rounded-full px-4 py-2 text-sm ${option === mbti ? "bg-white text-purple-900" : "border border-white/20 text-white/70"}`}
+                  className={`rounded-full px-4 py-2 text-sm ${
+                    option === mbti ? "white-pill bg-white shadow-lg" : "border border-white/20 text-white/70"
+                  }`}
                   onClick={() => setMbti(option)}
                 >
                   {option}
@@ -88,7 +90,7 @@ export default function QuizPage() {
               <button type="button" onClick={() => setStep(1)} className="rounded-full border border-white/30 px-4 py-2 text-sm">
                 ⬅️ Kembali
               </button>
-              <button type="button" onClick={() => setStep(3)} className="rounded-full bg-white px-5 py-2 text-sm font-semibold text-purple-900">
+              <button type="button" onClick={() => setStep(3)} className="white-pill rounded-full bg-white px-5 py-2 text-sm">
                 Lanjut ➡️
               </button>
             </div>
@@ -119,7 +121,7 @@ export default function QuizPage() {
               <button type="button" onClick={() => setStep(2)} className="rounded-full border border-white/30 px-4 py-2 text-sm">
                 ⬅️ Kembali
               </button>
-              <button type="submit" disabled={status === "saving"} className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-purple-900">
+              <button type="submit" disabled={status === "saving"} className="white-pill rounded-full bg-white px-6 py-3 text-sm">
                 {status === "saving" ? "Menyimpan..." : "Simpan hasil 💾"}
               </button>
             </div>

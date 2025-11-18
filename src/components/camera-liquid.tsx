@@ -195,7 +195,7 @@ export function CameraLiquidWidget({ variant = "full" }: { variant?: WidgetVaria
               autoPlay
               playsInline
               muted
-              className="h-full w-full object-cover"
+              className="mirror-video h-full w-full object-cover"
             />
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
             {box && (

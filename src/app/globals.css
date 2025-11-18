@@ -73,6 +73,21 @@ a {
   overflow: hidden;
 }
 
+.white-pill {
+  color: #2a0045 !important;
+  font-weight: 600;
+  text-shadow: 0 4px 18px rgba(255, 255, 255, 0.65);
+  transition: color 0.2s ease;
+}
+
+.white-pill:hover {
+  color: #160024 !important;
+}
+
+.mirror-video {
+  transform: scaleX(-1);
+}
+
 .emoji-heading {
   font-size: 0.78rem;
   letter-spacing: 0.4em;

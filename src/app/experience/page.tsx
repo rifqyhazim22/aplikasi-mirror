@@ -221,7 +221,7 @@ export default function ExperiencePage() {
                         onClick={() => toggleFocus(option)}
                         className={`rounded-full px-4 py-2 text-sm transition ${
                           active
-                            ? "bg-white text-purple-900 shadow-lg"
+                        ? "white-pill bg-white shadow-lg"
                             : "border border-white/20 text-white/70 hover:border-white/40"
                         }`}
                       >
@@ -311,7 +311,7 @@ export default function ExperiencePage() {
               <button
                 type="submit"
                 disabled={!isComplete || status === "saving"}
-                className="w-full rounded-full bg-white px-6 py-3 text-sm font-semibold text-purple-900 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
+                className="white-pill w-full rounded-full bg-white px-6 py-3 text-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {status === "saving" ? "Sedang menyimpan..." : "Simpan profil ke Supabase"}
               </button>
@@ -441,7 +441,7 @@ export default function ExperiencePage() {
             <button
               type="submit"
               disabled={moodStatus === "saving"}
-              className="w-full rounded-full bg-white px-6 py-3 text-sm font-semibold text-purple-900 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
+              className="white-pill w-full rounded-full bg-white px-6 py-3 text-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
             >
               {moodStatus === "saving" ? "Mencatat..." : "Simpan mood entry"}
             </button>

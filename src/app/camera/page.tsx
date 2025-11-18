@@ -23,7 +23,7 @@ export default function CameraPage() {
         </div>
         <Link
           href="/experience"
-          className="rounded-full bg-white px-6 py-3 text-center text-sm font-semibold text-purple-900 transition hover:-translate-y-0.5"
+          className="white-pill rounded-full bg-white px-6 py-3 text-center text-sm transition hover:-translate-y-0.5"
         >
           Ke onboarding 💫
         </Link>
