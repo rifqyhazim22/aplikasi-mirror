@@ -8,6 +8,10 @@ const emotionSchema = z.object({
   confidence: z.number().min(0).max(100).optional(),
 });
 
+const querySchema = z.object({
+  limit: z.coerce.number().min(1).max(50).optional(),
+});
+
 type CameraLogInsert = Database["public"]["Tables"]["camera_emotion_log"]["Insert"];
 
 export async function POST(request: Request) {
@@ -29,13 +33,18 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const parsed = querySchema.safeParse({
+    limit: searchParams.get("limit") ?? undefined,
+  });
+  const limit = parsed.success ? parsed.data.limit ?? 20 : 20;
   const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from("camera_emotion_log")
     .select("id,emotion,confidence,created_at")
     .order("created_at", { ascending: false })
-    .limit(20);
+    .limit(limit);
 
   if (error) {
     console.error(error);

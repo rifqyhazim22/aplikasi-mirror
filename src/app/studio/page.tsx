@@ -22,6 +22,21 @@ type ChatLogResponse = {
   createdAt: string;
 };
 
+type MoodSnapshot = {
+  id: string;
+  mood: string;
+  note: string | null;
+  source: string | null;
+  createdAt: string;
+};
+
+type CameraSnapshot = {
+  id: string;
+  emotion: string;
+  confidence: number | null;
+  createdAt: string;
+};
+
 const promptPresets = [
   "Aku lagi overthinking tugas besok, bisa bantu tenangin?",
   "Boleh kasih refleksi dari mood baseline ku?",
@@ -36,6 +51,8 @@ export default function StudioPage() {
   const [loading, setLoading] = useState(false);
   const [info, setInfo] = useState<string | null>(null);
   const [logsLoading, setLogsLoading] = useState(false);
+  const [sensorLoading, setSensorLoading] = useState(false);
+  const [sensors, setSensors] = useState<{ mood?: MoodSnapshot; camera?: CameraSnapshot }>({});
 
   const activeProfile = useMemo(
     () => profiles.find((profile) => profile.id === selectedProfileId) ?? null,
@@ -97,6 +114,49 @@ export default function StudioPage() {
   useEffect(() => {
     fetchLogs(selectedProfileId);
   }, [selectedProfileId, fetchLogs]);
+
+  useEffect(() => {
+    const loadSensors = async () => {
+      if (!selectedProfileId) {
+        setSensors({});
+        return;
+      }
+      setSensorLoading(true);
+      try {
+        const [moodRes, cameraRes] = await Promise.all([
+          fetch(`/api/moods?profileId=${selectedProfileId}`),
+          fetch("/api/emotions?limit=1"),
+        ]);
+        if (!moodRes.ok || !cameraRes.ok) {
+          throw new Error("Sensor gagal dimuat");
+        }
+        const moodPayload = (await moodRes.json()) as MoodSnapshot[];
+        const cameraPayload = (await cameraRes.json()) as {
+          id: string;
+          emotion: string;
+          confidence: number | null;
+          created_at: string;
+        }[];
+        setSensors({
+          mood: moodPayload[0],
+          camera: cameraPayload[0]
+            ? {
+                id: cameraPayload[0].id,
+                emotion: cameraPayload[0].emotion,
+                confidence: cameraPayload[0].confidence,
+                createdAt: cameraPayload[0].created_at,
+              }
+            : undefined,
+        });
+      } catch (error) {
+        console.error(error);
+        setInfo("Sensor emosi belum bisa dimuat. Coba refresh.");
+      } finally {
+        setSensorLoading(false);
+      }
+    };
+    loadSensors();
+  }, [selectedProfileId]);
 
   const handleSend = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -173,6 +233,56 @@ export default function StudioPage() {
           <p className="text-sm text-white/70">
             Fokus: {activeProfile.focusAreas.join(", ") || "-"} | Mood baseline: {activeProfile.moodBaseline}
           </p>
+        )}
+      </section>
+
+      <section className="glass-card space-y-4 p-6">
+        <p className="text-xs uppercase tracking-[0.4em] text-white/50">Sensor emosi</p>
+        {sensorLoading ? (
+          <p className="text-sm text-white/60">Menyelaraskan data kamera & mood...</p>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
+              <p className="text-xs uppercase tracking-[0.3em] text-white/50">Computer vision</p>
+              {sensors.camera ? (
+                <>
+                  <p className="mt-2 text-lg font-semibold text-white capitalize">
+                    {sensors.camera.emotion}
+                  </p>
+                  <p className="text-xs text-white/60">
+                    Confidence {sensors.camera.confidence ?? 0}% •{" "}
+                    {new Date(sensors.camera.createdAt).toLocaleTimeString("id-ID", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                </>
+              ) : (
+                <p className="mt-2 text-xs text-white/60">
+                  Belum ada log kamera terbaru. Nyalakan mirror cam untuk memperbarui data.
+                </p>
+              )}
+            </div>
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
+              <p className="text-xs uppercase tracking-[0.3em] text-white/50">Mood entry</p>
+              {sensors.mood ? (
+                <>
+                  <p className="mt-2 text-lg font-semibold text-white">{sensors.mood.mood}</p>
+                  <p className="text-xs text-white/60">
+                    {sensors.mood.source ?? "demo"} •{" "}
+                    {new Date(sensors.mood.createdAt).toLocaleString("id-ID")}
+                  </p>
+                  {sensors.mood.note && (
+                    <p className="mt-1 text-xs text-white/60">Catatan: {sensors.mood.note}</p>
+                  )}
+                </>
+              ) : (
+                <p className="mt-2 text-xs text-white/60">
+                  Belum ada mood entry. Isi form onboarding atau catat mood cepat.
+                </p>
+              )}
+            </div>
+          </div>
         )}
       </section>
 

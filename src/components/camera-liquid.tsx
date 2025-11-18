@@ -12,6 +12,8 @@ type MoodInfo = {
   confidence: number;
 };
 
+type PermissionState = "idle" | "granted" | "denied" | "paused";
+
 const emotionCopy: Record<string, { emoji: string; text: string }> = {
   happy: { emoji: "😊", text: "Terlihat ceria, cocok untuk afirmasi positif!" },
   surprised: { emoji: "😮", text: "Ada energi tinggi, ajak tarik napas dulu." },
@@ -21,10 +23,7 @@ const emotionCopy: Record<string, { emoji: string; text: string }> = {
   angry: { emoji: "😡", text: "Gunakan nada menenangkan + CBT singkat." },
 };
 
-const statusCopy: Record<
-  "idle" | "granted" | "denied",
-  { label: string; detail: string; color: string }
-> = {
+const statusCopy: Record<PermissionState, { label: string; detail: string; color: string }> = {
   idle: {
     label: "Meminta izin kamera",
     detail: "Mirror perlu akses kamera depan untuk membaca ekspresi seperti demo lama.",
@@ -39,6 +38,11 @@ const statusCopy: Record<
     label: "Izin ditolak",
     detail: "Tanpa kamera Mirror hanya mengandalkan mood teks. Refresh dan beri izin jika ingin demo penuh.",
     color: "text-rose-300",
+  },
+  paused: {
+    label: "Kamera dinonaktifkan",
+    detail: "Aktifkan kembali kamera jika ingin memperlihatkan computer vision Mirror.",
+    color: "text-white/70",
   },
 };
 
@@ -55,16 +59,35 @@ export function CameraLiquidWidget({ variant = "full" }: { variant?: WidgetVaria
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const [permission, setPermission] = useState<"idle" | "granted" | "denied">("idle");
+  const [permission, setPermission] = useState<PermissionState>("idle");
   const [mood, setMood] = useState<MoodInfo>(defaultMood);
   const [box, setBox] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
   const modelRef = useRef<blazeface.BlazeFaceModel | null>(null);
   const lastSentRef = useRef<number>(0);
+  const [isCameraOn, setIsCameraOn] = useState(true);
+
+  const stopStream = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  };
 
   useEffect(() => {
+    if (!isCameraOn) {
+      return;
+    }
+    let cancelled = false;
     const init = async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+        if (cancelled) {
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
         streamRef.current = stream;
         tf.setBackend("webgl");
         await tf.ready();
@@ -77,12 +100,10 @@ export function CameraLiquidWidget({ variant = "full" }: { variant?: WidgetVaria
     };
     init();
     return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
-        streamRef.current = null;
-      }
+      cancelled = true;
+      stopStream();
     };
-  }, []);
+  }, [isCameraOn]);
 
   useEffect(() => {
     if (permission !== "granted") return;
@@ -165,6 +186,21 @@ export function CameraLiquidWidget({ variant = "full" }: { variant?: WidgetVaria
     return () => clearInterval(interval);
   }, [permission]);
 
+  const handleToggleCamera = () => {
+    setIsCameraOn((prev) => {
+      const next = !prev;
+      if (!next) {
+        stopStream();
+        setPermission("paused");
+        setMood(defaultMood);
+        setBox(null);
+      } else {
+        setPermission("idle");
+      }
+      return next;
+    });
+  };
+
   const frameHeight = variant === "full" ? "h-[26rem]" : "h-72";
   const padding = variant === "full" ? "p-8" : "p-5";
   const statusTone = statusCopy[permission];
@@ -181,11 +217,20 @@ export function CameraLiquidWidget({ variant = "full" }: { variant?: WidgetVaria
             Realtime CV demo
           </span>
         </div>
-        <p className="text-sm text-white/70">
-          Bidikan kamera diperbesar seperti versi lama sehingga pengguna merasa sedang menatap cermin
-          digital. Mirror hanya membaca micro-expression & cahaya, tidak menyimpan foto apa pun. Jelaskan
-          hal ini saat demo supaya tester merasa aman. ✨
-        </p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-white/70 sm:max-w-xl">
+            Bidikan kamera diperbesar seperti versi lama sehingga pengguna merasa sedang menatap cermin
+            digital. Mirror hanya membaca micro-expression & cahaya, tidak menyimpan foto apa pun.
+            Jelaskan hal ini saat demo supaya tester merasa aman. ✨
+          </p>
+          <button
+            type="button"
+            onClick={handleToggleCamera}
+            className="white-pill rounded-full bg-white px-5 py-2 text-xs transition hover:-translate-y-0.5"
+          >
+            {isCameraOn ? "Matikan kamera" : "Nyalakan kamera"}
+          </button>
+        </div>
       </div>
       <div className={`camera-frame relative ${frameHeight} w-full`}>
         {permission === "granted" ? (
