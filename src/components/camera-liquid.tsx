@@ -33,7 +33,9 @@ export function CameraLiquidWidget({ compact = false }: { compact?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [permission, setPermission] = useState<"idle" | "granted" | "denied">("idle");
   const [mood, setMood] = useState<MoodInfo>(defaultMood);
+  const [box, setBox] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
   const modelRef = useRef<blazeface.BlazeFaceModel | null>(null);
+  const lastSentRef = useRef<number>(0);
 
   useEffect(() => {
     let stream: MediaStream;
@@ -75,6 +77,9 @@ export function CameraLiquidWidget({ compact = false }: { compact?: boolean }) {
         const [x1, y1] = predictions[0].topLeft as [number, number];
         const [x2, y2] = predictions[0].bottomRight as [number, number];
         faceBox = { x1, y1, x2, y2 };
+        setBox({ x: x1, y: y1, w: x2 - x1, h: y2 - y1 });
+      } else {
+        setBox(null);
       }
 
       canvas.width = width;
@@ -105,6 +110,18 @@ export function CameraLiquidWidget({ compact = false }: { compact?: boolean }) {
         description: copy.text,
         confidence: Math.round(emotion.confidence * 100),
       });
+      const now = Date.now();
+      if (now - lastSentRef.current > 10000) {
+        lastSentRef.current = now;
+        fetch("/api/emotions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            emotion: emotion.value,
+            confidence: Math.round(emotion.confidence * 100),
+          }),
+        }).catch((err) => console.error("emotion log", err));
+      }
     }, 3000);
     return () => clearInterval(interval);
   }, [permission]);
@@ -116,9 +133,22 @@ export function CameraLiquidWidget({ compact = false }: { compact?: boolean }) {
           <p className="text-sm text-white/70">Scanner kamera (demo)</p>
           <span className="text-2xl">{mood.emoji}</span>
         </div>
-        <div className="relative mx-auto h-40 w-40 overflow-hidden rounded-[32px] border border-white/20 bg-white/5">
+        <div className="relative mx-auto h-72 w-72 max-w-full overflow-hidden rounded-[48px] border border-white/20 bg-white/5 shadow-2xl">
           {permission === "granted" ? (
-            <video ref={videoRef} autoPlay playsInline muted className="h-full w-full object-cover" />
+            <>
+              <video ref={videoRef} autoPlay playsInline muted className="h-full w-full object-cover" />
+              {box && (
+                <span
+                  className="absolute border-2 border-cyan-300/70"
+                  style={{
+                    left: `${box.x}px`,
+                    top: `${box.y}px`,
+                    width: `${box.w}px`,
+                    height: `${box.h}px`,
+                  }}
+                />
+              )}
+            </>
           ) : (
             <div className="flex h-full items-center justify-center text-center text-sm text-white/60">
               {permission === "denied"

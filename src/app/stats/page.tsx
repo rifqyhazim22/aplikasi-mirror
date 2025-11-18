@@ -2,6 +2,13 @@
 
 import { useEffect, useState } from "react";
 
+type CameraLog = {
+  id: string;
+  emotion: string;
+  confidence: number | null;
+  created_at: string;
+};
+
 type MoodSummary = {
   date: string;
   count: number;
@@ -20,19 +27,25 @@ const moodEmoji = (text: string) => {
 
 export default function StatsPage() {
   const [summary, setSummary] = useState<MoodSummary[]>([]);
+  const [cameraLogs, setCameraLogs] = useState<CameraLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchSummary = async () => {
       try {
-        const response = await fetch("/api/moods/summary?days=14");
-        if (!response.ok) throw new Error("Gagal memuat data");
-        const payload = (await response.json()) as MoodSummary[];
+        const [summaryRes, cameraRes] = await Promise.all([
+          fetch("/api/moods/summary?days=14"),
+          fetch("/api/emotions"),
+        ]);
+        if (!summaryRes.ok || !cameraRes.ok) throw new Error("Gagal memuat data");
+        const payload = (await summaryRes.json()) as MoodSummary[];
+        const cameraPayload = (await cameraRes.json()) as CameraLog[];
         setSummary(payload);
+        setCameraLogs(cameraPayload);
       } catch (err) {
         console.error(err);
-        setError("Tidak bisa membaca ringkasan mood");
+        setError("Tidak bisa membaca data statistik");
       } finally {
         setLoading(false);
       }
@@ -58,6 +71,7 @@ export default function StatsPage() {
       ) : summary.length === 0 ? (
         <p className="text-center text-white/50">Belum ada data mood dalam 14 hari terakhir.</p>
       ) : (
+        <>
         <section className="grid gap-4 sm:grid-cols-2">
           {summary.map((item) => {
             const titleEmoji = moodEmoji(item.moods[0] ?? "");
@@ -81,6 +95,29 @@ export default function StatsPage() {
             );
           })}
         </section>
+        <section className="glass-card mt-6 space-y-3 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-[0.4em] text-white/60">Log kamera terakhir</p>
+              <p className="text-lg text-white/80">Bucket emosi dari widget CV</p>
+            </div>
+            <span className="text-sm text-white/60">{cameraLogs.length} entri</span>
+          </div>
+          {cameraLogs.length === 0 ? (
+            <p className="text-sm text-white/60">Belum ada log kamera tersimpan.</p>
+          ) : (
+            <ul className="space-y-2">
+              {cameraLogs.map((log) => (
+                <li key={log.id} className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm">
+                  <span className="font-semibold text-white capitalize">{log.emotion}</span>
+                  <span className="text-xs text-white/60">{new Date(log.created_at).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>
+                  <span className="text-xs text-white/50">{log.confidence ?? 0}%</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+        </>
       )}
     </main>
   );

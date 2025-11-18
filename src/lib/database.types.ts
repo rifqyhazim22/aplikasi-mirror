@@ -115,6 +115,27 @@ export type Database = {
         };
         Relationships: [];
       };
+      camera_emotion_log: {
+        Row: {
+          id: string;
+          emotion: string;
+          confidence: number | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          emotion: string;
+          confidence?: number | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          emotion?: string;
+          confidence?: number | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       mood_entry: {
         Row: {
           id: string;
