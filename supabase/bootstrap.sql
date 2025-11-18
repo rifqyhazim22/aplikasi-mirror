@@ -34,9 +34,19 @@ create table if not exists public.conversation_log (
   created_at timestamptz default now()
 );
 
+create table if not exists public.personality_quiz (
+  id uuid primary key default gen_random_uuid(),
+  nickname text,
+  mbti_result text,
+  enneagram_result text,
+  focus_note text,
+  created_at timestamptz default now()
+);
+
 alter table public.profile enable row level security;
 alter table public.mood_entry enable row level security;
 alter table public.conversation_log enable row level security;
+alter table public.personality_quiz enable row level security;
 
 do $$
 begin
@@ -47,6 +57,21 @@ begin
       and policyname = 'sandbox profile access'
   ) then
     create policy "sandbox profile access" on public.profile
+      for all
+      using (true)
+      with check (true);
+  end if;
+end $$;
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'public'
+      and tablename = 'personality_quiz'
+      and policyname = 'sandbox quiz access'
+  ) then
+    create policy "sandbox quiz access" on public.personality_quiz
       for all
       using (true)
       with check (true);

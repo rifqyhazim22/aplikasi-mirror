@@ -88,6 +88,33 @@ export type Database = {
           },
         ];
       };
+      personality_quiz: {
+        Row: {
+          id: string;
+          nickname: string | null;
+          mbti_result: string | null;
+          enneagram_result: string | null;
+          focus_note: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          nickname?: string | null;
+          mbti_result?: string | null;
+          enneagram_result?: string | null;
+          focus_note?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          nickname?: string | null;
+          mbti_result?: string | null;
+          enneagram_result?: string | null;
+          focus_note?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       mood_entry: {
         Row: {
           id: string;

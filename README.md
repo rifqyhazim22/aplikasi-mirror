@@ -41,6 +41,7 @@ supabase/
 - `/camera` — layar demo computer vision.
 - `/studio` — log percakapan sesudah ritual bercermin.
 - `/stats` — kalender mood 14 hari terakhir.
+- `/quiz` — kuis singkat MBTI/Enneagram untuk menghasilkan profil demo.
 
 ### Menjalankan secara lokal
 
@@ -76,6 +77,8 @@ atau payment. Alur cepat:
 - `POST /api/chat` — mengirim pesan ke Mirror dengan kontekstualisasi profil onboarding.
 - `GET /api/chat/logs?profileId=...` — membaca 30 log percakapan terakhir dari Supabase.
 - `GET /api/moods/summary?days=14` — ringkasan mood harian untuk halaman `/stats`.
+- `POST /api/personality` — menyimpan hasil kuis MBTI/Enneagram.
+- `GET /api/personality` — melihat 10 hasil kuis terbaru.
 
 Semua endpoint menggunakan kredensial publik Supabase (RLS dibuka khusus sandbox ini).
 
