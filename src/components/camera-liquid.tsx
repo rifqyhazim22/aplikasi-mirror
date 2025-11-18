@@ -65,8 +65,18 @@ export function CameraLiquidWidget({ variant = "full" }: { variant?: WidgetVaria
     const init = async () => {
       try {
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
+        const videoElement = videoRef.current;
+        if (videoElement) {
+          videoElement.srcObject = stream;
+          // Be explicit about playback to avoid Safari/Chrome blocking autoplay video feeds.
+          videoElement.onloadedmetadata = () => {
+            videoElement.play().catch((error) => {
+              console.warn("Mirror cam gagal autoplay, menunggu interaksi", error);
+            });
+          };
+          await videoElement.play().catch(() => {
+            // Some browsers require onloadedmetadata before play succeeds; ignore here.
+          });
         }
         tf.setBackend("webgl");
         await tf.ready();
