@@ -1,13 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-
-const moodMap = [
-  { label: "Energi penuh ⚡️", emoji: "⚡️", description: "Cahaya terang, ekspresi bersemangat" },
-  { label: "Seimbang 🙂", emoji: "🙂", description: "Pencahayaan stabil, ekspresi netral" },
-  { label: "Kontemplatif 🤔", emoji: "🤔", description: "Sedikit redup, ekspresi fokus" },
-  { label: "Butuh istirahat 😴", emoji: "😴", description: "Sangat redup, ekspresi kelelahan" },
-];
+import * as tf from "@tensorflow/tfjs";
+import * as blazeface from "@tensorflow-models/blazeface";
+import { mapAverageToEmotion } from "@/lib/emotion";
 
 type MoodInfo = {
   label: string;
@@ -23,11 +19,21 @@ const defaultMood: MoodInfo = {
   confidence: 0,
 };
 
+const emotionCopy: Record<string, { emoji: string; text: string }> = {
+  happy: { emoji: "😊", text: "Terlihat ceria, cocok untuk afirmasi positif!" },
+  surprised: { emoji: "😮", text: "Ada energi tinggi, ajak tarik napas dulu." },
+  neutral: { emoji: "🙂", text: "Ekspresi seimbang, siap lanjut cerita." },
+  tired: { emoji: "🥱", text: "Butuh grounding lembut sebelum chat." },
+  sad: { emoji: "😢", text: "Sampaikan empati ekstra saat memulai." },
+  angry: { emoji: "😡", text: "Gunakan nada menenangkan + CBT singkat." },
+};
+
 export function CameraLiquidWidget({ compact = false }: { compact?: boolean }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [permission, setPermission] = useState<"idle" | "granted" | "denied">("idle");
   const [mood, setMood] = useState<MoodInfo>(defaultMood);
+  const modelRef = useRef<blazeface.BlazeFaceModel | null>(null);
 
   useEffect(() => {
     let stream: MediaStream;
@@ -37,6 +43,9 @@ export function CameraLiquidWidget({ compact = false }: { compact?: boolean }) {
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
+        tf.setBackend("webgl");
+        await tf.ready();
+        modelRef.current = await blazeface.load();
         setPermission("granted");
       } catch (error) {
         console.error(error);
@@ -53,34 +62,50 @@ export function CameraLiquidWidget({ compact = false }: { compact?: boolean }) {
 
   useEffect(() => {
     if (permission !== "granted") return;
-    const interval = setInterval(() => {
+    const interval = setInterval(async () => {
       const video = videoRef.current;
       const canvas = canvasRef.current;
-      if (!video || !canvas) return;
+      const model = modelRef.current;
+      if (!video || !canvas || !model) return;
       const width = video.videoWidth || 320;
       const height = video.videoHeight || 240;
+      const predictions = await model.estimateFaces(video, false);
+      let faceBox = null;
+      if (predictions.length > 0 && predictions[0].topLeft && predictions[0].bottomRight) {
+        const [x1, y1] = predictions[0].topLeft as [number, number];
+        const [x2, y2] = predictions[0].bottomRight as [number, number];
+        faceBox = { x1, y1, x2, y2 };
+      }
+
       canvas.width = width;
       canvas.height = height;
-      const context = canvas.getContext("2d");
-      if (!context) return;
-      context.drawImage(video, 0, 0, width, height);
-      const data = context.getImageData(0, 0, width, height).data;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.drawImage(video, 0, 0, width, height);
+      let imageData;
+      if (faceBox) {
+        const boxW = faceBox.x2 - faceBox.x1;
+        const boxH = faceBox.y2 - faceBox.y1;
+        imageData = ctx.getImageData(faceBox.x1, faceBox.y1, boxW, boxH);
+      } else {
+        imageData = ctx.getImageData(0, 0, width, height);
+      }
+      const data = imageData.data;
       let total = 0;
-      const step = 4 * 4;
+      const step = 4 * 8;
       for (let i = 0; i < data.length; i += step) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-        total += (r + g + b) / 3;
+        total += (data[i] + data[i + 1] + data[i + 2]) / 3;
       }
       const avg = total / (data.length / step);
-      let nextMood = moodMap[1];
-      if (avg >= 190) nextMood = moodMap[0];
-      else if (avg >= 130) nextMood = moodMap[1];
-      else if (avg >= 90) nextMood = moodMap[2];
-      else nextMood = moodMap[3];
-      setMood({ ...nextMood, confidence: Math.min(100, Math.round((avg / 255) * 100)) });
-    }, 2500);
+      const emotion = mapAverageToEmotion(avg);
+      const copy = emotionCopy[emotion.value];
+      setMood({
+        label: emotion.value.toUpperCase(),
+        emoji: copy.emoji,
+        description: copy.text,
+        confidence: Math.round(emotion.confidence * 100),
+      });
+    }, 3000);
     return () => clearInterval(interval);
   }, [permission]);
 
@@ -106,7 +131,7 @@ export function CameraLiquidWidget({ compact = false }: { compact?: boolean }) {
           <p className="font-semibold text-white">{mood.label}</p>
           <p className="text-xs text-white/60">{mood.description}</p>
           {permission === "granted" && (
-            <p className="mt-2 text-xs text-white/50">Brightness index: {mood.confidence}%</p>
+            <p className="mt-2 text-xs text-white/50">Confidence ~{mood.confidence}%</p>
           )}
         </div>
       </div>
