@@ -42,6 +42,7 @@ supabase/
 - `/studio` — log percakapan sesudah ritual bercermin.
 - `/stats` — kalender mood 14 hari terakhir.
 - `/quiz` — kuis singkat MBTI/Enneagram untuk menghasilkan profil demo.
+- `/insights` — ringkasan CBT + rekomendasi berbasis kuis & log mood.
 
 ### Menjalankan secara lokal
 
@@ -79,6 +80,7 @@ atau payment. Alur cepat:
 - `GET /api/moods/summary?days=14` — ringkasan mood harian untuk halaman `/stats`.
 - `POST /api/personality` — menyimpan hasil kuis MBTI/Enneagram.
 - `GET /api/personality` — melihat 10 hasil kuis terbaru.
+- `GET /api/insights` — mengembalikan saran CBT ringkas berdasarkan kuis & mood.
 
 Semua endpoint menggunakan kredensial publik Supabase (RLS dibuka khusus sandbox ini).
 

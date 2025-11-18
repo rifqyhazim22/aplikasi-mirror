@@ -61,6 +61,12 @@ export default function HomePage() {
             Main kuis 💡
           </Link>
           <Link
+            href="/insights"
+            className="rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white"
+          >
+            Insight CBT 🧠
+          </Link>
+          <Link
             href="https://github.com/rifqyhazim22/aplikasi-mirror"
             target="_blank"
             className="rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white"
