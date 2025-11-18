@@ -1,4 +1,6 @@
+
 import { CameraLiquidWidget } from "@/components/camera-liquid";
+import { MiniChat } from "@/components/mini-chat";
 import Link from "next/link";
 
 export default function CameraPage() {
@@ -12,7 +14,10 @@ export default function CameraPage() {
           nggak pernah dikirim ke server—jadi aman buat freestyle ekspresi lucu.
         </p>
       </header>
-      <CameraLiquidWidget variant="full" />
+      <section className="glass-card grid gap-6 p-6 lg:grid-cols-2">
+        <CameraLiquidWidget variant="full" />
+        <MiniChat title="Chat cepat" compact />
+      </section>
       <div className="liquid-card flex flex-col gap-3 p-6 text-sm text-white/80 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-white font-semibold">Lanjutkan ritual onboarding?</p>

@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { CameraLiquidWidget } from "@/components/camera-liquid";
+import { MiniChat } from "@/components/mini-chat";
 
 const focusOptions = ["Stress akademik", "Hubungan", "Karier", "Self-growth"] as const;
 const moodBaselineOptions = ["tenang", "bersemangat", "lelah"] as const;
@@ -339,7 +340,12 @@ export default function ExperiencePage() {
         </form>
 
         <aside className="space-y-6">
-          <CameraLiquidWidget variant="full" />
+          <section className="glass-card space-y-4 p-6">
+            <div className="grid gap-4 lg:grid-cols-2">
+              <CameraLiquidWidget variant="full" />
+              <MiniChat title="Chat kilat" compact />
+            </div>
+          </section>
           <div className="glass-card space-y-3 p-6">
             <p className="emoji-heading">Panduan demo</p>
             <p className="text-lg font-semibold text-white">Narasi Mirror Word versi singkat ✨</p>
