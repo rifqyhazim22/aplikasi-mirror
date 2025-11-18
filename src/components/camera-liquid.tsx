@@ -12,13 +12,6 @@ type MoodInfo = {
   confidence: number;
 };
 
-const defaultMood: MoodInfo = {
-  label: "Memulai ritual",
-  emoji: "👀",
-  description: "Kamera siap membaca ekspresi",
-  confidence: 0,
-};
-
 const emotionCopy: Record<string, { emoji: string; text: string }> = {
   happy: { emoji: "😊", text: "Terlihat ceria, cocok untuk afirmasi positif!" },
   surprised: { emoji: "😮", text: "Ada energi tinggi, ajak tarik napas dulu." },
@@ -28,7 +21,37 @@ const emotionCopy: Record<string, { emoji: string; text: string }> = {
   angry: { emoji: "😡", text: "Gunakan nada menenangkan + CBT singkat." },
 };
 
-export function CameraLiquidWidget({ compact = false }: { compact?: boolean }) {
+const statusCopy: Record<
+  "idle" | "granted" | "denied",
+  { label: string; detail: string; color: string }
+> = {
+  idle: {
+    label: "Meminta izin kamera",
+    detail: "Mirror perlu akses kamera depan untuk membaca ekspresi seperti demo lama.",
+    color: "text-white",
+  },
+  granted: {
+    label: "Menganalisis micro-expression",
+    detail: "TensorFlow Lite mendeteksi bounding box lalu Mirror menyederhanakannya jadi bucket emosi.",
+    color: "text-emerald-300",
+  },
+  denied: {
+    label: "Izin ditolak",
+    detail: "Tanpa kamera Mirror hanya mengandalkan mood teks. Refresh dan beri izin jika ingin demo penuh.",
+    color: "text-rose-300",
+  },
+};
+
+const defaultMood: MoodInfo = {
+  label: "Memulai ritual",
+  emoji: "👀",
+  description: "Kamera siap membaca ekspresi",
+  confidence: 0,
+};
+
+type WidgetVariant = "full" | "compact";
+
+export function CameraLiquidWidget({ variant = "full" }: { variant?: WidgetVariant }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [permission, setPermission] = useState<"idle" | "granted" | "denied">("idle");
@@ -126,43 +149,92 @@ export function CameraLiquidWidget({ compact = false }: { compact?: boolean }) {
     return () => clearInterval(interval);
   }, [permission]);
 
+  const frameHeight = variant === "full" ? "h-[26rem]" : "h-72";
+  const padding = variant === "full" ? "p-8" : "p-5";
+  const statusTone = statusCopy[permission];
+
   return (
-    <div className={`liquid-card ${compact ? "p-4" : "p-6"}`}>
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-white/70">Scanner kamera (demo)</p>
-          <span className="text-2xl">{mood.emoji}</span>
+    <div className={`liquid-card ${padding} space-y-5`}>
+      <div className="flex flex-col gap-2">
+        <p className="emoji-heading">Mirror Cam</p>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h3 className="text-2xl font-semibold text-white">
+            Kolom kamera + computer vision
+          </h3>
+          <span className="mirror-pill px-4 py-1 text-xs text-white/70">
+            Realtime CV demo
+          </span>
         </div>
-        <div className="relative mx-auto h-72 w-72 max-w-full overflow-hidden rounded-[48px] border border-white/20 bg-white/5 shadow-2xl">
-          {permission === "granted" ? (
-            <>
-              <video ref={videoRef} autoPlay playsInline muted className="h-full w-full object-cover" />
-              {box && (
-                <span
-                  className="absolute border-2 border-cyan-300/70"
-                  style={{
-                    left: `${box.x}px`,
-                    top: `${box.y}px`,
-                    width: `${box.w}px`,
-                    height: `${box.h}px`,
-                  }}
-                />
-              )}
-            </>
-          ) : (
-            <div className="flex h-full items-center justify-center text-center text-sm text-white/60">
-              {permission === "denied"
-                ? "Izin kamera ditolak. Buka ulang halaman ini dan berikan izin."
-                : "Meminta izin kamera..."}
+        <p className="text-sm text-white/70">
+          Bidikan kamera diperbesar seperti versi lama sehingga pengguna merasa sedang menatap cermin
+          digital. Mirror hanya membaca micro-expression & cahaya, tidak menyimpan foto apa pun. Jelaskan
+          hal ini saat demo supaya tester merasa aman. ✨
+        </p>
+      </div>
+      <div className={`camera-frame relative ${frameHeight} w-full`}>
+        {permission === "granted" ? (
+          <>
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="h-full w-full object-cover"
+            />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+            {box && (
+              <div
+                className="pointer-events-none absolute rounded-3xl border-2 border-cyan-200/80 shadow-[0_0_40px_rgba(51,255,216,0.4)]"
+                style={{
+                  left: `${box.x}px`,
+                  top: `${box.y}px`,
+                  width: `${box.w}px`,
+                  height: `${box.h}px`,
+                }}
+              />
+            )}
+            <div className="pointer-events-none absolute left-6 top-6 flex flex-col text-xs text-white/80">
+              <span className="text-sm font-semibold text-white">Mirror Vision</span>
+              <span className="text-white/70">
+                {mood.label} · {mood.confidence}% yakin
+              </span>
             </div>
-          )}
+          </>
+        ) : (
+          <div className="flex h-full flex-col items-center justify-center gap-3 px-8 text-center">
+            <span className="text-4xl">{permission === "denied" ? "🚫" : "🪞"}</span>
+            <p className="text-lg font-semibold text-white">
+              {permission === "denied" ? "Mirror butuh izin kamera" : "Memanggil cermin digital"}
+            </p>
+            <p className="text-sm text-white/70">
+              {permission === "denied"
+                ? "Aktifkan kamera lewat ikon di browser, lalu refresh halaman untuk menyalakan scanner."
+                : "Tahan satu detik. Mirror sedang menyelaraskan cahaya & fokus sebelum menampilkan feed."}
+            </p>
+          </div>
+        )}
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <p className="text-xs uppercase tracking-[0.35em] text-white/50">Status</p>
+          <p className={`mt-2 text-lg font-semibold ${statusTone.color}`}>{statusTone.label}</p>
+          <p className="text-xs text-white/60">{statusTone.detail}</p>
         </div>
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-3 text-sm text-white/80">
-          <p className="font-semibold text-white">{mood.label}</p>
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <p className="text-xs uppercase tracking-[0.35em] text-white/50">Mood bucket</p>
+          <p className="mt-2 flex items-center gap-2 text-xl font-semibold text-white">
+            <span>{mood.emoji}</span> {mood.label}
+          </p>
           <p className="text-xs text-white/60">{mood.description}</p>
-          {permission === "granted" && (
-            <p className="mt-2 text-xs text-white/50">Confidence ~{mood.confidence}%</p>
-          )}
+          <div className="mt-3 h-2 w-full rounded-full bg-white/10">
+            <span
+              className="block h-full rounded-full bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-300"
+              style={{ width: `${Math.min(Math.max(mood.confidence, 5), 100)}%` }}
+            />
+          </div>
+          <p className="mt-1 text-right text-xs text-white/50">
+            {permission === "granted" ? `${mood.confidence}% confidence` : "Menunggu kamera"}
+          </p>
         </div>
       </div>
       <canvas ref={canvasRef} className="hidden" />

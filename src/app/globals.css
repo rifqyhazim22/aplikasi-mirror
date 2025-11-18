@@ -2,18 +2,35 @@
 
 :root {
   color-scheme: dark;
-  --mirror-purple: #8c38ff;
+  --mirror-purple: #9a5bff;
   --mirror-magenta: #ff5ccb;
-  --mirror-cyan: #23d5ab;
+  --mirror-cyan: #33ffd8;
+  --mirror-ink: #05000f;
 }
 
 body {
   min-height: 100vh;
-  background: radial-gradient(circle at 5% 0%, rgba(255, 92, 203, 0.25), transparent 40%),
-    radial-gradient(circle at 90% 10%, rgba(35, 213, 171, 0.3), transparent 55%),
-    linear-gradient(135deg, #04000f 0%, #150035 50%, #1b0029 100%);
+  margin: 0;
+  background-color: #05000f;
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(255, 92, 203, 0.28), transparent 40%),
+    radial-gradient(circle at 80% 0%, rgba(51, 255, 216, 0.22), transparent 45%),
+    radial-gradient(circle at 90% 80%, rgba(36, 116, 255, 0.18), transparent 50%),
+    linear-gradient(135deg, #03000a 0%, #11002a 40%, #1a0031 65%, #05000f 100%);
+  background-size: 180% 180%;
+  animation: aurora 24s ease-in-out infinite;
   color: #f8f2ff;
   font-family: "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 60% 0%, rgba(255, 255, 255, 0.08), transparent 60%);
+  pointer-events: none;
+  z-index: -1;
 }
 
 a {
@@ -23,17 +40,54 @@ a {
 .glass-card {
   border-radius: 32px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(14, 4, 28, 0.65);
-  box-shadow: 0 20px 70px rgba(6, 1, 14, 0.6);
-  backdrop-filter: blur(30px);
+  background: rgba(13, 3, 28, 0.7);
+  box-shadow: 0 25px 80px rgba(5, 0, 12, 0.7);
+  backdrop-filter: blur(35px);
 }
 
 .liquid-card {
   border-radius: 36px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: linear-gradient(135deg, rgba(255, 92, 203, 0.15), rgba(35, 213, 171, 0.08));
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  background: linear-gradient(135deg, rgba(255, 92, 203, 0.18), rgba(35, 213, 171, 0.1));
   box-shadow:
     inset 0 0 40px rgba(255, 255, 255, 0.08),
-    0 25px 60px rgba(8, 0, 15, 0.45);
-  backdrop-filter: blur(35px);
+    0 25px 60px rgba(6, 0, 18, 0.55);
+  backdrop-filter: blur(40px);
+}
+
+.mirror-pill {
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.05);
+}
+
+.camera-frame {
+  border-radius: 48px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.12), transparent 55%),
+    rgba(3, 0, 12, 0.7);
+  box-shadow:
+    inset 0 0 40px rgba(0, 0, 0, 0.4),
+    0 15px 40px rgba(3, 0, 14, 0.6);
+  overflow: hidden;
+}
+
+.emoji-heading {
+  font-size: 0.78rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+@keyframes aurora {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }

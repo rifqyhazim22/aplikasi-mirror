@@ -166,168 +166,210 @@ export default function ExperiencePage() {
   };
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-8 px-6 py-16 text-white">
-      <header className="space-y-3">
-        <p className="text-sm uppercase tracking-[0.4em] text-white/60">Ritual Mirror</p>
-        <h1 className="text-4xl font-semibold">Onboarding + sensor kamera</h1>
-        <p className="text-white/75">
-          Ini adalah versi demo dari ritual bercermin Mirror: pengguna menyebutkan panggilan kesayangan,
-          memberi izin kamera, dan membiarkan computer vision mengartikan mood sebelum percakapan dimulai.
+    <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-10 px-6 py-16 text-white">
+      <header className="space-y-4">
+        <p className="emoji-heading">Ritual Mirror</p>
+        <h1 className="text-4xl font-semibold leading-tight sm:text-5xl">
+          Onboarding hangat + kolom kamera besar seperti cermin 💗🪞
+        </h1>
+        <p className="text-lg text-white/80">
+          Kita membawa bahasa narasi dari dokumen Mirror Word: sapaan manis, memastikan izin kamera,
+          lalu menjelaskan bahwa AI membaca ekspresi secara real time sebelum menyusun prompt empatik.
+          Gunakan halaman ini untuk walkthrough investor maupun pengguna yang ingin mencicip ritual.
         </p>
-        <p className="text-sm text-white/60">
-          Gunakan bahasa yang hangat ketika memandu penguji: jelaskan bahwa feed kamera hanya dianalisis
-          sesaat untuk mengenali ekspresi—tidak ada foto yang disimpan—lalu data tekstualnya disimpan di Supabase.
-        </p>
+        <div className="flex flex-wrap gap-3 text-xs text-white/70">
+          <span className="mirror-pill px-4 py-2">🪞 Persona Mirror</span>
+          <span className="mirror-pill px-4 py-2">📸 Kamera + CV ringan</span>
+          <span className="mirror-pill px-4 py-2">🧠 Prompt empatik</span>
+          <span className="mirror-pill px-4 py-2">🌊 Liquid glass aesthetic</span>
+        </div>
       </header>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <section className="glass-card space-y-6 p-6">
-          <div>
-            <label className="text-sm text-white/70">Nama panggilan</label>
-            <input
-              className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/30"
-              value={form.nickname}
-              onChange={(event) => updateField("nickname", event.target.value)}
-              placeholder="contoh: Nara"
-            />
-          </div>
-          <div>
-            <p className="text-sm text-white/70">Topik utama yang ingin kamu fokuskan</p>
-            <p className="text-xs text-white/50">Sambil memilih, jelaskan posisi kamera dan ritual bercermin yang ingin diuji.</p>
-            <div className="mt-3 flex flex-wrap gap-3">
-              {focusOptions.map((option) => {
-                const active = form.focusAreas.includes(option);
-                return (
-                  <button
-                    type="button"
-                    key={option}
-                    onClick={() => toggleFocus(option)}
-                    className={`rounded-full px-4 py-2 text-sm transition ${
-                      active
-                        ? "bg-white text-purple-900"
-                        : "border border-white/20 text-white/70 hover:border-white/40"
-                    }`}
-                  >
-                    {option}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </section>
 
-        <section className="glass-card space-y-4 p-6">
-          <div className="flex flex-col gap-2">
-            <p className="text-sm uppercase tracking-[0.4em] text-white/60">Scanner kamera</p>
-            <h2 className="text-2xl font-semibold text-white">Liquid mirror demo 💧</h2>
+      <div className="grid gap-8 lg:grid-cols-[1.15fr,0.85fr]">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <section className="glass-card space-y-6 p-6 sm:p-8">
+            <div className="space-y-1">
+              <p className="emoji-heading">Langkah 1</p>
+              <h2 className="text-2xl font-semibold text-white">Identitas cermin & izin hangat 😌</h2>
+              <p className="text-sm text-white/70">
+                Sapaan Mirror dimulai dengan menanyakan nama panggilan. Setelah itu pilih 1-3 fokus cerita
+                yang paling relevan dengan sesi demo hari ini.
+              </p>
+            </div>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <label className="text-sm text-white/70">Nama panggilan</label>
+                <input
+                  className="mt-2 w-full rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/30"
+                  value={form.nickname}
+                  onChange={(event) => updateField("nickname", event.target.value)}
+                  placeholder="contoh: Nara, Mas Gio, Kak Mira"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <p className="text-sm text-white/70">Topik utama yang ingin kamu fokuskan</p>
+                <p className="text-xs text-white/50">
+                  Mirror menjaga supaya hanya 3 fokus aktif agar percakapan tetap rapih.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-3">
+                  {focusOptions.map((option) => {
+                    const active = form.focusAreas.includes(option);
+                    return (
+                      <button
+                        type="button"
+                        key={option}
+                        onClick={() => toggleFocus(option)}
+                        className={`rounded-full px-4 py-2 text-sm transition ${
+                          active
+                            ? "bg-white text-purple-900 shadow-lg"
+                            : "border border-white/20 text-white/70 hover:border-white/40"
+                        }`}
+                      >
+                        {active ? "💡 " : "☁️ "}
+                        {option}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="flex items-center gap-3 rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
+                <input
+                  type="checkbox"
+                  checked={form.consentData}
+                  onChange={(event) => updateField("consentData", event.target.checked)}
+                />
+                Saya paham data teks disimpan di Supabase (non-paywall) untuk pengembangan Mirror.
+              </label>
+              <label className="flex items-center gap-3 rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
+                <input
+                  type="checkbox"
+                  checked={form.consentCamera}
+                  onChange={(event) => updateField("consentCamera", event.target.checked)}
+                />
+                Izinkan Mirror memakai kamera depan selama demo komputer vision.
+              </label>
+            </div>
+          </section>
+
+          <section className="glass-card space-y-6 p-6 sm:p-8">
+            <div className="space-y-1">
+              <p className="emoji-heading">Langkah 2</p>
+              <h2 className="text-2xl font-semibold text-white">
+                Mood baseline + tipe kepribadian ✍️
+              </h2>
+              <p className="text-sm text-white/70">
+                Bagian ini menerjemahkan dokumen Mirror Word ke data: MBTI, Enneagram, archetype, serta mood
+                baseline untuk menyetel nada chat.
+              </p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div>
+                <label className="text-sm text-white/70">Mood baseline</label>
+                <select
+                  className="mt-2 w-full rounded-3xl border border-white/10 bg-white/5 px-3 py-3 text-white"
+                  value={form.moodBaseline}
+                  onChange={(event) =>
+                    updateField("moodBaseline", event.target.value as ProfileForm["moodBaseline"])
+                  }
+                >
+                  {moodBaselineOptions.map((option) => (
+                    <option key={option} value={option} className="bg-purple-900 text-white">
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-sm text-white/70">MBTI</label>
+                <input
+                  className="mt-2 w-full rounded-3xl border border-white/10 bg-white/5 px-3 py-3 text-center text-white"
+                  value={form.mbtiType}
+                  onChange={(event) => updateField("mbtiType", event.target.value.toUpperCase())}
+                />
+              </div>
+              <div>
+                <label className="text-sm text-white/70">Enneagram</label>
+                <input
+                  className="mt-2 w-full rounded-3xl border border-white/10 bg-white/5 px-3 py-3 text-center text-white"
+                  value={form.enneagramType}
+                  onChange={(event) => updateField("enneagramType", event.target.value)}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm text-white/70">Archetype utama</label>
+              <input
+                className="mt-2 w-full rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-white"
+                value={form.primaryArchetype}
+                onChange={(event) => updateField("primaryArchetype", event.target.value)}
+                placeholder="contoh: caregiver, hero, explorer"
+              />
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <button
+                type="submit"
+                disabled={!isComplete || status === "saving"}
+                className="w-full rounded-full bg-white px-6 py-3 text-sm font-semibold text-purple-900 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {status === "saving" ? "Sedang menyimpan..." : "Simpan profil ke Supabase"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setForm(initialForm);
+                  setStatus("idle");
+                  setMessage(null);
+                }}
+                className="w-full rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white/70 transition hover:border-white hover:text-white"
+              >
+                Reset form
+              </button>
+            </div>
+            {message && (
+              <p
+                className={`text-sm ${
+                  status === "success" ? "text-emerald-300" : "text-rose-300"
+                }`}
+              >
+                {message}
+              </p>
+            )}
+          </section>
+        </form>
+
+        <aside className="space-y-6">
+          <CameraLiquidWidget variant="full" />
+          <div className="glass-card space-y-3 p-6">
+            <p className="emoji-heading">Panduan demo</p>
+            <p className="text-lg font-semibold text-white">Narasi Mirror Word versi singkat ✨</p>
+            <ul className="space-y-2 text-sm text-white/70">
+              <li>1. Sapa pengguna sebagai “teman cermin” dan jelaskan bahwa kamera hanya dibaca lokal.</li>
+              <li>2. Saat kamera aktif, ceritakan bahwa Mirror mengukur mikro-ekspresi untuk mencocokkan nada.</li>
+              <li>3. Setelah data tersimpan, lanjutkan ke Studio/Quiz untuk menunjukkan alur penuh.</li>
+            </ul>
+          </div>
+          <div className="glass-card space-y-4 p-6">
+            <p className="text-lg font-semibold text-white">Kenapa besar seperti cermin?</p>
             <p className="text-sm text-white/70">
-              Tampilkan widget ini di depan kamera pengguna untuk memperlihatkan bagaimana Mirror membaca
-              intensitas cahaya & ekspresi sebagai sinyal awal. Ini CV versi ringan untuk demo terbuka.
+              Kolom ini didesain portrait dengan sudut melengkung agar mirip device Mirror generasi awal.
+              Silakan tampilkan juga pada layar eksternal atau perangkat mobile lewat mode PWA.
+            </p>
+            <p className="text-xs text-white/50">
+              Ke depannya halaman ini akan dibungkus ke APK/desktop via Capacitor sehingga saat offline dia
+              hanya menunggu koneksi lalu menyinkronkan data ke Supabase kembali.
             </p>
           </div>
-          <CameraLiquidWidget compact />
-        </section>
-
-        <section className="glass-card space-y-6 p-6">
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div>
-              <label className="text-sm text-white/70">Mood baseline</label>
-              <select
-                className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-white"
-                value={form.moodBaseline}
-                onChange={(event) =>
-                  updateField("moodBaseline", event.target.value as ProfileForm["moodBaseline"])
-                }
-              >
-                {moodBaselineOptions.map((option) => (
-                  <option key={option} value={option} className="bg-purple-900 text-white">
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="text-sm text-white/70">MBTI</label>
-              <input
-                className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-white text-center"
-                value={form.mbtiType}
-                onChange={(event) => updateField("mbtiType", event.target.value.toUpperCase())}
-              />
-            </div>
-            <div>
-              <label className="text-sm text-white/70">Enneagram</label>
-              <input
-                className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-white text-center"
-                value={form.enneagramType}
-                onChange={(event) => updateField("enneagramType", event.target.value)}
-              />
-            </div>
-          </div>
-          <div>
-            <label className="text-sm text-white/70">Archetype utama</label>
-            <input
-              className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white"
-              value={form.primaryArchetype}
-              onChange={(event) => updateField("primaryArchetype", event.target.value)}
-              placeholder="contoh: caregiver, explorer, hero"
-            />
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
-              <input
-                type="checkbox"
-                checked={form.consentData}
-                onChange={(event) => updateField("consentData", event.target.checked)}
-              />
-              Saya paham data teks & preferensi disimpan di Supabase untuk pengembangan Mirror.
-            </label>
-            <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
-              <input
-                type="checkbox"
-                checked={form.consentCamera}
-                onChange={(event) => updateField("consentCamera", event.target.checked)}
-              />
-              Izinkan Mirror memakai kamera untuk membaca ekspresi lewat computer vision (opsional).
-            </label>
-          </div>
-        </section>
-
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <button
-            type="submit"
-            disabled={!isComplete || status === "saving"}
-            className="w-full rounded-full bg-white px-6 py-3 text-sm font-semibold text-purple-900 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {status === "saving" ? "Sedang menyimpan..." : "Simpan profil ke Supabase"}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setForm(initialForm);
-              setStatus("idle");
-              setMessage(null);
-            }}
-            className="w-full rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white/70 transition hover:border-white hover:text-white"
-          >
-            Reset form
-          </button>
-        </div>
-        {message && (
-          <p
-            className={`text-sm ${
-              status === "success" ? "text-emerald-300" : "text-rose-300"
-            }`}
-          >
-            {message}
-          </p>
-        )}
-      </form>
+        </aside>
+      </div>
 
       <section className="glass-card space-y-4 p-6">
         <div className="flex flex-col gap-2">
           <h2 className="text-xl font-semibold text-white">Riwayat 10 profil terbaru</h2>
           <p className="text-sm text-white/70">
-            Pakai daftar ini buat menunjukkan bahwa data benar-benar tersimpan dan dapat dipakai
-            ulang untuk fitur berikutnya.
+            Pakai daftar ini untuk membuktikan bahwa Supabase menyimpan data onboarding secara terbuka
+            (tidak ada paywall, siap untuk proses AI / mobile app).
           </p>
         </div>
         {recentLoading ? (
@@ -345,7 +387,8 @@ export default function ExperiencePage() {
                   Mood • {profile.moodBaseline}
                 </p>
                 <p className="text-white/60">
-                  Fokus: {profile.focusAreas.join(", ") || "-"} | {new Date(profile.createdAt).toLocaleString("id-ID")}
+                  Fokus: {profile.focusAreas.join(", ") || "-"} |{" "}
+                  {new Date(profile.createdAt).toLocaleString("id-ID")}
                 </p>
               </li>
             ))}
@@ -363,7 +406,7 @@ export default function ExperiencePage() {
         </div>
         <form onSubmit={handleMoodSubmit} className="grid gap-4 sm:grid-cols-3">
           <select
-            className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white"
+            className="rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white"
             value={moodForm.profileId}
             onChange={(event) =>
               setMoodForm((prev) => ({ ...prev, profileId: event.target.value }))
@@ -379,7 +422,7 @@ export default function ExperiencePage() {
             ))}
           </select>
           <input
-            className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white"
+            className="rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-white"
             placeholder="Mood sekarang"
             value={moodForm.mood}
             onChange={(event) =>
@@ -387,7 +430,7 @@ export default function ExperiencePage() {
             }
           />
           <input
-            className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white"
+            className="rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-white"
             placeholder="Catatan singkat (opsional)"
             value={moodForm.note}
             onChange={(event) =>
