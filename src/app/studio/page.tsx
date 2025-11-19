@@ -3,6 +3,8 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { CameraLiquidWidget } from "@/components/camera-liquid";
 import { MiniChat } from "@/components/mini-chat";
+import { usePreferences } from "@/contexts/preferences-context";
+import { onboardingCopy } from "@/lib/onboarding-i18n";
 import { getBrowserSupabaseClient } from "@/lib/supabase-browser";
 
 type RecentProfile = {
@@ -56,6 +58,19 @@ export default function StudioPage() {
   const [logsLoading, setLogsLoading] = useState(false);
   const [sensorLoading, setSensorLoading] = useState(false);
   const [sensors, setSensors] = useState<{ mood?: MoodSnapshot; camera?: CameraSnapshot }>({});
+  const { language } = usePreferences();
+  const focusCopy = onboardingCopy[language] ?? onboardingCopy.id;
+  const focusLookup = useMemo(() => {
+    const map = new Map<string, string>();
+    (focusCopy.focusCatalog ?? onboardingCopy.id.focusCatalog).forEach((option) => {
+      map.set(option.id, `${option.emoji} ${option.label}`.trim());
+    });
+    return map;
+  }, [focusCopy]);
+  const formatFocusAreas = useCallback(
+    (values: string[]) => values.map((value) => focusLookup.get(value) ?? value),
+    [focusLookup],
+  );
 
   const activeProfile = useMemo(
     () => profiles.find((profile) => profile.id === selectedProfileId) ?? null,
@@ -254,7 +269,7 @@ export default function StudioPage() {
             <option value="">Pilih profil dari onboarding</option>
             {profiles.map((profile) => (
               <option key={profile.id} value={profile.id} className="bg-purple-900 text-white">
-                {profile.nickname} • {profile.focusAreas[0] ?? "-"}
+                {profile.nickname} • {formatFocusAreas(profile.focusAreas)[0] ?? "-"}
               </option>
             ))}
           </select>
@@ -269,7 +284,7 @@ export default function StudioPage() {
         </div>
         {activeProfile && (
           <p className="text-sm text-white/70">
-            Fokus: {activeProfile.focusAreas.join(", ") || "-"} | Mood baseline: {activeProfile.moodBaseline}
+            Fokus: {formatFocusAreas(activeProfile.focusAreas).join(", ") || "-"} | Mood baseline: {activeProfile.moodBaseline}
           </p>
         )}
       </section>

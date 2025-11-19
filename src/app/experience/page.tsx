@@ -1,56 +1,13 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { z } from "zod";
 import { usePreferences } from "@/contexts/preferences-context";
-import { onboardingCopy } from "@/lib/onboarding-i18n";
+import { onboardingCopy, type StepLiteral } from "@/lib/onboarding-i18n";
 
-const focusCatalog = [
-  { id: "stress", label: "Stress akademik", emoji: "📚", blurb: "Deadline, tugas, dan rasa takut gagal." },
-  { id: "relationship", label: "Hubungan & pertemanan", emoji: "💞", blurb: "Ngatur emosi dengan pasangan atau sahabat." },
-  { id: "self-love", label: "Self-love & growth", emoji: "🌱", blurb: "Biar kamu makin cinta diri dan percaya diri." },
-  { id: "career", label: "Karier & masa depan", emoji: "🚀", blurb: "Rencana kerja, magang, sampai passion project." },
-] as const;
-
-const moodCatalog = [
-  { id: "tenang", label: "Tenang stabil", emoji: "🌤️", blurb: "Butuh ruang aman untuk cerita pelan." },
-  { id: "bersemangat", label: "Bersemangat", emoji: "⚡️", blurb: "Suka eksplor ide, perlu grounding lembut." },
-  { id: "lelah", label: "Sering lelah", emoji: "🌧️", blurb: "Energi cepat turun, butuh ritme stabil." },
-] as const;
-
-const mbtiCatalog = [
-  { code: "INFJ", name: "Advocate", spark: "Empatik & penuh makna" },
-  { code: "INFP", name: "Mediator", spark: "Imaginatif & idealis" },
-  { code: "ENFJ", name: "Protagonist", spark: "Leader hangat" },
-  { code: "ENFP", name: "Campaigner", spark: "Optimis & spontan" },
-  { code: "INTJ", name: "Architect", spark: "Visioner & strategis" },
-  { code: "INTP", name: "Logician", spark: "Analitis & curious" },
-  { code: "ENTJ", name: "Commander", spark: "Tegas & terstruktur" },
-  { code: "ENTP", name: "Debater", spark: "Eksplor ide liar" },
-] as const;
-
-const enneagramCatalog = [
-  { code: "1", title: "The Reformer", spark: "Perfeksionis, peduli nilai" },
-  { code: "2", title: "The Helper", spark: "Hangat, suka membantu" },
-  { code: "3", title: "The Achiever", spark: "Ambisius, fokus pencapaian" },
-  { code: "4", title: "The Individualist", spark: "Autentik & emosional" },
-  { code: "5", title: "The Investigator", spark: "Observan & private" },
-  { code: "6", title: "The Loyalist", spark: "Setia, cari rasa aman" },
-  { code: "7", title: "The Enthusiast", spark: "Petualang, fun" },
-  { code: "8", title: "The Challenger", spark: "Protektif, berani bersuara" },
-  { code: "9", title: "The Peacemaker", spark: "Tenang, cari harmoni" },
-] as const;
-
-const archetypeCatalog = [
-  { id: "caregiver", label: "Caregiver", spark: "Peluk paling hangat" },
-  { id: "creator", label: "Creator", spark: "Selalu punya ide baru" },
-  { id: "explorer", label: "Explorer", spark: "Penasaran & suka petualangan" },
-  { id: "hero", label: "Hero", spark: "Tahan banting, siap bantu" },
-  { id: "lover", label: "Lover", spark: "Peka hubungan & rasa nyaman" },
-  { id: "magician", label: "Magician", spark: "Suka transformasi" },
-  { id: "sage", label: "Sage", spark: "Bijak & reflektif" },
-] as const;
+const FALLBACK_COPY = onboardingCopy.id;
+const MOOD_VALUES = ["tenang", "bersemangat", "lelah"] as const;
 
 const zodiacCatalog = [
   { id: "aries", label: "Aries ♈︎", start: [3, 21], end: [4, 19] },
@@ -67,19 +24,14 @@ const zodiacCatalog = [
   { id: "pisces", label: "Pisces ♓︎", start: [2, 19], end: [3, 20] },
 ] as const;
 
-const onboardingSteps = [
-  { id: "persona", title: "Persona Mirror", subtitle: "Nama panggilan + fokus" },
-  { id: "traits", title: "Mood baseline", subtitle: "MBTI & Enneagram" },
-  { id: "ritual", title: "Mood ritual", subtitle: "Jurnal singkat" },
-] as const;
-type StepId = (typeof onboardingSteps)[number]["id"];
+type StepId = StepLiteral;
 
 const profileSchema = z.object({
   nickname: z.string().min(2),
   focusAreas: z.array(z.string()).min(1),
   consentCamera: z.boolean(),
   consentData: z.boolean(),
-  moodBaseline: z.enum(["tenang", "bersemangat", "lelah"] as const),
+  moodBaseline: z.enum(MOOD_VALUES),
   mbtiType: z.string().min(3).max(4),
   enneagramType: z.string().min(1).max(2),
   primaryArchetype: z.string().min(3),
@@ -129,15 +81,13 @@ function detectZodiac(date: string) {
       ) {
         return sign;
       }
-    } else {
-      if (
-        (month === startMonth && day >= startDay) ||
-        (month === endMonth && day <= endDay) ||
-        month > startMonth ||
-        month < endMonth
-      ) {
-        return sign;
-      }
+    } else if (
+      (month === startMonth && day >= startDay) ||
+      (month === endMonth && day <= endDay) ||
+      month > startMonth ||
+      month < endMonth
+    ) {
+      return sign;
     }
   }
   return null;
@@ -160,17 +110,13 @@ function OptionCard({
     ? "border-white bg-white/10 text-white shadow-lg"
     : "border-white/20 text-white/70 hover:border-white/40";
   const dayClasses = active
-    ? "border-[rgba(19,4,41,0.2)] bg-white text-[var(--mirror-ink)] shadow-lg"
-    : "border-[rgba(19,4,41,0.2)] bg-white/70 text-[var(--mirror-ink)] hover:border-[rgba(19,4,41,0.3)]";
+    ? "border-[rgba(19,4,41,0.35)] bg-white text-[var(--mirror-ink)] shadow-lg"
+    : "border-[rgba(19,4,41,0.2)] bg-white/80 text-[var(--mirror-ink)] hover:border-[rgba(19,4,41,0.4)]";
   const palette = isDay ? dayClasses : nightClasses;
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`w-full rounded-3xl border px-4 py-3 text-left transition ${palette}`}
-    >
+    <button type="button" onClick={onClick} className={`w-full rounded-3xl border px-4 py-3 text-left transition ${palette}`}>
       <p className={`text-sm font-semibold ${isDay ? "text-[var(--mirror-ink)]" : "text-white"}`}>{title}</p>
-      <p className={`text-xs ${isDay ? "text-[rgba(19,4,41,0.6)]" : "text-white/60"}`}>{subtitle}</p>
+      <p className={`text-xs ${isDay ? "text-[rgba(19,4,41,0.65)]" : "text-white/60"}`}>{subtitle}</p>
     </button>
   );
 }
@@ -178,7 +124,19 @@ function OptionCard({
 export default function ExperiencePage() {
   const { language, theme } = usePreferences();
   const isDay = theme === "day";
-  const copy = onboardingCopy[language] ?? onboardingCopy.id;
+  const copy = onboardingCopy[language] ?? FALLBACK_COPY;
+  const steps = copy.steps ?? FALLBACK_COPY.steps;
+  const focusOptions = copy.focusCatalog ?? FALLBACK_COPY.focusCatalog;
+  const moodOptions = copy.moodCatalog ?? FALLBACK_COPY.moodCatalog;
+  const mbtiOptions = copy.mbtiCatalog ?? FALLBACK_COPY.mbtiCatalog;
+  const enneagramOptions = copy.enneagramCatalog ?? FALLBACK_COPY.enneagramCatalog;
+  const archetypeOptions = copy.archetypeCatalog ?? FALLBACK_COPY.archetypeCatalog;
+  const locale = language === "en" ? "en-US" : "id-ID";
+  const consentFields: Array<{ key: "consentData" | "consentCamera"; label: string }> = [
+    { key: "consentData", label: copy.consentPrivacy },
+    { key: "consentCamera", label: copy.consentCamera },
+  ];
+
   const [form, setForm] = useState<ProfileForm>(initialForm);
   const [status, setStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
@@ -190,18 +148,32 @@ export default function ExperiencePage() {
   const [activeStep, setActiveStep] = useState<StepId>("persona");
   const [birthDate, setBirthDate] = useState("");
 
+  const focusLookup = useMemo(() => {
+    const map = new Map<string, string>();
+    focusOptions.forEach((option) => {
+      map.set(option.id, `${option.emoji} ${option.label}`.trim());
+    });
+    return map;
+  }, [focusOptions]);
+
+  const formatFocusAreas = useCallback(
+    (values: string[]) => values.map((value) => focusLookup.get(value) ?? value),
+    [focusLookup],
+  );
+
   const isComplete = useMemo(
-    () => form.nickname.trim().length >= 2 && form.focusAreas.length > 0 && form.consentData === true,
+    () => form.nickname.trim().length >= 2 && form.focusAreas.length > 0 && form.consentData,
     [form],
   );
-  const activeIndex = onboardingSteps.findIndex((step) => step.id === activeStep);
-  const goToStep = (id: StepId) => setActiveStep(id);
+
+  const activeIndex = steps.findIndex((step) => step.id === activeStep);
+  const navBadgePrefix = copy.stepBadge ?? (language === "en" ? "Step" : "Langkah");
   const zodiacInsight = useMemo(() => detectZodiac(birthDate), [birthDate]);
 
-  const toggleFocus = (label: string) => {
+  const toggleFocus = (optionId: string) => {
     setForm((prev) => {
-      const exists = prev.focusAreas.includes(label);
-      const next = exists ? prev.focusAreas.filter((item) => item !== label) : [...prev.focusAreas, label];
+      const exists = prev.focusAreas.includes(optionId);
+      const next = exists ? prev.focusAreas.filter((item) => item !== optionId) : [...prev.focusAreas, optionId];
       return { ...prev, focusAreas: next.slice(0, 3) };
     });
   };
@@ -241,22 +213,22 @@ export default function ExperiencePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      if (!response.ok) throw new Error("Mirror lagi kesulitan menyimpan data");
+      if (!response.ok) throw new Error(copy.profileSaveError);
       setStatus("success");
-      setMessage("Profil tersimpan. Siap lanjut ke mood ritual ✨");
+      setMessage(copy.profileSaved);
       fetchProfiles();
       setActiveStep("ritual");
     } catch (error) {
       console.error(error);
       setStatus("error");
-      setMessage(error instanceof Error ? error.message : "Terjadi kendala. Coba beberapa detik lagi.");
+      setMessage(error instanceof Error ? error.message : copy.profileSaveError);
     }
   };
 
   const handleMoodSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!moodForm.profileId || moodForm.mood.trim().length < 2) {
-      setMoodMessage("Pilih profil dan isi mood minimal 2 huruf");
+      setMoodMessage(copy.moodValidation);
       setMoodStatus("error");
       return;
     }
@@ -273,53 +245,78 @@ export default function ExperiencePage() {
           source: "sandbox",
         }),
       });
-      if (!response.ok) throw new Error("Gagal mencatat mood");
+      if (!response.ok) throw new Error(copy.moodSaveError);
       setMoodStatus("success");
-      setMoodMessage("Mood entry dicatat. Siap tampilkan di Studio.");
+      setMoodMessage(copy.moodSaved);
       setMoodForm((prev) => ({ ...prev, mood: "", note: "" }));
     } catch (error) {
       console.error(error);
       setMoodStatus("error");
-      setMoodMessage(error instanceof Error ? error.message : "Server tidak merespons, coba ulang.");
+      setMoodMessage(error instanceof Error ? error.message : copy.moodSaveError);
     }
+  };
+
+  const fieldClass = `mt-2 w-full rounded-3xl border px-4 py-3 text-sm transition focus:outline-none ${
+    isDay
+      ? "border-[rgba(19,4,41,0.18)] bg-white text-[var(--mirror-ink)] placeholder:text-[rgba(19,4,41,0.55)] shadow-[0_15px_35px_rgba(19,4,41,0.08)] focus:border-[rgba(19,4,41,0.45)]"
+      : "border-white/10 bg-white/5 text-white placeholder:text-white/35 focus:border-white/60"
+  }`;
+
+  const textareaClass = `${fieldClass} resize-none`;
+  const selectClass = fieldClass;
+  const mutedText = isDay ? "text-[rgba(19,4,41,0.55)]" : "text-white/50";
+  const subText = isDay ? "text-[rgba(19,4,41,0.7)]" : "text-white/70";
+  const primaryButtonClass = `white-pill rounded-full px-6 py-3 text-sm font-semibold transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 ${
+    isDay ? "bg-[var(--mirror-ink)] text-white shadow-lg" : "bg-white text-purple-900"
+  }`;
+  const secondaryButtonClass = `rounded-full border px-6 py-3 text-sm transition ${
+    isDay
+      ? "border-[rgba(19,4,41,0.25)] text-[var(--mirror-ink)] hover:border-[rgba(19,4,41,0.45)]"
+      : "border-white/30 text-white/70 hover:border-white hover:text-white"
+  }`;
+
+  const navButtonClass = (state: "active" | "completed" | "idle") => {
+    if (isDay) {
+      if (state === "active") return "border-[rgba(19,4,41,0.45)] bg-white text-[var(--mirror-ink)] shadow-lg";
+      if (state === "completed") return "border-[rgba(19,4,41,0.18)] bg-white/80 text-[var(--mirror-ink)]";
+      return "border-[rgba(19,4,41,0.18)] text-[rgba(19,4,41,0.6)] hover:border-[rgba(19,4,41,0.4)]";
+    }
+    if (state === "active") return "border-white bg-white/10 text-white shadow-lg";
+    if (state === "completed") return "border-emerald-300/40 text-emerald-100 hover:border-emerald-200/70";
+    return "border-white/15 text-white/60 hover:text-white";
   };
 
   return (
     <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-10 px-6 py-16 text-white">
       <header className="space-y-4">
-        <p className="emoji-heading">Teman dalam genggaman</p>
+        <p className="emoji-heading">{copy.tagline}</p>
         <h1 className="text-4xl font-semibold leading-tight sm:text-5xl">{copy.heroTitle}</h1>
         <p className="text-lg text-white/80">{copy.heroDescription}</p>
       </header>
 
-      <nav className="glass-card flex flex-col gap-4 p-5 text-sm text-white/70">
+      <nav className="glass-card flex flex-col gap-4 p-5 text-sm">
         <div className="flex flex-wrap gap-4">
-          {onboardingSteps.map((step, index) => {
+          {steps.map((step, index) => {
             const completed = index < activeIndex;
             const isActive = step.id === activeStep;
+            const state = isActive ? "active" : completed ? "completed" : "idle";
             return (
               <button
                 key={step.id}
                 type="button"
-                onClick={() => goToStep(step.id)}
-                className={`flex min-w-[160px] flex-1 flex-col rounded-3xl border px-4 py-3 text-left transition ${
-                  isActive
-                    ? "border-white bg-white/10 text-white shadow-lg"
-                    : completed
-                      ? "border-emerald-300/40 text-emerald-100 hover:border-emerald-200/70"
-                      : "border-white/15 text-white/60 hover:text-white"
-                }`}
+                onClick={() => setActiveStep(step.id)}
+                className={`flex min-w-[160px] flex-1 flex-col rounded-3xl border px-4 py-3 text-left transition ${navButtonClass(state)}`}
               >
-                <span className="text-xs uppercase tracking-[0.4em] text-white/40">Langkah {index + 1}</span>
+                <span className="text-xs uppercase tracking-[0.4em] text-white/40">
+                  {navBadgePrefix} {index + 1}
+                </span>
                 <span className="text-base font-semibold text-white">{step.title}</span>
                 <span className="text-[11px] text-white/60">{step.subtitle}</span>
               </button>
             );
           })}
         </div>
-        <p className="text-xs text-white/50">
-          Langkah 1–2 berada di form Supabase, sedangkan langkah 3 adalah mood ritual tambahan sebelum masuk Lab Kamera.
-        </p>
+        <p className={`text-xs ${mutedText}`}>{copy.stepOverview}</p>
       </nav>
 
       <div className="grid gap-8 lg:grid-cols-[1.2fr,0.8fr]">
@@ -328,63 +325,59 @@ export default function ExperiencePage() {
             {activeStep === "persona" && (
               <section className="glass-card space-y-6 p-6 sm:p-8">
                 <div className="space-y-2">
-                  <p className="emoji-heading">{language === "en" ? "Step 1" : "Langkah 1"}</p>
+                  <p className="emoji-heading">{navBadgePrefix} 1</p>
                   <h2 className="text-2xl font-semibold text-white">{copy.personaHeading}</h2>
-                  <p className="text-sm text-white/70">{copy.personaSub}</p>
+                  <p className={`text-sm ${subText}`}>{copy.personaSub}</p>
                 </div>
                 <div>
-                  <label className="text-sm text-white/70">{language === "en" ? "Nickname" : "Nama panggilan"}</label>
+                  <label className={`text-sm ${subText}`}>{copy.nicknameLabel}</label>
                   <input
-                    className="mt-2 w-full rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/30"
+                    className={fieldClass}
                     value={form.nickname}
                     onChange={(event) => updateField("nickname", event.target.value)}
-                    placeholder="contoh: Nara, Mas Gio, Kak Mira"
+                    placeholder={copy.nicknamePlaceholder}
                   />
                 </div>
                 <div>
-                  <p className="text-sm text-white/70">{copy.focusLabel}</p>
-                  <p className="text-xs text-white/50">{copy.focusHint}</p>
+                  <p className={`text-sm ${subText}`}>{copy.focusLabel}</p>
+                  <p className={`text-xs ${mutedText}`}>{copy.focusHint}</p>
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    {focusCatalog.map((option) => (
+                    {focusOptions.map((option) => (
                       <OptionCard
                         key={option.id}
                         title={`${option.emoji} ${option.label}`}
                         subtitle={option.blurb}
-                        active={form.focusAreas.includes(option.label)}
-                        onClick={() => toggleFocus(option.label)}
+                        active={form.focusAreas.includes(option.id)}
+                        onClick={() => toggleFocus(option.id)}
                         isDay={isDay}
                       />
                     ))}
                   </div>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <label className="flex items-center gap-3 rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
-                    <input
-                      type="checkbox"
-                      checked={form.consentData}
-                      onChange={(event) => updateField("consentData", event.target.checked)}
-                    />
-                    {copy.consentPrivacy}
-                  </label>
-                  <label className="flex items-center gap-3 rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
-                    <input
-                      type="checkbox"
-                      checked={form.consentCamera}
-                      onChange={(event) => updateField("consentCamera", event.target.checked)}
-                    />
-                    {copy.consentCamera}
-                  </label>
+                  {consentFields.map(({ key, label }) => (
+                    <label
+                      key={key}
+                      className={`flex items-center gap-3 rounded-3xl border p-4 text-sm ${
+                        isDay
+                          ? "border-[rgba(19,4,41,0.18)] bg-white text-[var(--mirror-ink)]"
+                          : "border-white/10 bg-white/5 text-white/80"
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={form[key]}
+                        onChange={(event) => updateField(key, event.target.checked)}
+                      />
+                      {label}
+                    </label>
+                  ))}
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  <button
-                    type="button"
-                    onClick={() => goToStep("traits")}
-                    disabled={!isComplete}
-                    className="white-pill rounded-full bg-white px-6 py-3 text-sm text-purple-900 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
-                  >
+                  <button type="button" onClick={() => setActiveStep("traits")} disabled={!isComplete} className={primaryButtonClass}>
                     {copy.nextStep}
                   </button>
-                  <p className="text-xs text-white/50">Checklist ini menggantikan slide onboarding lama.</p>
+                  <p className={`text-xs ${mutedText}`}>{copy.checklistHint}</p>
                 </div>
               </section>
             )}
@@ -392,14 +385,14 @@ export default function ExperiencePage() {
             {activeStep === "traits" && (
               <section className="glass-card space-y-6 p-6 sm:p-8">
                 <div className="space-y-2">
-                  <p className="emoji-heading">{language === "en" ? "Step 2" : "Langkah 2"}</p>
+                  <p className="emoji-heading">{navBadgePrefix} 2</p>
                   <h2 className="text-2xl font-semibold text-white">{copy.traitsHeading}</h2>
-                  <p className="text-sm text-white/70">{copy.traitsSub}</p>
+                  <p className={`text-sm ${subText}`}>{copy.traitsSub}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-white/70">{copy.moodLabel}</p>
+                  <p className={`text-sm ${subText}`}>{copy.moodLabel}</p>
                   <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                    {moodCatalog.map((mood) => (
+                    {moodOptions.map((mood) => (
                       <OptionCard
                         key={mood.id}
                         title={`${mood.emoji} ${mood.label}`}
@@ -413,40 +406,40 @@ export default function ExperiencePage() {
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <p className="text-sm text-white/70">{copy.mbtiLabel}</p>
+                    <p className={`text-sm ${subText}`}>{copy.mbtiLabel}</p>
                     <div className="grid gap-2">
-                      {mbtiCatalog.map((item) => (
-                      <OptionCard
-                        key={item.code}
-                        title={`${item.code} • ${item.name}`}
-                        subtitle={item.spark}
-                        active={form.mbtiType === item.code}
-                        onClick={() => updateField("mbtiType", item.code)}
-                        isDay={isDay}
-                      />
+                      {mbtiOptions.map((item) => (
+                        <OptionCard
+                          key={item.code}
+                          title={`${item.code} • ${item.name}`}
+                          subtitle={item.spark}
+                          active={form.mbtiType === item.code}
+                          onClick={() => updateField("mbtiType", item.code)}
+                          isDay={isDay}
+                        />
                       ))}
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <p className="text-sm text-white/70">{copy.enneagramLabel}</p>
+                    <p className={`text-sm ${subText}`}>{copy.enneagramLabel}</p>
                     <div className="grid gap-2">
-                      {enneagramCatalog.map((item) => (
-                      <OptionCard
-                        key={item.code}
-                        title={`Tipe ${item.code} • ${item.title}`}
-                        subtitle={item.spark}
-                        active={form.enneagramType === item.code}
-                        onClick={() => updateField("enneagramType", item.code)}
-                        isDay={isDay}
-                      />
+                      {enneagramOptions.map((item) => (
+                        <OptionCard
+                          key={item.code}
+                          title={`Type ${item.code} • ${item.title}`}
+                          subtitle={item.spark}
+                          active={form.enneagramType === item.code}
+                          onClick={() => updateField("enneagramType", item.code)}
+                          isDay={isDay}
+                        />
                       ))}
                     </div>
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm text-white/70">{copy.archetypeLabel}</p>
+                  <p className={`text-sm ${subText}`}>{copy.archetypeLabel}</p>
                   <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                    {archetypeCatalog.map((item) => (
+                    {archetypeOptions.map((item) => (
                       <OptionCard
                         key={item.id}
                         title={item.label}
@@ -459,38 +452,33 @@ export default function ExperiencePage() {
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm text-white/70">{copy.birthHint}</p>
-                  <input
-                    type="date"
-                    value={birthDate}
-                    onChange={(event) => setBirthDate(event.target.value)}
-                    className="mt-2 w-full rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-white"
-                  />
+                  <p className={`text-sm ${subText}`}>{copy.birthHint}</p>
+                  <input type="date" value={birthDate} onChange={(event) => setBirthDate(event.target.value)} className={fieldClass} />
                   {zodiacInsight && (
-                    <p className="mt-2 text-sm text-white/70">
+                    <p className={`mt-2 text-sm ${subText}`}>
                       {(copy.birthNote ?? "{sign}").replace("{sign}", zodiacInsight.label)}
                     </p>
                   )}
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  <button
-                    type="button"
-                    onClick={() => goToStep("persona")}
-                    className="rounded-full border border-white/30 px-6 py-3 text-sm text-white/70 transition hover:border-white hover:text-white"
-                  >
-                    {language === "en" ? "Back to step 1" : "Kembali ke langkah 1"}
+                  <button type="button" onClick={() => setActiveStep("persona")} className={secondaryButtonClass}>
+                    {copy.backToStepOne}
                   </button>
-                  <button
-                    type="submit"
-                    disabled={!isComplete || status === "saving"}
-                    className="white-pill rounded-full bg-white px-6 py-3 text-sm text-purple-900 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    {status === "saving"
-                      ? language === "en" ? "Saving..." : "Sedang menyimpan..."
-                      : language === "en" ? "Save profile to Supabase" : "Simpan profil ke Supabase"}
+                  <button type="submit" disabled={!isComplete || status === "saving"} className={primaryButtonClass}>
+                    {status === "saving" ? copy.saveProfileSaving : copy.saveProfileCta}
                   </button>
                 </div>
-                {message && <p className={`text-sm ${status === "success" ? "text-emerald-300" : "text-rose-300"}`}>{message}</p>}
+                {message && (
+                  <p
+                    className={`text-sm ${
+                      status === "success"
+                        ? isDay ? "text-emerald-600" : "text-emerald-300"
+                        : isDay ? "text-rose-500" : "text-rose-300"
+                    }`}
+                  >
+                    {message}
+                  </p>
+                )}
               </section>
             )}
           </form>
@@ -498,64 +486,73 @@ export default function ExperiencePage() {
           {activeStep === "ritual" && (
             <section className="glass-card space-y-5 p-6 sm:p-8">
               <div className="space-y-2">
-                <p className="emoji-heading">{language === "en" ? "Step 3" : "Langkah 3"}</p>
+                <p className="emoji-heading">{navBadgePrefix} 3</p>
                 <h2 className="text-2xl font-semibold text-white">{copy.ritualHeading}</h2>
-                <p className="text-sm text-white/70">{copy.ritualSub}</p>
+                <p className={`text-sm ${subText}`}>{copy.ritualSub}</p>
               </div>
               <form onSubmit={handleMoodSubmit} className="space-y-4">
                 <div>
-                  <label className="text-sm text-white/70">{language === "en" ? "Use profile" : "Gunakan profil"}</label>
+                  <label className={`text-sm ${subText}`}>{copy.moodSelectLabel}</label>
                   <select
-                    className="mt-2 w-full rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-white"
+                    className={selectClass}
                     value={moodForm.profileId}
                     onChange={(event) => setMoodForm((prev) => ({ ...prev, profileId: event.target.value }))}
                   >
-                    <option value="">Pilih salah satu</option>
+                    <option value="">{copy.moodSelectPlaceholder}</option>
                     {recentProfiles.map((profile) => (
-                      <option key={profile.id} value={profile.id} className="bg-purple-900 text-white">
+                      <option key={profile.id} value={profile.id}>
                         {profile.nickname}
                       </option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm text-white/70">{copy.moodField}</label>
+                  <label className={`text-sm ${subText}`}>{copy.moodField}</label>
                   <input
-                    className="mt-2 w-full rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-white"
+                    className={fieldClass}
                     value={moodForm.mood}
                     onChange={(event) => setMoodForm((prev) => ({ ...prev, mood: event.target.value }))}
-                    placeholder="contoh: mellow tapi pengen validasi"
+                    placeholder={copy.moodPlaceholder}
                   />
                 </div>
                 <div>
-                  <label className="text-sm text-white/70">{copy.noteField}</label>
+                  <label className={`text-sm ${subText}`}>{copy.noteField}</label>
                   <textarea
-                    className="mt-2 w-full rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white"
+                    className={textareaClass}
                     rows={3}
                     value={moodForm.note}
                     onChange={(event) => setMoodForm((prev) => ({ ...prev, note: event.target.value }))}
-                    placeholder="cerita singkat buat memicu Studio chat"
+                    placeholder={copy.notePlaceholder}
                   />
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
-                  <button
-                    type="submit"
-                    className="white-pill rounded-full bg-white px-6 py-3 text-sm text-purple-900 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
-                    disabled={!moodForm.profileId || moodStatus === "saving"}
-                  >
-                    {moodStatus === "saving"
-                      ? language === "en" ? "Saving..." : "Mencatat..."
-                      : copy.ritualCta}
+                  <button type="submit" className={primaryButtonClass} disabled={!moodForm.profileId || moodStatus === "saving"}>
+                    {moodStatus === "saving" ? copy.ritualSaving : copy.ritualCta}
                   </button>
                   {moodMessage && (
-                    <span className={`text-xs ${moodStatus === "success" ? "text-emerald-300" : "text-rose-300"}`}>
+                    <span
+                      className={`text-xs ${
+                        moodStatus === "success"
+                          ? isDay ? "text-emerald-600" : "text-emerald-300"
+                          : isDay ? "text-rose-500" : "text-rose-300"
+                      }`}
+                    >
                       {moodMessage}
                     </span>
                   )}
                 </div>
               </form>
-              <p className="text-xs text-white/50">
-                Setelah log tersimpan, buka <Link href="/camera" className="underline">Lab Kamera</Link> atau <Link href="/studio" className="underline">Studio</Link> buat nerusin cerita.
+              <p className={`text-xs ${mutedText}`}>
+                {copy.postRitualHint}{" "}
+                <Link href="/camera" className="underline">
+                  Lab Kamera
+                </Link>
+                {" "}
+                ·
+                {" "}
+                <Link href="/studio" className="underline">
+                  Studio
+                </Link>
               </p>
             </section>
           )}
@@ -563,47 +560,53 @@ export default function ExperiencePage() {
 
         <aside className="space-y-6">
           <section className="glass-card space-y-4 p-6">
-            <p className="emoji-heading">Flow eksklusif</p>
-            <h2 className="text-xl font-semibold text-white">Setelah onboarding selesai</h2>
+            <p className="emoji-heading">{copy.flowHeading}</p>
+            <h2 className="text-xl font-semibold text-white">{copy.flowSubheading}</h2>
             <div className="space-y-3">
               {copy.flowModules.map((module) => (
                 <Link
                   href={module.href}
                   key={module.href}
-                  className="flex items-center justify-between rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/80 transition hover:border-white hover:text-white"
+                  className={`flex items-center justify-between rounded-3xl border px-4 py-3 text-sm transition ${
+                    isDay
+                      ? "border-[rgba(19,4,41,0.15)] bg-white/85 text-[var(--mirror-ink)] hover:border-[rgba(19,4,41,0.35)]"
+                      : "border-white/10 bg-white/5 text-white/80 hover:border-white hover:text-white"
+                  }`}
                 >
                   <span>
                     <span className="mr-2 text-lg">{module.emoji}</span>
                     {module.title}
                   </span>
-                  <span className="text-xs text-white/50">{module.blurb}</span>
+                  <span className={`text-xs ${mutedText}`}>{module.blurb}</span>
                 </Link>
               ))}
             </div>
           </section>
           <section className="glass-card space-y-3 p-6">
-            <p className="emoji-heading">Playbook demo</p>
-            <p className="text-lg font-semibold text-white">Narasi Mirror Word versi singkat ✨</p>
-            <ul className="space-y-2 text-sm text-white/70">
-              <li>1. “Mirror cuma baca ekspresi lokal—kameramu aman.”</li>
-              <li>2. “Selesai ritual ini kita loncat ke Lab Kamera lalu Studio chat.”</li>
-              <li>3. “Semua data transparan di Supabase, gampang jadi APK.”</li>
+            <p className="emoji-heading">{copy.playbookHeading}</p>
+            <p className="text-lg font-semibold text-white">{copy.playbookTitle}</p>
+            <ul className={`space-y-2 text-sm ${subText}`}>
+              {copy.demoGuide.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
             </ul>
           </section>
           <section className="glass-card space-y-3 p-6">
-            <p className="emoji-heading">Riwayat onboarding</p>
+            <p className="emoji-heading">{copy.historyTitle}</p>
+            <p className={`text-sm ${subText}`}>{copy.historyDescription}</p>
             {recentLoading ? (
-              <p className="text-sm text-white/60">Memuat data...</p>
+              <p className={`text-sm ${subText}`}>{copy.historyLoading}</p>
             ) : recentProfiles.length === 0 ? (
-              <p className="text-sm text-white/60">Belum ada data tersimpan. Isi form kiri dulu.</p>
+              <p className={`text-sm ${subText}`}>{copy.historyEmpty}</p>
             ) : (
               <ul className="divide-y divide-white/5 text-sm text-white/80">
                 {recentProfiles.map((profile) => (
                   <li key={profile.id} className="py-3">
                     <p className="font-semibold text-white">{profile.nickname}</p>
-                    <p className="text-xs uppercase tracking-[0.3em] text-white/50">Mood • {profile.moodBaseline}</p>
-                    <p className="text-white/60">
-                      Fokus: {profile.focusAreas.join(", ") || "-"} · {new Date(profile.createdAt).toLocaleString("id-ID")}
+                    <p className={`text-xs uppercase tracking-[0.3em] ${mutedText}`}>Mood • {profile.moodBaseline}</p>
+                    <p className={`${subText}`}>
+                      {copy.historyFocusLabel}: {formatFocusAreas(profile.focusAreas).join(", ") || "-"} ·{" "}
+                      {new Date(profile.createdAt).toLocaleString(locale)}
                     </p>
                   </li>
                 ))}
