@@ -225,43 +225,28 @@ function buildMessages(
       ).toLocaleString("id-ID")}.`
     : "Belum ada mood entry eksplisit untuk profil ini.";
 
-  const cameraLine = (() => {
-    if (liveVision) {
-      return formatVisionLine({
-        label: "Sinyal realtime",
-        emotion: liveVision.emotion,
-        confidence: liveVision.confidence,
-        moment: new Date(liveVision.timestamp).toLocaleTimeString("id-ID"),
-        metrics: liveVision.metrics,
-      });
-    }
-    if (cameraReading) {
-      const metadata = (cameraReading.metadata as Partial<SensorMetrics> | null) ?? null;
-      return formatVisionLine({
-        label: "Log kamera terakhir",
-        emotion: cameraReading.emotion,
-        confidence: cameraReading.confidence ?? 0,
-        moment: new Date(cameraReading.created_at).toLocaleTimeString("id-ID"),
-        metrics: metadata ?? undefined,
-      });
-    }
-    return "Belum ada pembacaan computer vision terbaru (kamera mungkin dimatikan).";
-  })();
-
-  const systemPrompt = [
+  const visionInsight = buildVisionInsight(liveVision, cameraReading);
+  const systemPromptLines = [
     "Kamu adalah Mirror, sahabat curhat AI yang empatik dan suportif.",
-    "Gunakan bahasa Indonesia yang hangat, singkat namun bermakna.",
-    `Selalu hubungkan respon ke konteks berikut: ${profileSynopsis}`,
+    "Gunakan bahasa hangat yang mudah dimengerti Gen Z (boleh campur sedikit slang).",
+    `Konfirmasi konteks ini: ${profileSynopsis}`,
     `Data mood: ${moodLine}`,
-    `Data computer vision: ${cameraLine}`,
+    `Data computer vision: ${visionInsight.text}`,
     `Ringkasan chat sebelumnya: ${
       conversationSummary && conversationSummary.length > 0
         ? conversationSummary
         : "belum ada ringkasan"
     }`,
-    "Gunakan informasi ini untuk mempersonalisasi respon dan validasi emosi pengguna.",
-    "Kamu boleh menawarkan latihan sederhana (breathing, journaling) namun jangan memberi diagnosa klinis.",
-  ].join(" ");
+    "Gunakan informasi di atas untuk mempersonalisasi respon dan validasi emosi pengguna.",
+    "Boleh menawarkan latihan sederhana (breathing/journaling) namun jangan memberi diagnosa klinis.",
+  ];
+  if (visionInsight.cues.length > 0) {
+    systemPromptLines.push(`Tanggapi cues kamera berikut: ${visionInsight.cues.join(", ")}.`);
+  }
+  if (liveVision) {
+    systemPromptLines.push("Sebutkan bahwa kamu mengikuti ekspresi secara realtime tanpa menyimpan video.");
+  }
+  const systemPrompt = systemPromptLines.join(" ");
 
   const normalizedHistory: ChatCompletionMessageParam[] = history.map((item) => ({
     role: item.role,
@@ -273,6 +258,37 @@ function buildMessages(
     ...normalizedHistory,
     { role: "user", content: latestMessage },
   ];
+}
+
+type VisionInsight = { text: string; cues: string[] };
+
+function buildVisionInsight(
+  liveVision: VisionSignalPayload | null,
+  cameraReading: CameraSnapshot | null,
+): VisionInsight {
+  if (liveVision) {
+    return formatVisionLine({
+      label: "Sinyal realtime",
+      emotion: liveVision.emotion,
+      confidence: liveVision.confidence,
+      moment: new Date(liveVision.timestamp).toLocaleTimeString("id-ID"),
+      metrics: liveVision.metrics,
+    });
+  }
+  if (cameraReading) {
+    const metadata = (cameraReading.metadata as Partial<SensorMetrics> | null) ?? null;
+    return formatVisionLine({
+      label: "Log kamera terakhir",
+      emotion: cameraReading.emotion,
+      confidence: cameraReading.confidence ?? 0,
+      moment: new Date(cameraReading.created_at).toLocaleTimeString("id-ID"),
+      metrics: metadata ?? undefined,
+    });
+  }
+  return {
+    text: "Belum ada pembacaan computer vision terbaru (kamera mungkin nonaktif).",
+    cues: [],
+  };
 }
 
 function formatVisionLine({
@@ -287,9 +303,9 @@ function formatVisionLine({
   confidence: number;
   moment: string;
   metrics?: Partial<SensorMetrics> | null;
-}): string {
+}): VisionInsight {
   const base = `${label} mendeteksi ${emotion} (${Math.round(confidence)}% yakin) pada ${moment}.`;
-  if (!metrics) return base;
+  if (!metrics) return { text: base, cues: [] };
   const parts: string[] = [];
   if (typeof metrics.valence === "number") {
     parts.push(`valence ${Math.round(((metrics.valence + 1) / 2) * 100)}%`);
@@ -300,9 +316,6 @@ function formatVisionLine({
   if (typeof metrics.tension === "number") {
     parts.push(`ketegangan ${Math.round(metrics.tension * 100)}%`);
   }
-  if (metrics.cues && metrics.cues.length > 0) {
-    parts.push(`cues: ${metrics.cues.slice(0, 2).join("; ")}`);
-  }
   if (typeof metrics.attention === "number") {
     parts.push(`attention ${Math.round(metrics.attention * 100)}%`);
   }
@@ -311,10 +324,16 @@ function formatVisionLine({
     parts.push(`head pose pitch ${pitch}° yaw ${yaw}° roll ${roll}°`);
   }
   if (metrics.expressions && metrics.expressions.length > 0) {
-    const dominant = metrics.expressions.slice(0, 2).map((expr) => `${expr.label} ${Math.round(expr.score * 100)}%`);
+    const dominant = metrics.expressions
+      .slice(0, 2)
+      .map((expr) => `${expr.label} ${Math.round(expr.score * 100)}%`);
     parts.push(`ekspresi ${dominant.join(", ")}`);
   }
-  return `${base} ${parts.join(" • ")}`.trim();
+  const cues = metrics.cues?.slice(-3) ?? [];
+  if (cues.length) {
+    parts.push(`cues: ${cues.join("; ")}`);
+  }
+  return { text: `${base} ${parts.join(" • ")}`.trim(), cues };
 }
 
 function updateConversationSummary(

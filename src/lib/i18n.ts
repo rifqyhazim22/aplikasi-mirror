@@ -34,6 +34,38 @@ export const translations = {
       { href: "/quiz", label: "Quiz MBTI/Enneagram", emoji: "🧩" },
       { href: "/insights", label: "Insight CBT", emoji: "🧠" },
     ],
+    howTo: {
+      heading: "Cara pakainya",
+      title: "“Tatap kamera, tarik napas, cerita jujur.”",
+      description:
+        "Udah nggak ada bahasa pitch lagi. Jelaskan bahwa Mirror cuma baca vibe lewat brightness & bounding box langsung di device pengguna.",
+      flowTitle: "Flow favorit pengguna:",
+      flowSteps: [
+        "Isi ritual onboarding sambil bercermin.",
+        "Nyalakan kamera besar biar berasa kayak selfie filter.",
+        "Catat mood singkat, terus buka chat Studio.",
+        "Lihat timeline & insight buat track healing journey.",
+      ],
+      footnote:
+        "Build ini tinggal dibungkus jadi apk/desktop via Capacitor—siap dibawa ke event atau dibagiin tanpa bahas backend lagi.",
+    },
+    singleCode: {
+      title: "Satu kodebase untuk semua ritual",
+      body: [
+        "Bahasa tiap halaman sudah disetel buat Gen Z tester. Kamu bisa ubah copy spesifik tanpa merusak flow besar (onboarding → kamera → chat → stats).",
+        "Kalau nanti butuh mode premium, tinggal tambahin gate/payment di atas UI yang sama.",
+      ],
+      note: "Modul siap demo",
+    },
+    downloadSection: {
+      heading: "Download builds",
+      title: "Unduh Mirror untuk semua device",
+      description:
+        "Semua shell mengarah ke deploy Vercel, jadi begitu dibuka langsung sinkron dengan Supabase & OpenAI. Pastikan koneksi aktif supaya kamera dan chat lancar.",
+      footnote:
+        "Build Windows dan iOS Simulator tersedia di GitHub Releases. IPA signed/installer lain bisa ditambah di release yang sama dan link ini otomatis ikut.",
+    },
+    backToTop: "⬅︎ Kembali ke awal demo",
   },
   en: {
     heroTagline: "Mirror playground",
@@ -67,5 +99,37 @@ export const translations = {
       { href: "/quiz", label: "MBTI/Enneagram quiz", emoji: "🧩" },
       { href: "/insights", label: "CBT insights", emoji: "🧠" },
     ],
+    howTo: {
+      heading: "How it works",
+      title: "“Face the cam, breathe, speak honestly.”",
+      description:
+        "No more pitchy talk. Tell testers Mirror only reads light & micro-expressions locally before blending them with text.",
+      flowTitle: "Common flow:",
+      flowSteps: [
+        "Fill the onboarding ritual while looking at the mirror UI.",
+        "Keep the large cam visible so it feels like an AR selfie filter.",
+        "Log a quick mood then open Studio chat.",
+        "Review the timeline & insights to track the healing journey.",
+      ],
+      footnote:
+        "This build ships as apk/desktop via Capacitor so you can bring it to events or friends without touching backend again.",
+    },
+    singleCode: {
+      title: "One codebase, all rituals",
+      body: [
+        "Every page uses Gen-Z friendly copy so you can tweak details without breaking the onboarding → camera → chat → stats flow.",
+        "When premium mode returns, add gates/payments on top of the same UI.",
+      ],
+      note: "Demo-ready modules",
+    },
+    downloadSection: {
+      heading: "Download builds",
+      title: "Grab Mirror for every device",
+      description:
+        "Each shell points to the Vercel deploy so it immediately syncs with Supabase & OpenAI. Keep the internet on for smooth camera/chat.",
+      footnote:
+        "Windows & iOS Simulator builds live on GitHub Releases. Upload signed IPAs or installers to the same release and these links update automatically.",
+    },
+    backToTop: "⬅︎ Back to the top",
   },
 };

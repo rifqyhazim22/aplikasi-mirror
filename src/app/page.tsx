@@ -90,17 +90,15 @@ export default function HomePage() {
 
       <section className="glass-card grid gap-6 p-8 text-white/80 lg:grid-cols-2">
         <div className="space-y-3">
-          <h2 className="text-2xl font-semibold text-white">Satu kodebase untuk semua ritual</h2>
-          <p>
-            Bahasa di setiap halaman udah disesuaikan buat Gen Z tester. Kamu tinggal ganti copy detil kalau mau,
-            tapi flow besar (onboarding → kamera → chat → stats) tetap sama.
-          </p>
-          <p className="text-sm text-white/70">
-            Kalau nanti balik lagi ke mode premium, tinggal tambahin gate / payment tanpa harus rombak UI.
-          </p>
+          <h2 className="text-2xl font-semibold text-white">{copy.singleCode.title}</h2>
+          {copy.singleCode.body.map((paragraph) => (
+            <p key={paragraph} className="text-sm text-white/80">
+              {paragraph}
+            </p>
+          ))}
         </div>
         <div className="space-y-4">
-          <h3 className="text-xl font-semibold text-white">Modul siap demo</h3>
+          <h3 className="text-xl font-semibold text-white">{copy.singleCode.note}</h3>
           <div className="grid gap-3 sm:grid-cols-2">
             {copy.modules.map((module) => (
               <Link
@@ -118,12 +116,9 @@ export default function HomePage() {
       <section className="glass-card space-y-6 p-8 text-white/80">
         <PreferenceTogglePanel />
         <div className="space-y-2">
-          <p className="emoji-heading">Download builds</p>
-          <h2 className="text-2xl font-semibold text-white">Unduh Mirror untuk semua device</h2>
-          <p className="text-sm text-white/70">
-            Semua shell disambungkan ke deploy Vercel, jadi begitu dibuka langsung sinkron dengan Supabase & OpenAI.
-            Pastikan koneksi aktif supaya kamera dan chat berjalan normal.
-          </p>
+          <p className="emoji-heading">{copy.downloadSection.heading}</p>
+          <h2 className="text-2xl font-semibold text-white">{copy.downloadSection.title}</h2>
+          <p className="text-sm text-white/70">{copy.downloadSection.description}</p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           {downloadCatalog.map((entry) => (
@@ -158,15 +153,12 @@ export default function HomePage() {
             </article>
           ))}
         </div>
-        <p className="text-xs text-white/50">
-          Build Windows dan iOS Simulator kini tersedia via GitHub Releases. Jika butuh IPA signed atau installer offline lain,
-          tinggal unggah ke release yang sama dan daftar ini akan otomatis memperbarui link-nya.
-        </p>
+        <p className="text-xs text-white/50">{copy.downloadSection.footnote}</p>
         <a
           href="#hero"
           className="inline-flex w-full items-center justify-center rounded-full border border-white/20 px-6 py-3 text-center text-sm text-white transition hover:border-white hover:text-white/90"
         >
-          ⬅︎ Kembali ke awal demo
+          {copy.backToTop}
         </a>
       </section>
     </main>
