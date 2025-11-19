@@ -25,6 +25,7 @@ android/app/build/
 android/.gradle/
 ios/App/build/
 ios/App/Pods/
+ios/build/
 electron/node_modules/
 electron/dist/
 

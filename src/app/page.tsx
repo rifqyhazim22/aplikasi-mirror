@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { downloadCatalog } from "@/lib/downloads";
 
 const highlightFeatures = [
   {
@@ -29,6 +30,15 @@ const modules = [
   { href: "/quiz", label: "Quiz MBTI/Enneagram", emoji: "🧩" },
   { href: "/insights", label: "Insight CBT", emoji: "🧠" },
 ];
+
+const statusTone: Record<
+  NonNullable<(typeof downloadCatalog)[number]["status"]>,
+  { label: string; tone: string }
+> = {
+  ready: { label: "Siap demo", tone: "bg-emerald-500/20 text-emerald-200 border-emerald-400/40" },
+  beta: { label: "Beta", tone: "bg-amber-500/20 text-amber-200 border-amber-400/40" },
+  simulator: { label: "Simulator", tone: "bg-sky-500/20 text-sky-200 border-sky-400/40" },
+};
 
 export default function HomePage() {
   return (
@@ -131,6 +141,52 @@ export default function HomePage() {
             ))}
           </div>
         </div>
+      </section>
+
+      <section className="glass-card space-y-6 p-8 text-white/80">
+        <div className="space-y-2">
+          <p className="emoji-heading">Download builds</p>
+          <h2 className="text-2xl font-semibold text-white">Unduh Mirror untuk semua device</h2>
+          <p className="text-sm text-white/70">
+            Semua shell disambungkan ke deploy Vercel, jadi begitu dibuka langsung sinkron dengan Supabase & OpenAI.
+            Pastikan koneksi aktif supaya kamera dan chat berjalan normal.
+          </p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          {downloadCatalog.map((entry) => (
+            <article
+              key={entry.filename}
+              className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-white/80"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-lg font-semibold text-white">{entry.platform}</p>
+                  <p className="text-xs text-white/50">{entry.filename}</p>
+                </div>
+                {entry.status && (
+                  <span className={`rounded-full border px-3 py-1 text-xs ${statusTone[entry.status].tone}`}>
+                    {statusTone[entry.status].label}
+                  </span>
+                )}
+              </div>
+              <p className="mt-3 text-white/70">{entry.notes}</p>
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-white/60">
+                <span>Ukuran: {entry.size}</span>
+                <Link
+                  href={entry.href}
+                  download
+                  className="white-pill rounded-full bg-white px-4 py-2 text-xs text-purple-900 transition hover:-translate-y-0.5"
+                >
+                  Download
+                </Link>
+              </div>
+            </article>
+          ))}
+        </div>
+        <p className="text-xs text-white/50">
+          iOS build masih untuk Simulator. Untuk perangkat fisik & App Store diperlukan provisioning Apple Developer
+          sebelum menandatangani IPA. Semua file tersedia juga di folder `public/downloads` jika ingin mengganti host.
+        </p>
       </section>
     </main>
   );

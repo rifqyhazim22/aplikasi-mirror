@@ -56,6 +56,17 @@ supabase/
 2. Jalankan `pnpm build` untuk memastikan tidak ada error.
 3. Deploy menggunakan `vercel` CLI atau hubungkan repo ke Vercel dashboard.
 
+### Downloadable builds
+
+Semua artefak build tersedia langsung di web app (section **Download builds**) dan disimpan di `public/downloads`:
+
+| Platform | File | Catatan |
+| --- | --- | --- |
+| macOS | `Mirror-macOS.dmg` | Electron shell yang memuat deploy Vercel. |
+| Windows | `Mirror-Windows-Setup.exe` | Installer NSIS, siap jalan di Windows 10/11. |
+| Android | `Mirror-Android-debug.apk` | Debug APK; aktifkan *install from unknown sources*. |
+| iOS Simulator | `Mirror-iOS-simulator.zip` | Ekstrak lalu `xcrun simctl install booted App.app`. Untuk device fisik perlu signing Apple ID. |
+
 ### Jalur APK / desktop via Capacitor
 
 `capacitor.config.ts` menargetkan web build dan fallback ke URL Vercel sehingga demo bisa dibungkus tanpa login
