@@ -172,13 +172,15 @@ export default function HomePage() {
               <p className="mt-3 text-white/70">{entry.notes}</p>
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-white/60">
                 <span>Ukuran: {entry.size}</span>
-                <Link
+                <a
                   href={entry.href}
                   download
                   className="white-pill rounded-full bg-white px-4 py-2 text-xs text-purple-900 transition hover:-translate-y-0.5"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   Download
-                </Link>
+                </a>
               </div>
             </article>
           ))}
