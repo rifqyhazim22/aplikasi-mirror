@@ -103,6 +103,13 @@ Semua endpoint menggunakan kredensial publik Supabase (RLS dibuka khusus sandbox
 2. Jalankan `supabase/bootstrap.sql` untuk membuat tabel `profile`, `mood_entry`, dan `conversation_log` beserta kebijakan.
 3. Salin URL & anon key Supabase ke `.env.local` sesuai contoh di `.env.example`.
 
+> Pembaruan terbaru menambahkan kolom `profile.conversation_summary` dan `camera_emotion_log.profile_id` untuk menghubungkan log kamera ke profil dan menyimpan ringkasan chat. Jika sudah pernah membuat tabel sebelumnya, jalankan ulang bagian alter table di `bootstrap.sql` atau salin SQL berikut:
+>
+> ```sql
+> alter table public.profile add column if not exists conversation_summary text;
+> alter table public.camera_emotion_log add column if not exists profile_id uuid references public.profile(id) on delete set null;
+> ```
+
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://gutibpbuoigchxltzxbb.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...        # anon key (boleh dipublikasi)

@@ -24,6 +24,7 @@ export type Database = {
           personality_notes: string | null;
           created_at: string;
           updated_at: string;
+          conversation_summary: string | null;
         };
         Insert: {
           id?: string;
@@ -39,6 +40,7 @@ export type Database = {
           personality_notes?: string | null;
           created_at?: string;
           updated_at?: string;
+          conversation_summary?: string | null;
         };
         Update: {
           id?: string;
@@ -54,6 +56,7 @@ export type Database = {
           personality_notes?: string | null;
           created_at?: string;
           updated_at?: string;
+          conversation_summary?: string | null;
         };
         Relationships: [];
       };
@@ -118,23 +121,33 @@ export type Database = {
       camera_emotion_log: {
         Row: {
           id: string;
+          profile_id: string | null;
           emotion: string;
           confidence: number | null;
           created_at: string;
         };
         Insert: {
           id?: string;
+          profile_id?: string | null;
           emotion: string;
           confidence?: number | null;
           created_at?: string;
         };
         Update: {
           id?: string;
+          profile_id?: string | null;
           emotion?: string;
           confidence?: number | null;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "camera_emotion_log_profile_id_fkey";
+            columns: ["profile_id"];
+            referencedRelation: "profile";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       mood_entry: {
         Row: {

@@ -58,17 +58,21 @@ export async function POST(request: Request) {
       supabase
         .from("camera_emotion_log")
         .select("emotion,confidence,created_at")
+        .eq("profile_id", payload.profileId)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle(),
     ]);
 
+    const trimmedHistory = payload.history.slice(-6);
+
     const conversation: ChatCompletionMessageParam[] = buildMessages(
       profile,
       (moodSnapshot as MoodSnapshot | null) ?? null,
       (cameraSnapshot as CameraSnapshot | null) ?? null,
-      payload.history,
+      trimmedHistory,
       payload.message,
+      profile.conversation_summary,
     );
     const openai = getOpenAIClient();
 
@@ -114,6 +118,17 @@ export async function POST(request: Request) {
       console.error("Gagal menyimpan log assistant", logAssistantError);
     }
 
+    const updatedSummary = updateConversationSummary(
+      profile.conversation_summary,
+      payload.message,
+      reply,
+    );
+
+    await supabase
+      .from("profile")
+      .update({ conversation_summary: updatedSummary })
+      .eq("id", profile.id);
+
     return NextResponse.json({
       reply,
       usage: completion.usage,
@@ -133,8 +148,9 @@ function buildMessages(
   cameraReading: CameraSnapshot | null,
   history: z.infer<typeof messageSchema>[],
   latestMessage: string,
+  conversationSummary: string | null,
 ): ChatCompletionMessageParam[] {
-  const summary = `Nama: ${profile.nickname}. Mood baseline: ${profile.mood_baseline}. Fokus: ${
+  const profileSynopsis = `Nama: ${profile.nickname}. Mood baseline: ${profile.mood_baseline}. Fokus: ${
     profile.focus_areas?.join(", ") || "-"
   }. MBTI: ${profile.mbti_type ?? "-"}. Enneagram: ${profile.enneagram_type ?? "-"}. Archetype: ${
     profile.primary_archetype ?? "-"
@@ -156,9 +172,14 @@ function buildMessages(
   const systemPrompt = [
     "Kamu adalah Mirror, sahabat curhat AI yang empatik dan suportif.",
     "Gunakan bahasa Indonesia yang hangat, singkat namun bermakna.",
-    `Selalu hubungkan respon ke konteks berikut: ${summary}`,
+    `Selalu hubungkan respon ke konteks berikut: ${profileSynopsis}`,
     `Data mood: ${moodLine}`,
     `Data computer vision: ${cameraLine}`,
+    `Ringkasan chat sebelumnya: ${
+      conversationSummary && conversationSummary.length > 0
+        ? conversationSummary
+        : "belum ada ringkasan"
+    }`,
     "Gunakan informasi ini untuk mempersonalisasi respon dan validasi emosi pengguna.",
     "Kamu boleh menawarkan latihan sederhana (breathing, journaling) namun jangan memberi diagnosa klinis.",
   ].join(" ");
@@ -173,4 +194,20 @@ function buildMessages(
     ...normalizedHistory,
     { role: "user", content: latestMessage },
   ];
+}
+
+function updateConversationSummary(
+  previous: string | null,
+  userMessage: string,
+  assistantMessage: string,
+) {
+  const sanitize = (text: string) => text.replace(/\s+/g, " ").trim();
+  const entry = `• U: ${sanitize(userMessage).slice(0, 140)} | M: ${sanitize(assistantMessage).slice(
+    0,
+    140,
+  )}`;
+  const existing = previous ? previous.split("\n").filter(Boolean) : [];
+  existing.push(entry);
+  const trimmed = existing.slice(-8);
+  return trimmed.join("\n");
 }

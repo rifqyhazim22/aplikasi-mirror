@@ -55,7 +55,13 @@ const defaultMood: MoodInfo = {
 
 type WidgetVariant = "full" | "compact";
 
-export function CameraLiquidWidget({ variant = "full" }: { variant?: WidgetVariant }) {
+export function CameraLiquidWidget({
+  variant = "full",
+  profileId = null,
+}: {
+  variant?: WidgetVariant;
+  profileId?: string | null;
+}) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -123,7 +129,7 @@ export function CameraLiquidWidget({ variant = "full" }: { variant?: WidgetVaria
     } else {
       videoElement.onloadedmetadata = playVideo;
     }
-  }, [permission]);
+  }, [permission, profileId]);
 
   useEffect(() => {
     if (permission !== "granted") return;
@@ -183,12 +189,13 @@ export function CameraLiquidWidget({ variant = "full" }: { variant?: WidgetVaria
           body: JSON.stringify({
             emotion: emotion.value,
             confidence: Math.round(emotion.confidence * 100),
+            profileId: profileId ?? undefined,
           }),
         }).catch((err) => console.error("emotion log", err));
       }
     }, 3000);
     return () => clearInterval(interval);
-  }, [permission]);
+  }, [permission, profileId]);
 
   const captureFrame = () => {
     const canvas = canvasRef.current;
@@ -249,8 +256,9 @@ export function CameraLiquidWidget({ variant = "full" }: { variant?: WidgetVaria
           <h3 className="text-2xl font-semibold text-white">
             Kolom kamera + computer vision
           </h3>
-          <span className="mirror-pill px-4 py-1 text-xs text-white/70">
+          <span className="mirror-pill flex items-center gap-2 px-4 py-1 text-xs text-white/70">
             Realtime CV demo
+            {!profileId && <span className="text-[10px] text-rose-200">tidak terhubung ke profil</span>}
           </span>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

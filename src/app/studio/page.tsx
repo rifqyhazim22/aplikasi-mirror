@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { CameraLiquidWidget } from "@/components/camera-liquid";
 import { MiniChat } from "@/components/mini-chat";
+import { getBrowserSupabaseClient } from "@/lib/supabase-browser";
 
 type RecentProfile = {
   id: string;
@@ -127,7 +128,7 @@ export default function StudioPage() {
       try {
         const [moodRes, cameraRes] = await Promise.all([
           fetch(`/api/moods?profileId=${selectedProfileId}`),
-          fetch("/api/emotions?limit=1"),
+          fetch(`/api/emotions?profileId=${selectedProfileId}&limit=1`),
         ]);
         if (!moodRes.ok || !cameraRes.ok) {
           throw new Error("Sensor gagal dimuat");
@@ -158,6 +159,42 @@ export default function StudioPage() {
       }
     };
     loadSensors();
+  }, [selectedProfileId]);
+
+  useEffect(() => {
+    if (!selectedProfileId) return;
+    const client = getBrowserSupabaseClient();
+    const channel = client
+      .channel(`camera-log-${selectedProfileId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "camera_emotion_log",
+          filter: `profile_id=eq.${selectedProfileId}`,
+        },
+        (payload) => {
+          const newRow = payload.new as {
+            emotion: string;
+            confidence: number | null;
+            created_at: string;
+          };
+          setSensors((prev) => ({
+            ...prev,
+            camera: {
+              id: payload.new.id as string,
+              emotion: newRow.emotion,
+              confidence: newRow.confidence,
+              createdAt: newRow.created_at,
+            },
+          }));
+        },
+      )
+      .subscribe();
+    return () => {
+      client.removeChannel(channel);
+    };
   }, [selectedProfileId]);
 
   const handleSend = async (event: FormEvent<HTMLFormElement>) => {
@@ -246,7 +283,7 @@ export default function StudioPage() {
                 Kamera dan chat cepat sengaja ditempatkan dalam satu kolom supaya terasa seperti cermin interaktif.
               </p>
             </div>
-            <CameraLiquidWidget variant="full" />
+            <CameraLiquidWidget variant="full" profileId={selectedProfileId || null} />
             <MiniChat title="Chat cepat" />
           </div>
           <section className="glass-card space-y-4 p-6">

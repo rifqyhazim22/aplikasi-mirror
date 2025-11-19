@@ -1,9 +1,37 @@
+"use client";
 
+import { useEffect, useState } from "react";
 import { CameraLiquidWidget } from "@/components/camera-liquid";
 import { MiniChat } from "@/components/mini-chat";
 import Link from "next/link";
 
+type ProfileOption = {
+  id: string;
+  nickname: string;
+};
+
 export default function CameraPage() {
+  const [profiles, setProfiles] = useState<ProfileOption[]>([]);
+  const [activeProfileId, setActiveProfileId] = useState("");
+  const [info, setInfo] = useState<string | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const response = await fetch("/api/profiles");
+        if (!response.ok) throw new Error("Gagal memuat profil");
+        const payload = (await response.json()) as ProfileOption[];
+        setProfiles(payload);
+        setActiveProfileId((prev) => prev || payload[0]?.id || "");
+        setInfo(null);
+      } catch (error) {
+        console.error(error);
+        setInfo("Belum ada profil tersimpan. Simpan ritual onboarding terlebih dulu.");
+      }
+    };
+    load();
+  }, []);
+
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-8 px-6 py-16 text-white">
       <header className="space-y-3 text-center">
@@ -15,8 +43,35 @@ export default function CameraPage() {
         </p>
       </header>
       <section className="glass-card space-y-6 p-6">
-        <CameraLiquidWidget variant="full" />
-        <MiniChat title="Chat cepat" />
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col">
+            <p className="text-xs uppercase tracking-[0.4em] text-white/50">Profil Mirror</p>
+            <p className="text-sm text-white/70">
+              Pilih profil onboarding supaya log kamera & chat memakai data yang sama.
+            </p>
+          </div>
+          <select
+            className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white sm:max-w-xs"
+            value={activeProfileId}
+            onChange={(event) => setActiveProfileId(event.target.value)}
+            disabled={!profiles.length}
+          >
+            <option value="">Tanpa profil</option>
+            {profiles.map((profile) => (
+              <option key={profile.id} value={profile.id} className="bg-purple-900 text-white">
+                {profile.nickname}
+              </option>
+            ))}
+          </select>
+        </div>
+        {info && <p className="text-xs text-rose-300">{info}</p>}
+        <CameraLiquidWidget variant="full" profileId={activeProfileId || null} />
+        <MiniChat
+          title="Chat cepat"
+          profiles={profiles}
+          selectedProfileId={activeProfileId}
+          onSelectProfile={setActiveProfileId}
+        />
       </section>
       <div className="liquid-card flex flex-col gap-3 p-6 text-sm text-white/80 sm:flex-row sm:items-center sm:justify-between">
         <div>

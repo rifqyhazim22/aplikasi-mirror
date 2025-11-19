@@ -14,7 +14,8 @@ create table if not exists public.profile (
   zodiac_sign text,
   personality_notes text,
   created_at timestamptz default now(),
-  updated_at timestamptz default now()
+  updated_at timestamptz default now(),
+  conversation_summary text
 );
 
 create table if not exists public.mood_entry (
@@ -45,10 +46,17 @@ create table if not exists public.personality_quiz (
 
 create table if not exists public.camera_emotion_log (
   id uuid primary key default gen_random_uuid(),
+  profile_id uuid references public.profile(id) on delete set null,
   emotion text not null,
   confidence numeric default 0,
   created_at timestamptz default now()
 );
+
+alter table if exists public.profile
+  add column if not exists conversation_summary text;
+
+alter table if exists public.camera_emotion_log
+  add column if not exists profile_id uuid references public.profile(id) on delete set null;
 
 alter table public.profile enable row level security;
 alter table public.mood_entry enable row level security;

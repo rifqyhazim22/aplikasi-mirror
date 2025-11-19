@@ -7,6 +7,7 @@ type CameraLog = {
   emotion: string;
   confidence: number | null;
   created_at: string;
+  profile_id: string | null;
 };
 
 type MoodSummary = {
@@ -189,6 +190,9 @@ export default function StatsPage() {
                         })}
                       </span>
                     </div>
+                    <p className="text-[11px] text-white/50">
+                      Profil: {log.profile_id ? log.profile_id.slice(0, 8) : "tidak terhubung"}
+                    </p>
                     <div className="mt-2 h-1.5 rounded-full bg-white/10">
                       <span
                         className="block h-full rounded-full bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-300"

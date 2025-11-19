@@ -12,40 +12,74 @@ type ChatMessage = {
   content: string;
 };
 
+type MiniChatProps = {
+  title?: string;
+  compact?: boolean;
+  profiles?: ProfileOption[];
+  selectedProfileId?: string;
+  onSelectProfile?: (id: string) => void;
+};
+
 export function MiniChat({
   title = "Chat Mirror",
   compact = false,
-}: {
-  title?: string;
-  compact?: boolean;
-}) {
-  const [profiles, setProfiles] = useState<ProfileOption[]>([]);
-  const [selectedProfileId, setSelectedProfileId] = useState("");
+  profiles: controlledProfiles,
+  selectedProfileId: controlledSelectedProfileId,
+  onSelectProfile,
+}: MiniChatProps) {
+  const [profiles, setProfiles] = useState<ProfileOption[]>(controlledProfiles ?? []);
+  const [selectedProfileId, setSelectedProfileId] = useState(controlledSelectedProfileId ?? "");
   const [logs, setLogs] = useState<ChatMessage[]>([]);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [info, setInfo] = useState<string | null>(null);
 
+  const resolvedProfiles = controlledProfiles ?? profiles;
+  const resolvedSelectedProfileId = controlledSelectedProfileId ?? selectedProfileId;
+
   const activeProfile = useMemo(
-    () => profiles.find((profile) => profile.id === selectedProfileId) ?? null,
-    [profiles, selectedProfileId],
+    () =>
+      resolvedProfiles.find((profile) => profile.id === resolvedSelectedProfileId) ?? null,
+    [resolvedProfiles, resolvedSelectedProfileId],
   );
 
   useEffect(() => {
+    if (controlledProfiles) {
+      setProfiles(controlledProfiles);
+      return;
+    }
     const loadProfiles = async () => {
       try {
         const response = await fetch("/api/profiles");
         if (!response.ok) throw new Error("Gagal memuat profil");
         const payload = (await response.json()) as ProfileOption[];
         setProfiles(payload);
-        setSelectedProfileId((prev) => prev || payload[0]?.id || "");
+        setSelectedProfileId((prev) => {
+          const next = prev || payload[0]?.id || "";
+          if (!prev && payload[0]) {
+            onSelectProfile?.(payload[0].id);
+          }
+          return next;
+        });
       } catch (error) {
         console.error(error);
         setInfo("Mirror belum menemukan profil. Simpan ritual dulu.");
       }
     };
     loadProfiles();
-  }, []);
+  }, [controlledProfiles, onSelectProfile]);
+
+  useEffect(() => {
+    if (controlledSelectedProfileId) {
+      setSelectedProfileId(controlledSelectedProfileId);
+    }
+  }, [controlledSelectedProfileId]);
+
+  useEffect(() => {
+    if (controlledProfiles && !controlledSelectedProfileId && controlledProfiles.length > 0) {
+      onSelectProfile?.(controlledProfiles[0].id);
+    }
+  }, [controlledProfiles, controlledSelectedProfileId, onSelectProfile]);
 
   const sendMessage = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -66,8 +100,8 @@ export function MiniChat({
         }),
       });
       if (!response.ok) throw new Error("Mirror lagi sibuk");
-      const payload = (await response.json()) as { reply: string };
-      setLogs((prev) => [...prev, { role: "assistant", content: payload.reply }]);
+        const payload = (await response.json()) as { reply: string };
+        setLogs((prev) => [...prev, { role: "assistant", content: payload.reply }]);
     } catch (error) {
       console.error(error);
       setInfo("Mirror belum merespons. Coba beberapa detik lagi.");
@@ -87,12 +121,18 @@ export function MiniChat({
         </div>
         <select
           className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white disabled:opacity-40"
-          value={selectedProfileId}
-          onChange={(event) => setSelectedProfileId(event.target.value)}
-          disabled={profiles.length === 0}
+          value={resolvedSelectedProfileId}
+          onChange={(event) => {
+            const next = event.target.value;
+            if (!controlledSelectedProfileId) {
+              setSelectedProfileId(next);
+            }
+            onSelectProfile?.(next);
+          }}
+          disabled={resolvedProfiles.length === 0}
         >
           <option value="">Pilih profil</option>
-          {profiles.map((profile) => (
+          {resolvedProfiles.map((profile) => (
             <option key={profile.id} value={profile.id} className="bg-purple-900 text-white">
               {profile.nickname}
             </option>
@@ -101,7 +141,7 @@ export function MiniChat({
         <div className={`flex flex-col gap-3 ${compact ? "h-48" : "h-64"} overflow-y-auto`}>
           {logs.length === 0 ? (
             <p className="text-sm text-white/60">
-              {profiles.length === 0
+              {resolvedProfiles.length === 0
                 ? "Belum ada profil tersimpan."
                 : "Belum ada chat. Tulis pesan di bawah untuk mulai."}
             </p>
