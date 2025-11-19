@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { CameraLiquidWidget } from "@/components/camera-liquid";
 import { MiniChat } from "@/components/mini-chat";
+import { VisionAnalyticsPanel } from "@/components/vision-analytics";
 import Link from "next/link";
 import type { VisionSignal } from "@/types/vision";
 
@@ -88,6 +89,7 @@ export default function CameraPage() {
           onSelectProfile={setActiveProfileId}
           visionSignal={synchronizedVision}
         />
+        <VisionAnalyticsPanel signal={synchronizedVision} />
       </section>
       <div className="liquid-card flex flex-col gap-3 p-6 text-sm text-white/80 sm:flex-row sm:items-center sm:justify-between">
         <div>

@@ -5,7 +5,7 @@ import * as tf from "@tensorflow/tfjs";
 import * as blazeface from "@tensorflow-models/blazeface";
 import type * as FaceLandmarksDetection from "@tensorflow-models/face-landmarks-detection";
 import { mapAverageToEmotion } from "@/lib/emotion";
-import type { SensorMetrics, VisionSignal } from "@/types/vision";
+import type { SensorMetrics, VisionSignal, ExpressionScore } from "@/types/vision";
 
 type MoodInfo = {
   label: string;
@@ -57,6 +57,8 @@ const defaultMood: MoodInfo = {
 
 type WidgetVariant = "full" | "compact";
 
+type FaceBox = { x1: number; y1: number; x2: number; y2: number };
+
 const defaultMetrics: SensorMetrics = {
   valence: 0,
   energy: 0.5,
@@ -64,6 +66,9 @@ const defaultMetrics: SensorMetrics = {
   focus: 0.5,
   tilt: null,
   cues: [],
+  attention: null,
+  headPose: null,
+  expressions: [],
 };
 
 type FaceMeshModule = typeof import("@tensorflow-models/face-landmarks-detection");
@@ -93,6 +98,8 @@ export function CameraLiquidWidget({
   const [lastCapture, setLastCapture] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [sensorMetrics, setSensorMetrics] = useState<SensorMetrics>(defaultMetrics);
+  const humanRef = useRef<HumanInstance | null>(null);
+  const [humanStatus, setHumanStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -183,6 +190,54 @@ export function CameraLiquidWidget({
   }, [brightnessHistory]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    let cancelled = false;
+    const bootHuman = async () => {
+      try {
+        setHumanStatus("loading");
+        const namespace = await loadHumanNamespace();
+        if (!namespace || cancelled) {
+          if (!cancelled) setHumanStatus("error");
+          return;
+        }
+        const human = new namespace.Human({
+          modelBasePath: "https://cdn.jsdelivr.net/npm/@vladmandic/human@3.3.6/models",
+          backend: "webgl",
+          warmup: "face",
+          face: {
+            enabled: true,
+            detector: { enabled: true, rotation: true, maxDetected: 1 },
+            mesh: { enabled: true },
+            iris: { enabled: false },
+            attention: { enabled: true },
+            emotion: { enabled: true },
+          },
+          hand: { enabled: false },
+          body: { enabled: false },
+          object: { enabled: false },
+        });
+        await human.load();
+        if (human.initialize) {
+          await human.initialize();
+        }
+        if (cancelled) {
+          human.terminate?.();
+          return;
+        }
+        humanRef.current = human;
+        setHumanStatus("ready");
+      } catch (error) {
+        console.error("Gagal menginisiasi Human CV", error);
+        if (!cancelled) setHumanStatus("error");
+      }
+    };
+    bootHuman();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
     if (permission !== "granted") return;
     const videoElement = videoRef.current;
     const stream = streamRef.current;
@@ -209,7 +264,7 @@ export function CameraLiquidWidget({
       const width = video.videoWidth || 320;
       const height = video.videoHeight || 240;
       const predictions = await model.estimateFaces(video, false);
-      let faceBox = null;
+      let faceBox: FaceBox | null = null;
       if (predictions.length > 0 && predictions[0].topLeft && predictions[0].bottomRight) {
         const [x1, y1] = predictions[0].topLeft as [number, number];
         const [x2, y2] = predictions[0].bottomRight as [number, number];
@@ -257,6 +312,31 @@ export function CameraLiquidWidget({
           }
         } catch (error) {
           console.warn("Gagal menganalisis landmark wajah", error);
+        }
+      }
+      const human = humanRef.current;
+      if (human) {
+        try {
+          const advanced = await human.detect(video);
+          const humanFace = advanced?.face?.[0];
+          if (humanFace) {
+            const result = applyHumanInsights(humanFace, computedMetrics);
+            computedMetrics = result.metrics;
+            if (result.boundingBox) {
+              setBox(result.boundingBox);
+              faceBox = {
+                x1: result.boundingBox.x,
+                y1: result.boundingBox.y,
+                x2: result.boundingBox.x + result.boundingBox.w,
+                y2: result.boundingBox.y + result.boundingBox.h,
+              };
+            }
+            if (result.overrideMood) {
+              setMood(result.overrideMood);
+            }
+          }
+        } catch (error) {
+          console.warn("Human detect error", error);
         }
       }
       metricsRef.current = computedMetrics;
@@ -424,6 +504,16 @@ export function CameraLiquidWidget({
           <p className="text-xs uppercase tracking-[0.35em] text-white/50">Status</p>
           <p className={`mt-2 text-lg font-semibold ${statusTone.color}`}>{statusTone.label}</p>
           <p className="text-xs text-white/60">{statusTone.detail}</p>
+          <p className="mt-2 text-[11px] text-white/40">
+            CV lanjutan:{" "}
+            {humanStatus === "ready"
+              ? "Human AI aktif"
+              : humanStatus === "loading"
+                ? "Memuat engine Human..."
+                : humanStatus === "error"
+                  ? "Eksperimental off"
+                  : "Menunggu aktivasi"}
+          </p>
         </div>
         <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
           <p className="text-xs uppercase tracking-[0.35em] text-white/50">Mood bucket</p>
@@ -615,6 +705,9 @@ function analyzeLandmarks(points: Landmark[]): SensorMetrics {
     focus: Number(focus.toFixed(2)),
     tilt: tilt ? Number(tilt.toFixed(1)) : null,
     cues,
+    attention: null,
+    headPose: tilt ? { pitch: 0, yaw: 0, roll: Number(tilt.toFixed(1)) } : null,
+    expressions: [],
   };
 }
 function averageBrightness(data: Uint8ClampedArray) {
@@ -657,16 +750,143 @@ function deriveMetrics(
     focus: Number(focus.toFixed(2)),
     tilt: null,
     cues,
+    attention: null,
+    headPose: null,
+    expressions: [],
   };
+}
+
+type HumanNamespace = {
+  Human: new (config?: Record<string, unknown>) => HumanInstance;
+};
+
+type HumanInstance = {
+  load(): Promise<void>;
+  initialize?(): Promise<void>;
+  terminate?(): void;
+  detect(
+    input: HTMLVideoElement | HTMLCanvasElement,
+    options?: Record<string, unknown>,
+  ): Promise<HumanResult>;
+};
+
+type HumanResult = {
+  face?: HumanFaceResult[];
+};
+
+type HumanFaceResult = {
+  box?: { raw?: [number, number, number, number] };
+  emotion?: Array<{ emotion?: string; score?: number }>;
+  attention?: number;
+  rotation?: { angle?: { pitch?: number; yaw?: number; roll?: number } };
+};
+
+type HumanInsightResult = {
+  metrics: SensorMetrics;
+  overrideMood?: MoodInfo | null;
+  boundingBox?: { x: number; y: number; w: number; h: number };
+};
+
+function applyHumanInsights(face: HumanFaceResult, baseline: SensorMetrics): HumanInsightResult {
+  const expressions = normalizeExpressions(face.emotion);
+  const attention =
+    typeof face.attention === "number"
+      ? Number(face.attention.toFixed(2))
+      : baseline.attention ?? null;
+  const headPose = face.rotation?.angle
+    ? {
+        pitch: Number((face.rotation.angle.pitch ?? baseline.headPose?.pitch ?? 0).toFixed(1)),
+        yaw: Number((face.rotation.angle.yaw ?? baseline.headPose?.yaw ?? 0).toFixed(1)),
+        roll: Number((face.rotation.angle.roll ?? baseline.headPose?.roll ?? baseline.tilt ?? 0).toFixed(1)),
+      }
+    : baseline.headPose ?? null;
+  const cues = [...baseline.cues];
+  if (attention !== null) {
+    if (attention < 0.35) cues.push("Perhatian visual turun, ajak fokus ke napas.");
+    if (attention > 0.75) cues.push("Mata sangat fokus, bantu relaksasi rahang.");
+  }
+  if (headPose?.pitch && headPose.pitch < -5) cues.push("Dagu menurun, ingatkan postur terbuka.");
+  if (headPose?.pitch && headPose.pitch > 5) cues.push("Dagu terangkat, cek kenyamanan leher.");
+  if (expressions[0]?.label === "disgust") cues.push("Ekspresi jengah, validasi perasaan.");
+
+  const metrics: SensorMetrics = {
+    ...baseline,
+    attention,
+    headPose,
+    expressions,
+    cues: Array.from(new Set(cues)).slice(-6),
+  };
+
+  let overrideMood: MoodInfo | null = null;
+  const dominant = expressions[0];
+  if (dominant && dominant.score > 0.35) {
+    const mapped = mapExpressionToMoodKey(dominant.label);
+    if (mapped) {
+      const copy = emotionCopy[mapped];
+      overrideMood = {
+        label: dominant.label.toUpperCase(),
+        emoji: copy.emoji,
+        description: copy.text,
+        confidence: Math.round(dominant.score * 100),
+      };
+    }
+  }
+
+  const boundingBox =
+    face.box?.raw && face.box.raw.length === 4
+      ? {
+          x: face.box.raw[0],
+          y: face.box.raw[1],
+          w: face.box.raw[2],
+          h: face.box.raw[3],
+        }
+      : undefined;
+
+  return { metrics, overrideMood, boundingBox };
+}
+
+function normalizeExpressions(
+  raw?: Array<{ emotion?: string; score?: number }>,
+): ExpressionScore[] {
+  if (!raw) return [];
+  return raw
+    .filter((item): item is { emotion: string; score: number } => Boolean(item.emotion))
+    .map((item) => ({
+      label: item.emotion.trim().toLowerCase(),
+      score: Number((item.score ?? 0).toFixed(2)),
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5);
+}
+
+function mapExpressionToMoodKey(
+  label: string,
+): keyof typeof emotionCopy | null {
+  const normalized = label.toLowerCase();
+  const mapping: Record<string, keyof typeof emotionCopy> = {
+    happy: "happy",
+    joy: "happy",
+    neutral: "neutral",
+    sad: "sad",
+    disgust: "angry",
+    angry: "angry",
+    fear: "surprised",
+    surprised: "surprised",
+    surprise: "surprised",
+    tired: "tired",
+  };
+  return mapping[normalized] ?? null;
 }
 
 declare global {
   interface Window {
     faceLandmarksDetection?: FaceMeshModule;
+    Human?: HumanNamespace;
   }
 }
 
 let faceMeshModulePromise: Promise<FaceMeshModule | null> | null = null;
+let humanNamespacePromise: Promise<HumanNamespace | null> | null = null;
 
 async function loadFaceMeshModule(): Promise<FaceMeshModule | null> {
   if (typeof window === "undefined") return null;
@@ -688,6 +908,28 @@ async function loadFaceMeshModule(): Promise<FaceMeshModule | null> {
     faceMeshModulePromise = null;
   }
   return loadedModule;
+}
+
+async function loadHumanNamespace(): Promise<HumanNamespace | null> {
+  if (typeof window === "undefined") return null;
+  if (window.Human) {
+    return window.Human as HumanNamespace;
+  }
+  if (!humanNamespacePromise) {
+    humanNamespacePromise = loadScript(
+      "https://cdn.jsdelivr.net/npm/@vladmandic/human@3.3.6/dist/human.js",
+    )
+      .then(() => window.Human ?? null)
+      .catch((error) => {
+        console.error("Gagal memuat Human bundle", error);
+        return null;
+      });
+  }
+  const namespace = await humanNamespacePromise;
+  if (!namespace) {
+    humanNamespacePromise = null;
+  }
+  return namespace;
 }
 
 function loadScript(src: string): Promise<void> {

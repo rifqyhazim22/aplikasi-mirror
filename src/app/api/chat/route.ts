@@ -18,6 +18,23 @@ const metricsSchema = z.object({
   focus: z.number().min(0).max(1),
   tilt: z.number().nullable().optional(),
   cues: z.array(z.string()).optional(),
+  attention: z.number().min(0).max(1).nullable().optional(),
+  headPose: z
+    .object({
+      pitch: z.number(),
+      yaw: z.number(),
+      roll: z.number(),
+    })
+    .nullable()
+    .optional(),
+  expressions: z
+    .array(
+      z.object({
+        label: z.string(),
+        score: z.number().min(0).max(1),
+      }),
+    )
+    .optional(),
 });
 
 const visionSignalSchema = z.object({
@@ -45,7 +62,7 @@ type MoodSnapshot = {
 type CameraSnapshot = {
   emotion: Database["public"]["Tables"]["camera_emotion_log"]["Row"]["emotion"];
   confidence: Database["public"]["Tables"]["camera_emotion_log"]["Row"]["confidence"];
-  metadata: Database["public"]["Tables"]["camera_emotion_log"]["Row"]["metadata"];
+  metadata: SensorMetrics | null;
   created_at: Database["public"]["Tables"]["camera_emotion_log"]["Row"]["created_at"];
 };
 type VisionSignalPayload = z.infer<typeof visionSignalSchema>;
@@ -86,10 +103,17 @@ export async function POST(request: Request) {
 
     const trimmedHistory = payload.history.slice(-6);
 
+    const normalizedCameraSnapshot: CameraSnapshot | null = cameraSnapshot
+      ? {
+          ...cameraSnapshot,
+          metadata: (cameraSnapshot.metadata as SensorMetrics | null) ?? null,
+        }
+      : null;
+
     const conversation: ChatCompletionMessageParam[] = buildMessages(
       profile,
       (moodSnapshot as MoodSnapshot | null) ?? null,
-      (cameraSnapshot as CameraSnapshot | null) ?? null,
+      normalizedCameraSnapshot,
       trimmedHistory,
       payload.message,
       profile.conversation_summary,
@@ -262,6 +286,17 @@ function formatVisionLine({
   }
   if (metrics.cues && metrics.cues.length > 0) {
     parts.push(`cues: ${metrics.cues.slice(0, 2).join("; ")}`);
+  }
+  if (typeof metrics.attention === "number") {
+    parts.push(`attention ${Math.round(metrics.attention * 100)}%`);
+  }
+  if (metrics.headPose) {
+    const { pitch, yaw, roll } = metrics.headPose;
+    parts.push(`head pose pitch ${pitch}° yaw ${yaw}° roll ${roll}°`);
+  }
+  if (metrics.expressions && metrics.expressions.length > 0) {
+    const dominant = metrics.expressions.slice(0, 2).map((expr) => `${expr.label} ${Math.round(expr.score * 100)}%`);
+    parts.push(`ekspresi ${dominant.join(", ")}`);
   }
   return `${base} ${parts.join(" • ")}`.trim();
 }

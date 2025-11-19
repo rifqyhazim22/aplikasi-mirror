@@ -1,3 +1,14 @@
+export type ExpressionScore = {
+  label: string;
+  score: number;
+};
+
+export type HeadPose = {
+  pitch: number;
+  yaw: number;
+  roll: number;
+};
+
 export type SensorMetrics = {
   valence: number;
   energy: number;
@@ -5,6 +16,9 @@ export type SensorMetrics = {
   focus: number;
   tilt: number | null;
   cues: string[];
+  attention?: number | null;
+  headPose?: HeadPose | null;
+  expressions?: ExpressionScore[];
 };
 
 export type VisionSignal = {

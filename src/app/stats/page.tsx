@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { SensorMetrics } from "@/types/vision";
 
 type CameraLog = {
   id: string;
@@ -8,14 +9,7 @@ type CameraLog = {
   confidence: number | null;
   created_at: string;
   profile_id: string | null;
-  metadata?: {
-    valence?: number | null;
-    energy?: number | null;
-    focus?: number | null;
-    tension?: number | null;
-    tilt?: number | null;
-    cues?: string[] | null;
-  } | null;
+  metadata?: SensorMetrics | null;
 };
 
 type MoodSummary = {
@@ -230,14 +224,29 @@ export default function StatsPage() {
                           Fokus {percentLabel(log.metadata.focus)} • Tensi{" "}
                           {percentLabel(log.metadata.tension)}
                         </p>
+                        {typeof log.metadata.attention === "number" && (
+                          <p>Attention {percentLabel(log.metadata.attention)}</p>
+                        )}
+                        {log.metadata.headPose && (
+                          <p>
+                            Head pose pitch {log.metadata.headPose.pitch}° yaw {log.metadata.headPose.yaw}° roll{" "}
+                            {log.metadata.headPose.roll}°
+                          </p>
+                        )}
+                        {log.metadata.expressions && log.metadata.expressions.length > 0 && (
+                          <p>
+                            Ekspresi{" "}
+                            {log.metadata.expressions
+                              .slice(0, 2)
+                              .map((expr) => `${expr.label} ${percentLabel(expr.score)}`)
+                              .join(", ")}
+                          </p>
+                        )}
                         {log.metadata.cues && log.metadata.cues.length > 0 && (
                           <p>Cues: {log.metadata.cues.slice(0, 2).join(", ")}</p>
                         )}
                       </div>
                     )}
-                    <p className="mt-1 text-[11px] text-white/50">
-                      Profil: {log.profile_id ? log.profile_id.slice(0, 8) : "tidak terhubung"}
-                    </p>
                   </li>
                 ))}
               </ul>
