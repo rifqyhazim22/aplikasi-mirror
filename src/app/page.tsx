@@ -1,36 +1,10 @@
+'use client';
+
 import Link from "next/link";
 import { downloadCatalog } from "@/lib/downloads";
 import { PreferenceTogglePanel } from "@/components/preference-toggle";
-
-const highlightFeatures = [
-  {
-    title: "Check-in santai",
-    description:
-      "Masuk pake nickname lucu, pilih fokus cerita, lalu Mirror kenalin mood kamu kayak journaling interaktif.",
-    emoji: "🪞",
-  },
-  {
-    title: "Kamera nggak serem",
-    description:
-      "Video cuma dibaca di device-mu. Mirror nge-scan ekspresi & cahaya buat nyari vibe, bukan buat simpen foto.",
-    emoji: "📸",
-  },
-  {
-    title: "Teman curhat 24/7",
-    description:
-      "Abis onboarding, langsung lanjut chat. AI-nya ngeblend data onboarding + kamera biar terasa kayak bestie yang ngerti batasan.",
-    emoji: "🤝",
-  },
-];
-
-const modules = [
-  { href: "/experience", label: "Ritual onboarding", emoji: "🌅" },
-  { href: "/camera", label: "Lab kamera", emoji: "🔍" },
-  { href: "/studio", label: "Studio chat", emoji: "💬" },
-  { href: "/stats", label: "Mood timeline", emoji: "📊" },
-  { href: "/quiz", label: "Quiz MBTI/Enneagram", emoji: "🧩" },
-  { href: "/insights", label: "Insight CBT", emoji: "🧠" },
-];
+import { usePreferences } from "@/contexts/preferences-context";
+import { translations } from "@/lib/i18n";
 
 const statusTone: Record<
   NonNullable<(typeof downloadCatalog)[number]["status"]>,
@@ -42,18 +16,15 @@ const statusTone: Record<
 };
 
 export default function HomePage() {
+  const { language } = usePreferences();
+  const copy = translations[language] ?? translations.id;
   return (
     <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-10 px-6 py-16 text-white sm:py-24">
       <section className="grid gap-10 lg:grid-cols-[1.1fr,0.9fr]">
         <header className="space-y-6">
-          <p className="emoji-heading">Mirror playground</p>
-          <h1 className="text-4xl font-semibold leading-tight text-white sm:text-6xl">
-            Cermin digital buat Gen Z: buka kamera, ngomong jujur soal mood, Mirror jawab sebagai teman baikmu. 💜
-          </h1>
-          <p className="max-w-3xl text-lg text-white/80 sm:text-xl">
-            Ini bukan deck investor—ini versi yang bisa kamu pakai langsung buat daily check-in. Tinggal kasih izin kamera,
-            pilih mood fokus, terus Mirror bakal baca ekspresi + teks kamu untuk bikin chat yang relate.
-          </p>
+          <p className="emoji-heading">{copy.heroTagline}</p>
+          <h1 className="text-4xl font-semibold leading-tight text-white sm:text-6xl">{copy.heroTitle}</h1>
+          <p className="max-w-3xl text-lg text-white/80 sm:text-xl">{copy.heroDescription}</p>
           <div className="flex flex-wrap gap-3 text-xs text-white/70">
             <span className="mirror-pill px-4 py-2">🪞 Nickname & vibes</span>
             <span className="mirror-pill px-4 py-2">📷 Micro-expression tracker</span>
@@ -66,13 +37,13 @@ export default function HomePage() {
               href="/experience"
               className="white-pill rounded-full bg-white px-7 py-3 text-sm transition hover:-translate-y-0.5"
             >
-              Mulai ritual sekarang
+              {copy.ctaExperience}
             </Link>
             <Link
               href="/camera"
               className="rounded-full border border-white/30 px-7 py-3 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white"
             >
-              Uji kamera 🔮
+              {copy.ctaCamera}
             </Link>
             <Link
               href="https://github.com/rifqyhazim22/aplikasi-mirror"
@@ -108,7 +79,7 @@ export default function HomePage() {
       </section>
 
       <section className="grid gap-6 md:grid-cols-3">
-        {highlightFeatures.map((item) => (
+        {copy.highlightFeatures.map((item) => (
           <article key={item.title} className="glass-card p-6 text-sm text-white/80">
             <p className="text-2xl">{item.emoji}</p>
             <p className="mt-2 text-lg font-semibold text-white">{item.title}</p>
@@ -131,7 +102,7 @@ export default function HomePage() {
         <div className="space-y-4">
           <h3 className="text-xl font-semibold text-white">Modul siap demo</h3>
           <div className="grid gap-3 sm:grid-cols-2">
-            {modules.map((module) => (
+            {copy.modules.map((module) => (
               <Link
                 href={module.href}
                 key={module.href}
