@@ -6,6 +6,7 @@ import * as blazeface from "@tensorflow-models/blazeface";
 import type * as FaceLandmarksDetection from "@tensorflow-models/face-landmarks-detection";
 import { mapAverageToEmotion } from "@/lib/emotion";
 import type { SensorMetrics, VisionSignal, ExpressionScore } from "@/types/vision";
+import { broadcastVisionSignal } from "@/lib/vision-channel";
 
 type MoodInfo = {
   label: string;
@@ -342,15 +343,17 @@ export function CameraLiquidWidget({
       metricsRef.current = computedMetrics;
       setSensorMetrics(computedMetrics);
       const timestamp = Date.now();
+      const signalPayload: VisionSignal = {
+        emotion: emotion.value,
+        confidence: Math.round(emotion.confidence * 100),
+        metrics: computedMetrics,
+        timestamp,
+        profileId,
+      };
       if (onVisionSignal) {
-        onVisionSignal({
-          emotion: emotion.value,
-          confidence: Math.round(emotion.confidence * 100),
-          metrics: computedMetrics,
-          timestamp,
-          profileId,
-        });
+        onVisionSignal(signalPayload);
       }
+      broadcastVisionSignal(signalPayload);
       const now = timestamp;
       if (now - lastSentRef.current > 10000) {
         lastSentRef.current = now;

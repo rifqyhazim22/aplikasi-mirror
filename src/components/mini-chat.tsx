@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { VisionSignal } from "@/types/vision";
+import { subscribeVisionSignal } from "@/lib/vision-channel";
 
 type ProfileOption = {
   id: string;
@@ -36,12 +37,22 @@ export function MiniChat({
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [info, setInfo] = useState<string | null>(null);
+  const [broadcastVision, setBroadcastVision] = useState<VisionSignal | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = subscribeVisionSignal((signal) => {
+      setBroadcastVision(signal);
+    });
+    return () => unsubscribe();
+  }, []);
+
   const freshVision = useMemo(() => {
-    if (!visionSignal) return null;
-    const age = Date.now() - visionSignal.timestamp;
+    const source = visionSignal ?? broadcastVision;
+    if (!source) return null;
+    const age = Date.now() - source.timestamp;
     if (Number.isNaN(age) || age > 15000) return null;
-    return visionSignal;
-  }, [visionSignal]);
+    return source;
+  }, [visionSignal, broadcastVision]);
 
   const resolvedProfiles = controlledProfiles ?? profiles;
   const resolvedSelectedProfileId = controlledSelectedProfileId ?? selectedProfileId;
