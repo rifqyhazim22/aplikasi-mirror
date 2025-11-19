@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CameraLiquidWidget } from "@/components/camera-liquid";
 import { MiniChat } from "@/components/mini-chat";
 import Link from "next/link";
+import type { VisionSignal } from "@/types/vision";
 
 type ProfileOption = {
   id: string;
@@ -14,6 +15,16 @@ export default function CameraPage() {
   const [profiles, setProfiles] = useState<ProfileOption[]>([]);
   const [activeProfileId, setActiveProfileId] = useState("");
   const [info, setInfo] = useState<string | null>(null);
+  const [visionSignal, setVisionSignal] = useState<VisionSignal | null>(null);
+  const synchronizedVision = useMemo(() => {
+    if (!visionSignal) return null;
+    const sameProfile =
+      !visionSignal.profileId ||
+      !activeProfileId ||
+      visionSignal.profileId === activeProfileId;
+    const fresh = Date.now() - visionSignal.timestamp < 15000;
+    return sameProfile && fresh ? visionSignal : null;
+  }, [visionSignal, activeProfileId]);
 
   useEffect(() => {
     const load = async () => {
@@ -65,12 +76,17 @@ export default function CameraPage() {
           </select>
         </div>
         {info && <p className="text-xs text-rose-300">{info}</p>}
-        <CameraLiquidWidget variant="full" profileId={activeProfileId || null} />
+        <CameraLiquidWidget
+          variant="full"
+          profileId={activeProfileId || null}
+          onVisionSignal={(signal) => setVisionSignal(signal)}
+        />
         <MiniChat
           title="Chat cepat"
           profiles={profiles}
           selectedProfileId={activeProfileId}
           onSelectProfile={setActiveProfileId}
+          visionSignal={synchronizedVision}
         />
       </section>
       <div className="liquid-card flex flex-col gap-3 p-6 text-sm text-white/80 sm:flex-row sm:items-center sm:justify-between">

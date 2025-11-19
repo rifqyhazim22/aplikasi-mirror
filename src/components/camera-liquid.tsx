@@ -5,6 +5,7 @@ import * as tf from "@tensorflow/tfjs";
 import * as blazeface from "@tensorflow-models/blazeface";
 import type * as FaceLandmarksDetection from "@tensorflow-models/face-landmarks-detection";
 import { mapAverageToEmotion } from "@/lib/emotion";
+import type { SensorMetrics, VisionSignal } from "@/types/vision";
 
 type MoodInfo = {
   label: string;
@@ -56,15 +57,6 @@ const defaultMood: MoodInfo = {
 
 type WidgetVariant = "full" | "compact";
 
-type SensorMetrics = {
-  valence: number;
-  energy: number;
-  tension: number;
-  focus: number;
-  tilt: number | null;
-  cues: string[];
-};
-
 const defaultMetrics: SensorMetrics = {
   valence: 0,
   energy: 0.5,
@@ -79,9 +71,11 @@ type FaceMeshModule = typeof import("@tensorflow-models/face-landmarks-detection
 export function CameraLiquidWidget({
   variant = "full",
   profileId = null,
+  onVisionSignal,
 }: {
   variant?: WidgetVariant;
   profileId?: string | null;
+  onVisionSignal?: (signal: VisionSignal) => void;
 }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -203,7 +197,7 @@ export function CameraLiquidWidget({
     } else {
       videoElement.onloadedmetadata = playVideo;
     }
-  }, [permission, profileId]);
+  }, [permission, profileId, onVisionSignal]);
 
   useEffect(() => {
     if (permission !== "granted") return;
@@ -267,7 +261,17 @@ export function CameraLiquidWidget({
       }
       metricsRef.current = computedMetrics;
       setSensorMetrics(computedMetrics);
-      const now = Date.now();
+      const timestamp = Date.now();
+      if (onVisionSignal) {
+        onVisionSignal({
+          emotion: emotion.value,
+          confidence: Math.round(emotion.confidence * 100),
+          metrics: computedMetrics,
+          timestamp,
+          profileId,
+        });
+      }
+      const now = timestamp;
       if (now - lastSentRef.current > 10000) {
         lastSentRef.current = now;
         fetch("/api/emotions", {
@@ -283,7 +287,7 @@ export function CameraLiquidWidget({
       }
     }, 3000);
     return () => clearInterval(interval);
-  }, [permission, profileId]);
+  }, [permission, profileId, onVisionSignal]);
 
   const captureFrame = () => {
     const canvas = canvasRef.current;

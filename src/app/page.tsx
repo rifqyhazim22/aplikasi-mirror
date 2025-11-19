@@ -186,8 +186,8 @@ export default function HomePage() {
           ))}
         </div>
         <p className="text-xs text-white/50">
-          iOS build masih untuk Simulator. Untuk perangkat fisik & App Store diperlukan provisioning Apple Developer
-          sebelum menandatangani IPA. Semua file tersedia juga di folder `public/downloads` jika ingin mengganti host.
+          Build Windows & iOS fisik lagi disiapkan (perlu wine/mono & signing Apple Developer). Begitu siap akan otomatis
+          muncul di daftar ini tanpa perlu mengganti kode karena daftar bersumber dari release GitHub.
         </p>
       </section>
     </main>

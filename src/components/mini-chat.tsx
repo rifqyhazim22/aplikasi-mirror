@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import type { VisionSignal } from "@/types/vision";
 
 type ProfileOption = {
   id: string;
@@ -18,6 +19,7 @@ type MiniChatProps = {
   profiles?: ProfileOption[];
   selectedProfileId?: string;
   onSelectProfile?: (id: string) => void;
+  visionSignal?: VisionSignal | null;
 };
 
 export function MiniChat({
@@ -26,6 +28,7 @@ export function MiniChat({
   profiles: controlledProfiles,
   selectedProfileId: controlledSelectedProfileId,
   onSelectProfile,
+  visionSignal,
 }: MiniChatProps) {
   const [profiles, setProfiles] = useState<ProfileOption[]>(controlledProfiles ?? []);
   const [selectedProfileId, setSelectedProfileId] = useState(controlledSelectedProfileId ?? "");
@@ -33,6 +36,12 @@ export function MiniChat({
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [info, setInfo] = useState<string | null>(null);
+  const freshVision = useMemo(() => {
+    if (!visionSignal) return null;
+    const age = Date.now() - visionSignal.timestamp;
+    if (Number.isNaN(age) || age > 15000) return null;
+    return visionSignal;
+  }, [visionSignal]);
 
   const resolvedProfiles = controlledProfiles ?? profiles;
   const resolvedSelectedProfileId = controlledSelectedProfileId ?? selectedProfileId;
@@ -97,11 +106,19 @@ export function MiniChat({
           profileId: activeProfile.id,
           message: newEntry.content,
           history: logs.slice(-5),
+          visionSignal: freshVision
+            ? {
+                emotion: freshVision.emotion,
+                confidence: freshVision.confidence,
+                metrics: freshVision.metrics,
+                timestamp: freshVision.timestamp,
+              }
+            : undefined,
         }),
       });
       if (!response.ok) throw new Error("Mirror lagi sibuk");
-        const payload = (await response.json()) as { reply: string };
-        setLogs((prev) => [...prev, { role: "assistant", content: payload.reply }]);
+      const payload = (await response.json()) as { reply: string };
+      setLogs((prev) => [...prev, { role: "assistant", content: payload.reply }]);
     } catch (error) {
       console.error(error);
       setInfo("Mirror belum merespons. Coba beberapa detik lagi.");
@@ -118,6 +135,15 @@ export function MiniChat({
           <p className="text-sm text-white/70">
             Pilih profil dari ritual onboarding lalu kirim pesan cepat untuk menunjukkan respon Mirror.
           </p>
+          {freshVision ? (
+            <p className="text-xs text-emerald-200">
+              CV sinkron ⚡ {freshVision.emotion} ({freshVision.confidence}%)
+            </p>
+          ) : (
+            <p className="text-xs text-white/40">
+              Aktifkan kamera di lab supaya chat punya konteks ekspresi real-time.
+            </p>
+          )}
         </div>
         <select
           className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white disabled:opacity-40"

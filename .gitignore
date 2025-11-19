@@ -28,6 +28,7 @@ ios/App/Pods/
 ios/build/
 electron/node_modules/
 electron/dist/
+release-artifacts/
 public/downloads/
 supabase/.temp/
 
