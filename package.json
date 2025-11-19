@@ -9,7 +9,12 @@
     "lint": "eslint",
     "cap:sync": "cap sync",
     "cap:android": "cap run android",
-    "cap:ios": "cap run ios"
+    "cap:ios": "cap run ios",
+    "android:open": "cap open android",
+    "ios:open": "cap open ios",
+    "android:build": "cd android && ./gradlew assembleDebug",
+    "electron:make": "cd electron && npm run electron:make",
+    "native:sync": "pnpm exec cap sync android && pnpm exec cap sync ios && pnpm exec cap sync @capacitor-community/electron"
   },
   "dependencies": {
     "@capacitor/core": "^7.4.4",

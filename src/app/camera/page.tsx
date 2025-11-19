@@ -14,9 +14,9 @@ export default function CameraPage() {
           nggak pernah dikirim ke server—jadi aman buat freestyle ekspresi lucu.
         </p>
       </header>
-      <section className="glass-card grid gap-6 p-6 lg:grid-cols-2">
+      <section className="glass-card space-y-6 p-6">
         <CameraLiquidWidget variant="full" />
-        <MiniChat title="Chat cepat" compact />
+        <MiniChat title="Chat cepat" />
       </section>
       <div className="liquid-card flex flex-col gap-3 p-6 text-sm text-white/80 sm:flex-row sm:items-center sm:justify-between">
         <div>

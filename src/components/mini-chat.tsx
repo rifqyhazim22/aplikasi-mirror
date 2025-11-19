@@ -98,7 +98,7 @@ export function MiniChat({
             </option>
           ))}
         </select>
-        <div className={`space-y-3 ${compact ? "h-48" : "h-64"} overflow-y-auto`}>
+        <div className={`flex flex-col gap-3 ${compact ? "h-48" : "h-64"} overflow-y-auto`}>
           {logs.length === 0 ? (
             <p className="text-sm text-white/60">
               {profiles.length === 0

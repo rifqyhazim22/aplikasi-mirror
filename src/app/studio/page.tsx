@@ -1,6 +1,8 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { CameraLiquidWidget } from "@/components/camera-liquid";
+import { MiniChat } from "@/components/mini-chat";
 
 type RecentProfile = {
   id: string;
@@ -235,18 +237,18 @@ export default function StudioPage() {
         )}
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[1fr,1fr]">
-        <div className="glass-card p-6 space-y-4">
-          <p className="text-xs uppercase tracking-[0.4em] text-white/50">Mirror Cam</p>
-          <div className="rounded-[32px] border border-white/10 bg-white/5 p-4">
-            <iframe
-              title="Cam preview"
-              src="/camera"
-              className="h-[22rem] w-full rounded-[28px] border border-white/10"
-            />
+      <section className="grid gap-6 lg:grid-cols-[1.1fr,0.9fr]">
+        <div className="space-y-6">
+          <div className="glass-card space-y-6 p-6">
+            <div className="flex flex-col gap-1">
+              <p className="text-xs uppercase tracking-[0.4em] text-white/50">Mirror Cam</p>
+              <p className="text-sm text-white/70">
+                Kamera dan chat cepat sengaja ditempatkan dalam satu kolom supaya terasa seperti cermin interaktif.
+              </p>
+            </div>
+            <CameraLiquidWidget variant="full" />
+            <MiniChat title="Chat cepat" />
           </div>
-        </div>
-        <div className="flex flex-col gap-6">
           <section className="glass-card space-y-4 p-6">
             <p className="text-xs uppercase tracking-[0.4em] text-white/50">Sensor emosi</p>
             {sensorLoading ? (
@@ -296,130 +298,71 @@ export default function StudioPage() {
               </div>
             )}
           </section>
-          <section className="glass-card grid gap-6 p-6 md:grid-cols-3">
-            <div className="space-y-3">
-              <p className="text-xs uppercase tracking-[0.4em] text-white/50">Preset cepat</p>
-              <div className="flex flex-wrap gap-3">
-                {promptPresets.map((preset) => (
-                  <button
-                    key={preset}
-                    type="button"
-                    onClick={() => setInput(preset)}
-                    className="rounded-full border border-white/10 px-4 py-2 text-xs text-white/75 hover:border-white/40"
-                  >
-                    {preset}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="md:col-span-2 space-y-2">
-              <p className="text-xs uppercase tracking-[0.4em] text-white/50">Log percakapan</p>
-              <div className="h-80 overflow-y-auto rounded-3xl border border-white/5 bg-white/5 p-4">
-                {chat.length === 0 ? (
-                  <p className="text-sm text-white/60">
-                    {logsLoading ? "Memuat log percakapan..." : "Pilih profil dulu untuk memulai."}
-                  </p>
-                ) : (
-                  <div className="flex flex-col gap-4">
-                    {chat.map((message, index) => (
-                      <div
-                        key={`${message.role}-${index}`}
-                        className={`max-w-[90%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ${
-                          message.role === "assistant"
-                            ? "self-start bg-white/90 text-purple-900"
-                            : "self-end bg-purple-600/70"
-                        }`}
-                      >
-                        {message.content}
-                      </div>
-                    ))}
-                    {loading && <p className="text-xs text-white/60">Mirror sedang menulis...</p>}
-                    {logsLoading && <p className="text-xs text-white/60">Memperbarui log...</p>}
-                  </div>
-                )}
-              </div>
-              <form onSubmit={handleSend} className="flex flex-col gap-3 sm:flex-row">
-                <input
-                  className="w-full rounded-full border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/30"
-                  placeholder="Tulis pesanmu"
-                  value={input}
-                  onChange={(event) => setInput(event.target.value)}
-                  disabled={!activeProfile}
-                />
+        </div>
+        <section className="glass-card space-y-6 p-6">
+          <div className="space-y-3">
+            <p className="text-xs uppercase tracking-[0.4em] text-white/50">Preset cepat</p>
+            <p className="text-sm text-white/70">
+              Pakai kalimat ini ketika ingin menunjukkan bagaimana Mirror menyesuaikan respon terhadap tema berbeda.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              {promptPresets.map((preset) => (
                 <button
-                  type="submit"
-                  disabled={!activeProfile || !input.trim() || loading}
-                  className="white-pill rounded-full bg-white px-6 py-3 text-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
+                  key={preset}
+                  type="button"
+                  onClick={() => setInput(preset)}
+                  className="rounded-full border border-white/10 px-4 py-2 text-xs text-white/75 hover:border-white/40"
                 >
-                  {loading ? "Mengirim..." : "Kirim"}
+                  {preset}
                 </button>
-              </form>
-              {info && <p className="text-sm text-rose-300">{info}</p>}
+              ))}
             </div>
-          </section>
-        </div>
-      </section>
-
-      <section className="glass-card grid gap-6 p-6 md:grid-cols-3">
-        <div className="space-y-3">
-          <p className="text-xs uppercase tracking-[0.4em] text-white/50">Preset cepat</p>
-          <div className="flex flex-wrap gap-3">
-            {promptPresets.map((preset) => (
+          </div>
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-[0.4em] text-white/50">Log percakapan</p>
+            <div className="h-80 overflow-y-auto rounded-3xl border border-white/5 bg-white/5 p-4">
+              {chat.length === 0 ? (
+                <p className="text-sm text-white/60">
+                  {logsLoading ? "Memuat log percakapan..." : "Pilih profil dulu untuk memulai."}
+                </p>
+              ) : (
+                <div className="flex flex-col gap-4">
+                  {chat.map((message, index) => (
+                    <div
+                      key={`${message.role}-${index}`}
+                      className={`max-w-[90%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ${
+                        message.role === "assistant"
+                          ? "self-start bg-white/90 text-purple-900"
+                          : "self-end bg-purple-600/70"
+                      }`}
+                    >
+                      {message.content}
+                    </div>
+                  ))}
+                  {loading && <p className="text-xs text-white/60">Mirror sedang menulis...</p>}
+                  {logsLoading && <p className="text-xs text-white/60">Memperbarui log...</p>}
+                </div>
+              )}
+            </div>
+            <form onSubmit={handleSend} className="flex flex-col gap-3 sm:flex-row">
+              <input
+                className="w-full rounded-full border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/30"
+                placeholder="Tulis pesanmu"
+                value={input}
+                onChange={(event) => setInput(event.target.value)}
+                disabled={!activeProfile}
+              />
               <button
-                key={preset}
-                type="button"
-                onClick={() => setInput(preset)}
-                className="rounded-full border border-white/10 px-4 py-2 text-xs text-white/75 hover:border-white/40"
+                type="submit"
+                disabled={!activeProfile || !input.trim() || loading}
+                className="white-pill rounded-full bg-white px-6 py-3 text-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {preset}
+                {loading ? "Mengirim..." : "Kirim"}
               </button>
-            ))}
+            </form>
+            {info && <p className="text-sm text-rose-300">{info}</p>}
           </div>
-        </div>
-        <div className="md:col-span-2 space-y-2">
-          <p className="text-xs uppercase tracking-[0.4em] text-white/50">Log percakapan</p>
-          <div className="h-80 overflow-y-auto rounded-3xl border border-white/5 bg-white/5 p-4">
-            {chat.length === 0 ? (
-              <p className="text-sm text-white/60">
-                {logsLoading ? "Memuat log percakapan..." : "Pilih profil dulu untuk memulai."}
-              </p>
-            ) : (
-              <div className="flex flex-col gap-4">
-                {chat.map((message, index) => (
-                  <div
-                    key={`${message.role}-${index}`}
-                    className={`max-w-[90%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ${
-                      message.role === "assistant"
-                        ? "self-start bg-white/90 text-purple-900"
-                        : "self-end bg-purple-600/70"
-                    }`}
-                  >
-                    {message.content}
-                  </div>
-                ))}
-                {loading && <p className="text-xs text-white/60">Mirror sedang menulis...</p>}
-                {logsLoading && <p className="text-xs text-white/60">Memperbarui log...</p>}
-              </div>
-            )}
-          </div>
-          <form onSubmit={handleSend} className="flex flex-col gap-3 sm:flex-row">
-            <input
-              className="w-full rounded-full border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/30"
-              placeholder="Tulis pesanmu"
-              value={input}
-              onChange={(event) => setInput(event.target.value)}
-              disabled={!activeProfile}
-            />
-            <button
-              type="submit"
-              disabled={!activeProfile || !input.trim() || loading}
-              className="white-pill rounded-full bg-white px-6 py-3 text-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              {loading ? "Mengirim..." : "Kirim"}
-            </button>
-          </form>
-          {info && <p className="text-sm text-rose-300">{info}</p>}
-        </div>
+        </section>
       </section>
     </main>
   );

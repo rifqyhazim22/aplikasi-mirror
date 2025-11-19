@@ -1,13 +1,15 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
+const resolvedRemoteUrl = process.env.MIRROR_APP_URL ?? "https://aplikasi-mirror.vercel.app";
+
 const config: CapacitorConfig = {
   appId: "id.mirror.app",
   appName: "Mirror",
   webDir: process.env.CAP_WEB_DIR ?? "public",
-  server: process.env.MIRROR_APP_URL
+  server: resolvedRemoteUrl
     ? {
-        url: process.env.MIRROR_APP_URL,
-        cleartext: true,
+        url: resolvedRemoteUrl,
+        cleartext: resolvedRemoteUrl.startsWith("http://"),
       }
     : undefined,
   android: {

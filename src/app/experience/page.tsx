@@ -340,11 +340,9 @@ export default function ExperiencePage() {
         </form>
 
         <aside className="space-y-6">
-          <section className="glass-card space-y-4 p-6">
-            <div className="grid gap-4 lg:grid-cols-2">
-              <CameraLiquidWidget variant="full" />
-              <MiniChat title="Chat kilat" compact />
-            </div>
+          <section className="glass-card space-y-6 p-6">
+            <CameraLiquidWidget variant="full" />
+            <MiniChat title="Chat kilat" />
           </section>
           <div className="glass-card space-y-3 p-6">
             <p className="emoji-heading">Panduan demo</p>

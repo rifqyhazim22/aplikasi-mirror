@@ -237,7 +237,7 @@ export function CameraLiquidWidget({ variant = "full" }: { variant?: WidgetVaria
     setCountdown(3);
   };
 
-  const frameHeight = variant === "full" ? "h-[26rem]" : "h-72";
+  const frameHeight = variant === "full" ? "h-[30rem] lg:h-[32rem]" : "h-72";
   const padding = variant === "full" ? "p-8" : "p-5";
   const statusTone = statusCopy[permission];
 
