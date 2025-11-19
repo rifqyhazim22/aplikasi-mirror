@@ -91,7 +91,7 @@ export function CameraLiquidWidget({
   const [box, setBox] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
   const modelRef = useRef<blazeface.BlazeFaceModel | null>(null);
   const meshDetectorRef = useRef<FaceLandmarksDetection.FaceLandmarksDetector | null>(null);
-  const lastSentRef = useRef<number>(0);
+  const lastUploadRef = useRef<{ timestamp: number; metrics: SensorMetrics } | null>(null);
   const metricsRef = useRef<SensorMetrics>(defaultMetrics);
   const [isCameraOn, setIsCameraOn] = useState(true);
   const [brightnessHistory, setBrightnessHistory] = useState<number[]>([]);
@@ -354,9 +354,9 @@ export function CameraLiquidWidget({
         onVisionSignal(signalPayload);
       }
       broadcastVisionSignal(signalPayload);
-      const now = timestamp;
-      if (now - lastSentRef.current > 10000) {
-        lastSentRef.current = now;
+      const shouldSync = shouldUploadVision(lastUploadRef.current, computedMetrics, timestamp);
+      if (shouldSync) {
+        lastUploadRef.current = { timestamp, metrics: computedMetrics };
         fetch("/api/emotions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -487,6 +487,11 @@ export function CameraLiquidWidget({
                 {mood.label} · {mood.confidence}% yakin
               </span>
             </div>
+            {!profileId && (
+              <div className="pointer-events-none absolute bottom-6 left-1/2 w-[90%] -translate-x-1/2 rounded-2xl bg-black/45 p-3 text-center text-xs text-white">
+                Sambungkan kamera ke profil onboarding supaya chat otomatis menyesuaikan persona.
+              </div>
+            )}
           </>
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-3 px-8 text-center">
@@ -663,6 +668,24 @@ function MetricBar({
 }
 
 type Landmark = FaceLandmarksDetection.Keypoint;
+
+function shouldUploadVision(
+  previous: { timestamp: number; metrics: SensorMetrics } | null,
+  next: SensorMetrics,
+  timestamp: number,
+) {
+  if (!previous) return true;
+  const elapsed = timestamp - previous.timestamp;
+  if (elapsed > 15000) return true;
+  const deltas = [
+    Math.abs(next.valence - previous.metrics.valence),
+    Math.abs(next.energy - previous.metrics.energy),
+    Math.abs(next.tension - previous.metrics.tension),
+    Math.abs(next.focus - previous.metrics.focus),
+  ];
+  const cuesChanged = (next.cues || []).join('|') !== (previous.metrics.cues || []).join('|');
+  return deltas.some((delta) => delta > 0.12) || cuesChanged;
+}
 
 function analyzeLandmarks(points: Landmark[]): SensorMetrics {
   if (!points || points.length < 400) {

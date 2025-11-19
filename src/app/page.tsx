@@ -20,7 +20,7 @@ export default function HomePage() {
   const copy = translations[language] ?? translations.id;
   return (
     <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-10 px-6 py-16 text-white sm:py-24">
-      <section className="grid gap-10 lg:grid-cols-[1.1fr,0.9fr]">
+      <section id="hero" className="grid gap-10 lg:grid-cols-[1.1fr,0.9fr]">
         <header className="space-y-6">
           <p className="emoji-heading">{copy.heroTagline}</p>
           <h1 className="text-4xl font-semibold leading-tight text-white sm:text-6xl">{copy.heroTitle}</h1>
@@ -162,6 +162,12 @@ export default function HomePage() {
           Build Windows dan iOS Simulator kini tersedia via GitHub Releases. Jika butuh IPA signed atau installer offline lain,
           tinggal unggah ke release yang sama dan daftar ini akan otomatis memperbarui link-nya.
         </p>
+        <a
+          href="#hero"
+          className="inline-flex w-full items-center justify-center rounded-full border border-white/20 px-6 py-3 text-center text-sm text-white transition hover:border-white hover:text-white/90"
+        >
+          ⬅︎ Kembali ke awal demo
+        </a>
       </section>
     </main>
   );

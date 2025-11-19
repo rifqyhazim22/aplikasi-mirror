@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { VisionSignal } from "@/types/vision";
-import { subscribeVisionSignal } from "@/lib/vision-channel";
+import { readCachedVisionSignal, subscribeVisionSignal } from "@/lib/vision-channel";
 
 type ProfileOption = {
   id: string;
@@ -37,7 +37,7 @@ export function MiniChat({
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [info, setInfo] = useState<string | null>(null);
-  const [broadcastVision, setBroadcastVision] = useState<VisionSignal | null>(null);
+  const [broadcastVision, setBroadcastVision] = useState<VisionSignal | null>(readCachedVisionSignal);
 
   useEffect(() => {
     const unsubscribe = subscribeVisionSignal((signal) => {

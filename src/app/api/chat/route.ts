@@ -84,7 +84,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Profil tidak ditemukan" }, { status: 404 });
     }
 
-    const [{ data: moodSnapshot }, { data: cameraSnapshot }] = await Promise.all([
+    const [moodResult, cameraResult] = await Promise.all([
       supabase
         .from("mood_entry")
         .select("mood,note,source,created_at")
@@ -92,27 +92,43 @@ export async function POST(request: Request) {
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle(),
-      supabase
-        .from("camera_emotion_log")
-        .select("emotion,confidence,metadata,created_at")
-        .eq("profile_id", payload.profileId)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
+      payload.visionSignal
+        ? Promise.resolve({ data: null, error: null })
+        : supabase
+            .from("camera_emotion_log")
+            .select("emotion,confidence,metadata,created_at")
+            .eq("profile_id", payload.profileId)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle(),
     ]);
 
-    const trimmedHistory = payload.history.slice(-6);
+    if (moodResult.error) {
+      console.error("Mood snapshot error", moodResult.error);
+    }
+    if (cameraResult && (cameraResult as { error?: unknown }).error) {
+      console.error("Camera snapshot error", (cameraResult as { error?: unknown }).error);
+    }
 
-    const normalizedCameraSnapshot: CameraSnapshot | null = cameraSnapshot
+    const trimmedHistory = payload.history.slice(-4);
+    const moodSnapshot = (moodResult.data as MoodSnapshot | null) ?? null;
+    const cameraSource =
+      !payload.visionSignal && cameraResult && 'data' in cameraResult
+        ? ((cameraResult as { data: CameraSnapshot | null }).data ?? null)
+        : null;
+
+    const normalizedCameraSnapshot: CameraSnapshot | null = cameraSource
       ? {
-          ...cameraSnapshot,
-          metadata: (cameraSnapshot.metadata as SensorMetrics | null) ?? null,
+          ...cameraSource,
+          metadata: (cameraSource.metadata as SensorMetrics | null) ?? null,
         }
       : null;
 
+    
+
     const conversation: ChatCompletionMessageParam[] = buildMessages(
       profile,
-      (moodSnapshot as MoodSnapshot | null) ?? null,
+      moodSnapshot,
       normalizedCameraSnapshot,
       trimmedHistory,
       payload.message,
