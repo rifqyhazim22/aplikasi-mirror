@@ -58,7 +58,7 @@ supabase/
 
 ### Downloadable builds
 
-Artefak build di-host pada GitHub Releases [`downloadables-v1`](https://github.com/rifqyhazim22/aplikasi-mirror/releases/tag/downloadables-v1) dan juga ditautkan di landing section **Download builds**. Berkas yang tersedia:
+Artefak build di-host pada GitHub Releases [`downloadables-v2`](https://github.com/rifqyhazim22/aplikasi-mirror/releases/tag/downloadables-v2) dan juga ditautkan di landing section **Download builds**. Berkas yang tersedia:
 
 | Platform | File | Catatan |
 | --- | --- | --- |

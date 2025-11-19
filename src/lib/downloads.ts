@@ -8,7 +8,7 @@ export type DownloadEntry = {
 };
 
 const releaseBase =
-  "https://github.com/rifqyhazim22/aplikasi-mirror/releases/download/downloadables-v1";
+  "https://github.com/rifqyhazim22/aplikasi-mirror/releases/download/downloadables-v2";
 
 export const downloadCatalog: DownloadEntry[] = [
   {
