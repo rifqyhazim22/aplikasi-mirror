@@ -58,7 +58,7 @@ supabase/
 
 ### Downloadable builds
 
-Semua artefak build tersedia langsung di web app (section **Download builds**) dan disimpan di `public/downloads`:
+Artefak build di-host pada GitHub Releases [`downloadables-v1`](https://github.com/rifqyhazim22/aplikasi-mirror/releases/tag/downloadables-v1) dan juga ditautkan di landing section **Download builds**. Berkas yang tersedia:
 
 | Platform | File | Catatan |
 | --- | --- | --- |
@@ -66,6 +66,8 @@ Semua artefak build tersedia langsung di web app (section **Download builds**) d
 | Windows | `Mirror-Windows-Setup.exe` | Installer NSIS, siap jalan di Windows 10/11. |
 | Android | `Mirror-Android-debug.apk` | Debug APK; aktifkan *install from unknown sources*. |
 | iOS Simulator | `Mirror-iOS-simulator.zip` | Ekstrak lalu `xcrun simctl install booted App.app`. Untuk device fisik perlu signing Apple ID. |
+
+> Catatan: Direktori `public/downloads/` sengaja dikosongkan dan gitingnore agar repo serta Vercel deploy tetap ringan. Untuk merilis build baru, jalankan perintah build (APK/DMG/EXE/zip) lalu unggah ke rilis GitHub berikutnya, kemudian perbarui `src/lib/downloads.ts`.
 
 ### Jalur APK / desktop via Capacitor
 

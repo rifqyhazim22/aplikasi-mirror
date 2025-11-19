@@ -28,6 +28,8 @@ ios/App/Pods/
 ios/build/
 electron/node_modules/
 electron/dist/
+public/downloads/
+supabase/.temp/
 
 # misc
 .DS_Store
