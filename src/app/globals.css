@@ -150,6 +150,10 @@ html[data-theme='day'] .white-pill:hover {
   color: rgba(255, 255, 255, 0.6);
 }
 
+html[data-theme='day'] .emoji-heading {
+  color: rgba(19, 4, 41, 0.45);
+}
+
 @keyframes aurora {
   0% {
     background-position: 0% 50%;
@@ -161,6 +165,7 @@ html[data-theme='day'] .white-pill:hover {
     background-position: 0% 50%;
   }
 }
+
 
 
 html[data-theme='day'] .text-white {

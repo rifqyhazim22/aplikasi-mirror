@@ -148,28 +148,36 @@ function OptionCard({
   subtitle,
   active,
   onClick,
+  isDay,
 }: {
   title: string;
   subtitle: string;
   active: boolean;
   onClick: () => void;
+  isDay: boolean;
 }) {
+  const nightClasses = active
+    ? "border-white bg-white/10 text-white shadow-lg"
+    : "border-white/20 text-white/70 hover:border-white/40";
+  const dayClasses = active
+    ? "border-[rgba(19,4,41,0.2)] bg-white text-[var(--mirror-ink)] shadow-lg"
+    : "border-[rgba(19,4,41,0.2)] bg-white/70 text-[var(--mirror-ink)] hover:border-[rgba(19,4,41,0.3)]";
+  const palette = isDay ? dayClasses : nightClasses;
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`w-full rounded-3xl border px-4 py-3 text-left transition ${
-        active ? "border-white bg-white/10 text-white" : "border-white/20 text-white/70 hover:border-white/40"
-      }`}
+      className={`w-full rounded-3xl border px-4 py-3 text-left transition ${palette}`}
     >
-      <p className="text-sm font-semibold text-white">{title}</p>
-      <p className="text-xs text-white/60">{subtitle}</p>
+      <p className={`text-sm font-semibold ${isDay ? "text-[var(--mirror-ink)]" : "text-white"}`}>{title}</p>
+      <p className={`text-xs ${isDay ? "text-[rgba(19,4,41,0.6)]" : "text-white/60"}`}>{subtitle}</p>
     </button>
   );
 }
 
 export default function ExperiencePage() {
-  const { language } = usePreferences();
+  const { language, theme } = usePreferences();
+  const isDay = theme === "day";
   const copy = onboardingCopy[language] ?? onboardingCopy.id;
   const [form, setForm] = useState<ProfileForm>(initialForm);
   const [status, setStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
@@ -344,6 +352,7 @@ export default function ExperiencePage() {
                         subtitle={option.blurb}
                         active={form.focusAreas.includes(option.label)}
                         onClick={() => toggleFocus(option.label)}
+                        isDay={isDay}
                       />
                     ))}
                   </div>
@@ -397,6 +406,7 @@ export default function ExperiencePage() {
                         subtitle={mood.blurb}
                         active={form.moodBaseline === mood.id}
                         onClick={() => updateField("moodBaseline", mood.id)}
+                        isDay={isDay}
                       />
                     ))}
                   </div>
@@ -406,13 +416,14 @@ export default function ExperiencePage() {
                     <p className="text-sm text-white/70">{copy.mbtiLabel}</p>
                     <div className="grid gap-2">
                       {mbtiCatalog.map((item) => (
-                        <OptionCard
-                          key={item.code}
-                          title={`${item.code} • ${item.name}`}
-                          subtitle={item.spark}
-                          active={form.mbtiType === item.code}
-                          onClick={() => updateField("mbtiType", item.code)}
-                        />
+                      <OptionCard
+                        key={item.code}
+                        title={`${item.code} • ${item.name}`}
+                        subtitle={item.spark}
+                        active={form.mbtiType === item.code}
+                        onClick={() => updateField("mbtiType", item.code)}
+                        isDay={isDay}
+                      />
                       ))}
                     </div>
                   </div>
@@ -420,13 +431,14 @@ export default function ExperiencePage() {
                     <p className="text-sm text-white/70">{copy.enneagramLabel}</p>
                     <div className="grid gap-2">
                       {enneagramCatalog.map((item) => (
-                        <OptionCard
-                          key={item.code}
-                          title={`Tipe ${item.code} • ${item.title}`}
-                          subtitle={item.spark}
-                          active={form.enneagramType === item.code}
-                          onClick={() => updateField("enneagramType", item.code)}
-                        />
+                      <OptionCard
+                        key={item.code}
+                        title={`Tipe ${item.code} • ${item.title}`}
+                        subtitle={item.spark}
+                        active={form.enneagramType === item.code}
+                        onClick={() => updateField("enneagramType", item.code)}
+                        isDay={isDay}
+                      />
                       ))}
                     </div>
                   </div>
@@ -441,6 +453,7 @@ export default function ExperiencePage() {
                         subtitle={item.spark}
                         active={form.primaryArchetype === item.id}
                         onClick={() => updateField("primaryArchetype", item.id)}
+                        isDay={isDay}
                       />
                     ))}
                   </div>
