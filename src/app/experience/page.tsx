@@ -4,29 +4,74 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { z } from "zod";
 
-const focusOptions = ["Stress akademik", "Hubungan", "Karier", "Self-growth"] as const;
-const moodBaselineOptions = ["tenang", "bersemangat", "lelah"] as const;
+const focusCatalog = [
+  { id: "stress", label: "Stress akademik", emoji: "📚", blurb: "Deadline, tugas, dan rasa takut gagal." },
+  { id: "relationship", label: "Hubungan & pertemanan", emoji: "💞", blurb: "Ngatur emosi dengan pasangan atau sahabat." },
+  { id: "self-love", label: "Self-love & growth", emoji: "🌱", blurb: "Biar kamu makin cinta diri dan percaya diri." },
+  { id: "career", label: "Karier & masa depan", emoji: "🚀", blurb: "Rencana kerja, magang, sampai passion project." },
+] as const;
+
+const moodCatalog = [
+  { id: "tenang", label: "Tenang stabil", emoji: "🌤️", blurb: "Butuh ruang aman untuk cerita pelan." },
+  { id: "bersemangat", label: "Bersemangat", emoji: "⚡️", blurb: "Suka eksplor ide, perlu grounding lembut." },
+  { id: "lelah", label: "Sering lelah", emoji: "🌧️", blurb: "Energi cepat turun, butuh ritme stabil." },
+] as const;
+
+const mbtiCatalog = [
+  { code: "INFJ", name: "Advocate", spark: "Empatik & penuh makna" },
+  { code: "INFP", name: "Mediator", spark: "Imaginatif & idealis" },
+  { code: "ENFJ", name: "Protagonist", spark: "Leader hangat" },
+  { code: "ENFP", name: "Campaigner", spark: "Optimis & spontan" },
+  { code: "INTJ", name: "Architect", spark: "Visioner & strategis" },
+  { code: "INTP", name: "Logician", spark: "Analitis & curious" },
+  { code: "ENTJ", name: "Commander", spark: "Tegas & terstruktur" },
+  { code: "ENTP", name: "Debater", spark: "Eksplor ide liar" },
+] as const;
+
+const enneagramCatalog = [
+  { code: "1", title: "The Reformer", spark: "Perfeksionis, peduli nilai" },
+  { code: "2", title: "The Helper", spark: "Hangat, suka membantu" },
+  { code: "3", title: "The Achiever", spark: "Ambisius, fokus pencapaian" },
+  { code: "4", title: "The Individualist", spark: "Autentik & emosional" },
+  { code: "5", title: "The Investigator", spark: "Observan & private" },
+  { code: "6", title: "The Loyalist", spark: "Setia, cari rasa aman" },
+  { code: "7", title: "The Enthusiast", spark: "Petualang, fun" },
+  { code: "8", title: "The Challenger", spark: "Protektif, berani bersuara" },
+  { code: "9", title: "The Peacemaker", spark: "Tenang, cari harmoni" },
+] as const;
+
+const archetypeCatalog = [
+  { id: "caregiver", label: "Caregiver", spark: "Peluk paling hangat" },
+  { id: "creator", label: "Creator", spark: "Selalu punya ide baru" },
+  { id: "explorer", label: "Explorer", spark: "Penasaran & suka petualangan" },
+  { id: "hero", label: "Hero", spark: "Tahan banting, siap bantu" },
+  { id: "lover", label: "Lover", spark: "Peka hubungan & rasa nyaman" },
+  { id: "magician", label: "Magician", spark: "Suka transformasi" },
+  { id: "sage", label: "Sage", spark: "Bijak & reflektif" },
+] as const;
+
+const zodiacCatalog = [
+  { id: "aries", label: "Aries ♈︎", start: [3, 21], end: [4, 19] },
+  { id: "taurus", label: "Taurus ♉︎", start: [4, 20], end: [5, 20] },
+  { id: "gemini", label: "Gemini ♊︎", start: [5, 21], end: [6, 20] },
+  { id: "cancer", label: "Cancer ♋︎", start: [6, 21], end: [7, 22] },
+  { id: "leo", label: "Leo ♌︎", start: [7, 23], end: [8, 22] },
+  { id: "virgo", label: "Virgo ♍︎", start: [8, 23], end: [9, 22] },
+  { id: "libra", label: "Libra ♎︎", start: [9, 23], end: [10, 22] },
+  { id: "scorpio", label: "Scorpio ♏︎", start: [10, 23], end: [11, 21] },
+  { id: "sagittarius", label: "Sagittarius ♐︎", start: [11, 22], end: [12, 21] },
+  { id: "capricorn", label: "Capricorn ♑︎", start: [12, 22], end: [1, 19] },
+  { id: "aquarius", label: "Aquarius ♒︎", start: [1, 20], end: [2, 18] },
+  { id: "pisces", label: "Pisces ♓︎", start: [2, 19], end: [3, 20] },
+] as const;
+
 const onboardingSteps = [
-  {
-    id: "persona",
-    title: "Persona Mirror",
-    subtitle: "Nama panggilan + fokus",
-    detail: "Data ringan supaya AI Mirror tahu vibe kamu.",
-  },
-  {
-    id: "traits",
-    title: "Mood baseline",
-    subtitle: "MBTI, Enneagram, archetype",
-    detail: "Menyetel nada Studio & Studio Chat.",
-  },
-  {
-    id: "ritual",
-    title: "Mood ritual",
-    subtitle: "Jurnal singkat",
-    detail: "Langkah terakhir sebelum Lab Kamera.",
-  },
+  { id: "persona", title: "Persona Mirror", subtitle: "Nama panggilan + fokus" },
+  { id: "traits", title: "Mood baseline", subtitle: "MBTI & Enneagram" },
+  { id: "ritual", title: "Mood ritual", subtitle: "Jurnal singkat" },
 ] as const;
 type StepId = (typeof onboardingSteps)[number]["id"];
+
 const flowModules = [
   { title: "Lab Kamera", emoji: "🔮", href: "/camera", blurb: "Tunjukkan CV Mirror & log emosi realtime." },
   { title: "Studio Chat", emoji: "💬", href: "/studio", blurb: "Gunakan persona baru untuk curhat." },
@@ -39,7 +84,7 @@ const profileSchema = z.object({
   focusAreas: z.array(z.string()).min(1),
   consentCamera: z.boolean(),
   consentData: z.boolean(),
-  moodBaseline: z.enum(moodBaselineOptions),
+  moodBaseline: z.enum(["tenang", "bersemangat", "lelah"] as const),
   mbtiType: z.string().min(3).max(4),
   enneagramType: z.string().min(1).max(2),
   primaryArchetype: z.string().min(3),
@@ -72,6 +117,62 @@ const initialForm: ProfileForm = {
   primaryArchetype: "caregiver",
 };
 
+function detectZodiac(date: string) {
+  if (!date) return null;
+  const [, monthStr, dayStr] = date.split("-");
+  const month = Number(monthStr);
+  const day = Number(dayStr);
+  if (!month || !day) return null;
+  for (const sign of zodiacCatalog) {
+    const [startMonth, startDay] = sign.start;
+    const [endMonth, endDay] = sign.end;
+    if (startMonth < endMonth) {
+      if (
+        (month === startMonth && day >= startDay) ||
+        (month === endMonth && day <= endDay) ||
+        (month > startMonth && month < endMonth)
+      ) {
+        return sign;
+      }
+    } else {
+      if (
+        (month === startMonth && day >= startDay) ||
+        (month === endMonth && day <= endDay) ||
+        month > startMonth ||
+        month < endMonth
+      ) {
+        return sign;
+      }
+    }
+  }
+  return null;
+}
+
+function OptionCard({
+  title,
+  subtitle,
+  active,
+  onClick,
+}: {
+  title: string;
+  subtitle: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`w-full rounded-3xl border px-4 py-3 text-left transition ${
+        active ? "border-white bg-white/10 text-white" : "border-white/20 text-white/70 hover:border-white/40"
+      }`}
+    >
+      <p className="text-sm font-semibold text-white">{title}</p>
+      <p className="text-xs text-white/60">{subtitle}</p>
+    </button>
+  );
+}
+
 export default function ExperiencePage() {
   const [form, setForm] = useState<ProfileForm>(initialForm);
   const [status, setStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
@@ -82,6 +183,7 @@ export default function ExperiencePage() {
   const [moodStatus, setMoodStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
   const [moodMessage, setMoodMessage] = useState<string | null>(null);
   const [activeStep, setActiveStep] = useState<StepId>("persona");
+  const [birthDate, setBirthDate] = useState("");
 
   const isComplete = useMemo(
     () => form.nickname.trim().length >= 2 && form.focusAreas.length > 0 && form.consentData === true,
@@ -89,11 +191,12 @@ export default function ExperiencePage() {
   );
   const activeIndex = onboardingSteps.findIndex((step) => step.id === activeStep);
   const goToStep = (id: StepId) => setActiveStep(id);
+  const zodiacInsight = useMemo(() => detectZodiac(birthDate), [birthDate]);
 
-  const toggleFocus = (value: string) => {
+  const toggleFocus = (label: string) => {
     setForm((prev) => {
-      const exists = prev.focusAreas.includes(value);
-      const next = exists ? prev.focusAreas.filter((item) => item !== value) : [...prev.focusAreas, value];
+      const exists = prev.focusAreas.includes(label);
+      const next = exists ? prev.focusAreas.filter((item) => item !== label) : [...prev.focusAreas, label];
       return { ...prev, focusAreas: next.slice(0, 3) };
     });
   };
@@ -133,9 +236,7 @@ export default function ExperiencePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      if (!response.ok) {
-        throw new Error("Mirror lagi kesulitan menyimpan data");
-      }
+      if (!response.ok) throw new Error("Mirror lagi kesulitan menyimpan data");
       setStatus("success");
       setMessage("Profil tersimpan. Siap lanjut ke mood ritual ✨");
       fetchProfiles();
@@ -167,9 +268,7 @@ export default function ExperiencePage() {
           source: "sandbox",
         }),
       });
-      if (!response.ok) {
-        throw new Error("Gagal mencatat mood");
-      }
+      if (!response.ok) throw new Error("Gagal mencatat mood");
       setMoodStatus("success");
       setMoodMessage("Mood entry dicatat. Siap tampilkan di Studio.");
       setMoodForm((prev) => ({ ...prev, mood: "", note: "" }));
@@ -183,14 +282,15 @@ export default function ExperiencePage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-10 px-6 py-16 text-white">
       <header className="space-y-4">
-        <p className="emoji-heading">Ritual Mirror</p>
+        <p className="emoji-heading">Teman dalam genggaman</p>
         <h1 className="text-4xl font-semibold leading-tight sm:text-5xl">
-          Onboarding eksklusif, langsung siap demo di Lab Kamera & Studio 💗🪞
+          Onboarding eksklusif Mirror • siap lanjut ke Lab Kamera & Studio 💗🪞
         </h1>
         <p className="text-lg text-white/80">
-          Semua copy pitch lama sudah diringkas. Halaman ini fokus ke tiga step utama sebelum kamu memamerkan fitur kamera + chat.
+          Bahasa pitch lama kita sederhanakan supaya tetap empatik. Tinggal ikuti tiga langkah ini dan balikin rasa personal Mirror.
         </p>
       </header>
+
       <nav className="glass-card flex flex-col gap-4 p-5 text-sm text-white/70">
         <div className="flex flex-wrap gap-4">
           {onboardingSteps.map((step, index) => {
@@ -217,7 +317,7 @@ export default function ExperiencePage() {
           })}
         </div>
         <p className="text-xs text-white/50">
-          Langkah 1–2 berada di form Supabase, sedangkan langkah 3 adalah mood ritual tambahan. Setelah selesai, buka modul di kanan.
+          Langkah 1–2 berada di form Supabase, sedangkan langkah 3 adalah mood ritual tambahan sebelum masuk Lab Kamera.
         </p>
       </nav>
 
@@ -229,43 +329,30 @@ export default function ExperiencePage() {
                 <div className="space-y-2">
                   <p className="emoji-heading">Langkah 1</p>
                   <h2 className="text-2xl font-semibold text-white">Persona Mirror + fokus 😌</h2>
-                  <p className="text-sm text-white/70">
-                    Satu nickname yang terasa akrab + maksimal 3 fokus agar nada Mirror tetap intimate.
-                  </p>
+                  <p className="text-sm text-white/70">Nickname + pilihan fokus bikin Mirror terasa personal.</p>
                 </div>
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <div className="sm:col-span-2">
-                    <label className="text-sm text-white/70">Nama panggilan</label>
-                    <input
-                      className="mt-2 w-full rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/30"
-                      value={form.nickname}
-                      onChange={(event) => updateField("nickname", event.target.value)}
-                      placeholder="contoh: Nara, Mas Gio, Kak Mira"
-                    />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <p className="text-sm text-white/70">Topik utama</p>
-                    <p className="text-xs text-white/50">Mirror menjaga supaya hanya 3 fokus aktif.</p>
-                    <div className="mt-3 flex flex-wrap gap-3">
-                      {focusOptions.map((option) => {
-                        const active = form.focusAreas.includes(option);
-                        return (
-                          <button
-                            type="button"
-                            key={option}
-                            onClick={() => toggleFocus(option)}
-                            className={`rounded-full px-4 py-2 text-sm transition ${
-                              active
-                                ? "white-pill bg-white text-purple-900 shadow-lg"
-                                : "border border-white/20 text-white/70 hover:border-white/40"
-                            }`}
-                          >
-                            {active ? "💡 " : "☁️ "}
-                            {option}
-                          </button>
-                        );
-                      })}
-                    </div>
+                <div>
+                  <label className="text-sm text-white/70">Nama panggilan</label>
+                  <input
+                    className="mt-2 w-full rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/30"
+                    value={form.nickname}
+                    onChange={(event) => updateField("nickname", event.target.value)}
+                    placeholder="contoh: Nara, Mas Gio, Kak Mira"
+                  />
+                </div>
+                <div>
+                  <p className="text-sm text-white/70">Topik utama yang mau kamu fokuskan</p>
+                  <p className="text-xs text-white/50">Pilih maksimal tiga. Bisa kamu ubah kapan saja.</p>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    {focusCatalog.map((option) => (
+                      <OptionCard
+                        key={option.id}
+                        title={`${option.emoji} ${option.label}`}
+                        subtitle={option.blurb}
+                        active={form.focusAreas.includes(option.label)}
+                        onClick={() => toggleFocus(option.label)}
+                      />
+                    ))}
                   </div>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -275,7 +362,7 @@ export default function ExperiencePage() {
                       checked={form.consentData}
                       onChange={(event) => updateField("consentData", event.target.checked)}
                     />
-                    Saya paham data teks disimpan di Supabase (tanpa paywall).
+                    Aku mengerti kebijakan privasi Mirror.
                   </label>
                   <label className="flex items-center gap-3 rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
                     <input
@@ -283,7 +370,7 @@ export default function ExperiencePage() {
                       checked={form.consentCamera}
                       onChange={(event) => updateField("consentCamera", event.target.checked)}
                     />
-                    Izinkan Mirror memakai kamera depan saat demo.
+                    Izinkan analisis ekspresi (opsional).
                   </label>
                 </div>
                 <div className="flex flex-wrap gap-3">
@@ -295,9 +382,7 @@ export default function ExperiencePage() {
                   >
                     Lanjut ke langkah 2
                   </button>
-                  <p className="text-xs text-white/50">
-                    Checklist ini menggantikan slide onboarding lama—langsung siap dicopy.
-                  </p>
+                  <p className="text-xs text-white/50">Checklist ini menggantikan slide onboarding lama.</p>
                 </div>
               </section>
             )}
@@ -307,50 +392,79 @@ export default function ExperiencePage() {
                 <div className="space-y-2">
                   <p className="emoji-heading">Langkah 2</p>
                   <h2 className="text-2xl font-semibold text-white">Mood baseline + tipe kepribadian ✍️</h2>
-                  <p className="text-sm text-white/70">
-                    Bagian ini menerjemahkan dokumen Mirror Word ke data MBTI, Enneagram, dan archetype untuk menyetel Studio.
-                  </p>
+                  <p className="text-sm text-white/70">Data ini menyetir tone Studio & Insight tanpa kamu harus mengetik banyak.</p>
                 </div>
-                <div className="grid gap-4 sm:grid-cols-3">
-                  <div>
-                    <label className="text-sm text-white/70">Mood baseline</label>
-                    <select
-                      className="mt-2 w-full rounded-3xl border border-white/10 bg-white/5 px-3 py-3 text-white"
-                      value={form.moodBaseline}
-                      onChange={(event) => updateField("moodBaseline", event.target.value as ProfileForm["moodBaseline"])}
-                    >
-                      {moodBaselineOptions.map((option) => (
-                        <option key={option} value={option} className="bg-purple-900 text-white">
-                          {option}
-                        </option>
+                <div>
+                  <p className="text-sm text-white/70">Mood baseline</p>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                    {moodCatalog.map((mood) => (
+                      <OptionCard
+                        key={mood.id}
+                        title={`${mood.emoji} ${mood.label}`}
+                        subtitle={mood.blurb}
+                        active={form.moodBaseline === mood.id}
+                        onClick={() => updateField("moodBaseline", mood.id)}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <p className="text-sm text-white/70">MBTI</p>
+                    <div className="grid gap-2">
+                      {mbtiCatalog.map((item) => (
+                        <OptionCard
+                          key={item.code}
+                          title={`${item.code} • ${item.name}`}
+                          subtitle={item.spark}
+                          active={form.mbtiType === item.code}
+                          onClick={() => updateField("mbtiType", item.code)}
+                        />
                       ))}
-                    </select>
+                    </div>
                   </div>
-                  <div>
-                    <label className="text-sm text-white/70">MBTI</label>
-                    <input
-                      className="mt-2 w-full rounded-3xl border border-white/10 bg-white/5 px-3 py-3 text-center text-white"
-                      value={form.mbtiType}
-                      onChange={(event) => updateField("mbtiType", event.target.value.toUpperCase())}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm text-white/70">Enneagram</label>
-                    <input
-                      className="mt-2 w-full rounded-3xl border border-white/10 bg-white/5 px-3 py-3 text-center text-white"
-                      value={form.enneagramType}
-                      onChange={(event) => updateField("enneagramType", event.target.value)}
-                    />
+                  <div className="space-y-2">
+                    <p className="text-sm text-white/70">Enneagram</p>
+                    <div className="grid gap-2">
+                      {enneagramCatalog.map((item) => (
+                        <OptionCard
+                          key={item.code}
+                          title={`Tipe ${item.code} • ${item.title}`}
+                          subtitle={item.spark}
+                          active={form.enneagramType === item.code}
+                          onClick={() => updateField("enneagramType", item.code)}
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm text-white/70">Archetype utama</label>
+                  <p className="text-sm text-white/70">Archetype Mirror</p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                    {archetypeCatalog.map((item) => (
+                      <OptionCard
+                        key={item.id}
+                        title={item.label}
+                        subtitle={item.spark}
+                        active={form.primaryArchetype === item.id}
+                        onClick={() => updateField("primaryArchetype", item.id)}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm text-white/70">Tanggal lahir (opsional)</p>
                   <input
+                    type="date"
+                    value={birthDate}
+                    onChange={(event) => setBirthDate(event.target.value)}
                     className="mt-2 w-full rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-white"
-                    value={form.primaryArchetype}
-                    onChange={(event) => updateField("primaryArchetype", event.target.value)}
-                    placeholder="contoh: caregiver, hero, explorer"
                   />
+                  {zodiacInsight && (
+                    <p className="mt-2 text-sm text-white/70">
+                      {zodiacInsight.label} — Mirror pakai ini buat ice breaker manis di chat.
+                    </p>
+                  )}
                 </div>
                 <div className="flex flex-wrap gap-3">
                   <button
@@ -368,9 +482,7 @@ export default function ExperiencePage() {
                     {status === "saving" ? "Sedang menyimpan..." : "Simpan profil ke Supabase"}
                   </button>
                 </div>
-                {message && (
-                  <p className={`text-sm ${status === "success" ? "text-emerald-300" : "text-rose-300"}`}>{message}</p>
-                )}
+                {message && <p className={`text-sm ${status === "success" ? "text-emerald-300" : "text-rose-300"}`}>{message}</p>}
               </section>
             )}
           </form>
@@ -381,7 +493,7 @@ export default function ExperiencePage() {
                 <p className="emoji-heading">Langkah 3</p>
                 <h2 className="text-2xl font-semibold text-white">Mood ritual + log demo 🎧</h2>
                 <p className="text-sm text-white/70">
-                  Gunakan jurnal singkat ini sebelum masuk Lab Kamera. Log otomatis tersimpan di tabel mood entry Supabase.
+                  Gunakan jurnal singkat ini sebelum masuk Lab Kamera. Log otomatis tersimpan di Supabase.
                 </p>
               </div>
               <form onSubmit={handleMoodSubmit} className="space-y-4">
@@ -435,8 +547,7 @@ export default function ExperiencePage() {
                 </div>
               </form>
               <p className="text-xs text-white/50">
-                Setelah log tersimpan, buka <Link href="/camera" className="underline">Lab Kamera</Link> atau <Link href="/studio" className="underline">Studio Chat</Link>
-                untuk menunjukkan bagaimana data ini langsung dipakai.
+                Setelah log tersimpan, buka <Link href="/camera" className="underline">Lab Kamera</Link> atau <Link href="/studio" className="underline">Studio</Link> buat nerusin cerita.
               </p>
             </section>
           )}
@@ -466,9 +577,9 @@ export default function ExperiencePage() {
             <p className="emoji-heading">Playbook demo</p>
             <p className="text-lg font-semibold text-white">Narasi Mirror Word versi singkat ✨</p>
             <ul className="space-y-2 text-sm text-white/70">
-              <li>1. “Kita pakai Mirror sebagai teman cermin. Kamera hanya dibaca lokal.”</li>
-              <li>2. “Setelah ritual ini selesai kita loncat ke Lab Kamera lalu Studio Chat.”</li>
-              <li>3. “Semua data tersimpan di Supabase sehingga gampang dibawa ke APK/desktop.”</li>
+              <li>1. “Mirror cuma baca ekspresi lokal—kameramu aman.”</li>
+              <li>2. “Selesai ritual ini kita loncat ke Lab Kamera lalu Studio chat.”</li>
+              <li>3. “Semua data transparan di Supabase, gampang jadi APK.”</li>
             </ul>
           </section>
           <section className="glass-card space-y-3 p-6">

@@ -144,6 +144,17 @@ export default function HomePage() {
       </section>
 
       <section className="glass-card space-y-6 p-8 text-white/80">
+        <div className="rounded-3xl border border-white/10 bg-gradient-to-r from-white/10 to-white/5 p-6 text-white">
+          <span className="text-xs uppercase tracking-[0.4em] text-white/50">Teman dalam genggaman</span>
+          <h2 className="mt-2 text-3xl font-semibold">Mirror siap menemani siang & malam 🌙✨</h2>
+          <p className="mt-2 text-sm text-white/70">
+            Kami lagi menyiapkan night/day mode serta opsi bahasa Inggris & Indonesia supaya pengalaman curhat terasa makin personal.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-3 text-xs text-white/70">
+            <button className="rounded-full border border-white/20 px-4 py-2">Night mode (coming soon)</button>
+            <button className="rounded-full border border-white/20 px-4 py-2">Language toggle ID/EN (coming soon)</button>
+          </div>
+        </div>
         <div className="space-y-2">
           <p className="emoji-heading">Download builds</p>
           <h2 className="text-2xl font-semibold text-white">Unduh Mirror untuk semua device</h2>
