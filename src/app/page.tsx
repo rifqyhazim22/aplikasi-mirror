@@ -186,8 +186,8 @@ export default function HomePage() {
           ))}
         </div>
         <p className="text-xs text-white/50">
-          Build Windows & iOS fisik lagi disiapkan (perlu wine/mono & signing Apple Developer). Begitu siap akan otomatis
-          muncul di daftar ini tanpa perlu mengganti kode karena daftar bersumber dari release GitHub.
+          Build Windows dan iOS Simulator kini tersedia via GitHub Releases. Jika butuh IPA signed atau installer offline lain,
+          tinggal unggah ke release yang sama dan daftar ini akan otomatis memperbarui link-nya.
         </p>
       </section>
     </main>

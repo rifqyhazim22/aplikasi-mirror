@@ -20,11 +20,28 @@ export const downloadCatalog: DownloadEntry[] = [
     status: "ready",
   },
   {
+    platform: "Windows (.exe)",
+    filename: "Mirror-Windows-Setup.exe",
+    href: `${releaseBase}/Mirror-Windows-Setup.exe`,
+    size: "87 MB",
+    notes: "Installer NSIS (bisa pilih folder). Setelah terpasang, Mirror otomatis memuat deploy Vercel, jadi pastikan internet aktif.",
+    status: "ready",
+  },
+  {
     platform: "Android (.apk)",
     filename: "Mirror-Android-debug.apk",
     href: `${releaseBase}/Mirror-Android-debug.apk`,
     size: "3.9 MB",
     notes: "Capacitor Android debug build. Aktifkan instalasi dari sumber tak dikenal, lalu login ke koneksi agar camera widget hidup.",
     status: "beta",
+  },
+  {
+    platform: "iOS Simulator (.zip)",
+    filename: "Mirror-iOS-simulator.zip",
+    href: `${releaseBase}/Mirror-iOS-simulator.zip`,
+    size: "140 MB",
+    notes:
+      "Berisi App.app untuk simulator arm64. Ekstrak lalu jalankan `xcrun simctl install booted App.app`. Untuk perangkat fisik perlu IPA yang ditandatangani Apple ID.",
+    status: "simulator",
   },
 ];
