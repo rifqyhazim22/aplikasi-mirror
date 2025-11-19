@@ -74,13 +74,6 @@ const onboardingSteps = [
 ] as const;
 type StepId = (typeof onboardingSteps)[number]["id"];
 
-const flowModules = [
-  { title: "Lab Kamera", emoji: "🔮", href: "/camera", blurb: "Tunjukkan CV Mirror & log emosi realtime." },
-  { title: "Studio Chat", emoji: "💬", href: "/studio", blurb: "Gunakan persona baru untuk curhat." },
-  { title: "Mood Timeline", emoji: "📊", href: "/stats", blurb: "Validasi Supabase menyimpan data terbuka." },
-  { title: "Insight CBT", emoji: "🧠", href: "/insights", blurb: "Mapping value primer Mirror Word." },
-] as const;
-
 const profileSchema = z.object({
   nickname: z.string().min(2),
   focusAreas: z.array(z.string()).min(1),
@@ -327,12 +320,12 @@ export default function ExperiencePage() {
             {activeStep === "persona" && (
               <section className="glass-card space-y-6 p-6 sm:p-8">
                 <div className="space-y-2">
-                  <p className="emoji-heading">Langkah 1</p>
-                  <h2 className="text-2xl font-semibold text-white">Persona Mirror + fokus 😌</h2>
-                  <p className="text-sm text-white/70">Nickname + pilihan fokus bikin Mirror terasa personal.</p>
+                  <p className="emoji-heading">{language === "en" ? "Step 1" : "Langkah 1"}</p>
+                  <h2 className="text-2xl font-semibold text-white">{copy.personaHeading}</h2>
+                  <p className="text-sm text-white/70">{copy.personaSub}</p>
                 </div>
                 <div>
-                  <label className="text-sm text-white/70">Nama panggilan</label>
+                  <label className="text-sm text-white/70">{language === "en" ? "Nickname" : "Nama panggilan"}</label>
                   <input
                     className="mt-2 w-full rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/30"
                     value={form.nickname}
@@ -341,8 +334,8 @@ export default function ExperiencePage() {
                   />
                 </div>
                 <div>
-                  <p className="text-sm text-white/70">Topik utama yang mau kamu fokuskan</p>
-                  <p className="text-xs text-white/50">Pilih maksimal tiga. Bisa kamu ubah kapan saja.</p>
+                  <p className="text-sm text-white/70">{copy.focusLabel}</p>
+                  <p className="text-xs text-white/50">{copy.focusHint}</p>
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
                     {focusCatalog.map((option) => (
                       <OptionCard
@@ -362,7 +355,7 @@ export default function ExperiencePage() {
                       checked={form.consentData}
                       onChange={(event) => updateField("consentData", event.target.checked)}
                     />
-                    Aku mengerti kebijakan privasi Mirror.
+                    {copy.consentPrivacy}
                   </label>
                   <label className="flex items-center gap-3 rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
                     <input
@@ -370,7 +363,7 @@ export default function ExperiencePage() {
                       checked={form.consentCamera}
                       onChange={(event) => updateField("consentCamera", event.target.checked)}
                     />
-                    Izinkan analisis ekspresi (opsional).
+                    {copy.consentCamera}
                   </label>
                 </div>
                 <div className="flex flex-wrap gap-3">
@@ -380,7 +373,7 @@ export default function ExperiencePage() {
                     disabled={!isComplete}
                     className="white-pill rounded-full bg-white px-6 py-3 text-sm text-purple-900 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    Lanjut ke langkah 2
+                    {copy.nextStep}
                   </button>
                   <p className="text-xs text-white/50">Checklist ini menggantikan slide onboarding lama.</p>
                 </div>
@@ -390,12 +383,12 @@ export default function ExperiencePage() {
             {activeStep === "traits" && (
               <section className="glass-card space-y-6 p-6 sm:p-8">
                 <div className="space-y-2">
-                  <p className="emoji-heading">Langkah 2</p>
-                  <h2 className="text-2xl font-semibold text-white">Mood baseline + tipe kepribadian ✍️</h2>
-                  <p className="text-sm text-white/70">Data ini menyetir tone Studio & Insight tanpa kamu harus mengetik banyak.</p>
+                  <p className="emoji-heading">{language === "en" ? "Step 2" : "Langkah 2"}</p>
+                  <h2 className="text-2xl font-semibold text-white">{copy.traitsHeading}</h2>
+                  <p className="text-sm text-white/70">{copy.traitsSub}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-white/70">Mood baseline</p>
+                  <p className="text-sm text-white/70">{copy.moodLabel}</p>
                   <div className="mt-4 grid gap-3 sm:grid-cols-3">
                     {moodCatalog.map((mood) => (
                       <OptionCard
@@ -410,7 +403,7 @@ export default function ExperiencePage() {
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <p className="text-sm text-white/70">MBTI</p>
+                    <p className="text-sm text-white/70">{copy.mbtiLabel}</p>
                     <div className="grid gap-2">
                       {mbtiCatalog.map((item) => (
                         <OptionCard
@@ -424,7 +417,7 @@ export default function ExperiencePage() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <p className="text-sm text-white/70">Enneagram</p>
+                    <p className="text-sm text-white/70">{copy.enneagramLabel}</p>
                     <div className="grid gap-2">
                       {enneagramCatalog.map((item) => (
                         <OptionCard
@@ -439,7 +432,7 @@ export default function ExperiencePage() {
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm text-white/70">Archetype Mirror</p>
+                  <p className="text-sm text-white/70">{copy.archetypeLabel}</p>
                   <div className="mt-3 grid gap-3 sm:grid-cols-3">
                     {archetypeCatalog.map((item) => (
                       <OptionCard
@@ -453,7 +446,7 @@ export default function ExperiencePage() {
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm text-white/70">Tanggal lahir (opsional)</p>
+                  <p className="text-sm text-white/70">{copy.birthHint}</p>
                   <input
                     type="date"
                     value={birthDate}
@@ -462,7 +455,7 @@ export default function ExperiencePage() {
                   />
                   {zodiacInsight && (
                     <p className="mt-2 text-sm text-white/70">
-                      {zodiacInsight.label} — Mirror pakai ini buat ice breaker manis di chat.
+                      {(copy.birthNote ?? "{sign}").replace("{sign}", zodiacInsight.label)}
                     </p>
                   )}
                 </div>
@@ -472,14 +465,16 @@ export default function ExperiencePage() {
                     onClick={() => goToStep("persona")}
                     className="rounded-full border border-white/30 px-6 py-3 text-sm text-white/70 transition hover:border-white hover:text-white"
                   >
-                    Kembali ke langkah 1
+                    {language === "en" ? "Back to step 1" : "Kembali ke langkah 1"}
                   </button>
                   <button
                     type="submit"
                     disabled={!isComplete || status === "saving"}
                     className="white-pill rounded-full bg-white px-6 py-3 text-sm text-purple-900 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    {status === "saving" ? "Sedang menyimpan..." : "Simpan profil ke Supabase"}
+                    {status === "saving"
+                      ? language === "en" ? "Saving..." : "Sedang menyimpan..."
+                      : language === "en" ? "Save profile to Supabase" : "Simpan profil ke Supabase"}
                   </button>
                 </div>
                 {message && <p className={`text-sm ${status === "success" ? "text-emerald-300" : "text-rose-300"}`}>{message}</p>}
@@ -490,15 +485,13 @@ export default function ExperiencePage() {
           {activeStep === "ritual" && (
             <section className="glass-card space-y-5 p-6 sm:p-8">
               <div className="space-y-2">
-                <p className="emoji-heading">Langkah 3</p>
-                <h2 className="text-2xl font-semibold text-white">Mood ritual + log demo 🎧</h2>
-                <p className="text-sm text-white/70">
-                  Gunakan jurnal singkat ini sebelum masuk Lab Kamera. Log otomatis tersimpan di Supabase.
-                </p>
+                <p className="emoji-heading">{language === "en" ? "Step 3" : "Langkah 3"}</p>
+                <h2 className="text-2xl font-semibold text-white">{copy.ritualHeading}</h2>
+                <p className="text-sm text-white/70">{copy.ritualSub}</p>
               </div>
               <form onSubmit={handleMoodSubmit} className="space-y-4">
                 <div>
-                  <label className="text-sm text-white/70">Gunakan profil</label>
+                  <label className="text-sm text-white/70">{language === "en" ? "Use profile" : "Gunakan profil"}</label>
                   <select
                     className="mt-2 w-full rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-white"
                     value={moodForm.profileId}
@@ -513,7 +506,7 @@ export default function ExperiencePage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm text-white/70">Mood / vibe hari ini</label>
+                  <label className="text-sm text-white/70">{copy.moodField}</label>
                   <input
                     className="mt-2 w-full rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-white"
                     value={moodForm.mood}
@@ -522,7 +515,7 @@ export default function ExperiencePage() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm text-white/70">Catatan (opsional)</label>
+                  <label className="text-sm text-white/70">{copy.noteField}</label>
                   <textarea
                     className="mt-2 w-full rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white"
                     rows={3}
@@ -537,7 +530,9 @@ export default function ExperiencePage() {
                     className="white-pill rounded-full bg-white px-6 py-3 text-sm text-purple-900 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
                     disabled={!moodForm.profileId || moodStatus === "saving"}
                   >
-                    {moodStatus === "saving" ? "Mencatat..." : "Simpan mood ritual"}
+                    {moodStatus === "saving"
+                      ? language === "en" ? "Saving..." : "Mencatat..."
+                      : copy.ritualCta}
                   </button>
                   {moodMessage && (
                     <span className={`text-xs ${moodStatus === "success" ? "text-emerald-300" : "text-rose-300"}`}>
@@ -558,7 +553,7 @@ export default function ExperiencePage() {
             <p className="emoji-heading">Flow eksklusif</p>
             <h2 className="text-xl font-semibold text-white">Setelah onboarding selesai</h2>
             <div className="space-y-3">
-              {flowModules.map((module) => (
+              {copy.flowModules.map((module) => (
                 <Link
                   href={module.href}
                   key={module.href}

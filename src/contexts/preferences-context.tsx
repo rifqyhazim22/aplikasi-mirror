@@ -21,6 +21,21 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<Language>(initial.language);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as Partial<{ theme: Theme; language: Language }>;
+        if (parsed.theme && parsed.theme !== theme) setTheme(parsed.theme);
+        if (parsed.language && parsed.language !== language) setLanguage(parsed.language);
+      }
+    } catch (error) {
+      console.warn("Gagal memuat preferensi", error);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     if (typeof document === "undefined") return;
     document.documentElement.dataset.theme = theme;
   }, [theme]);
@@ -50,12 +65,7 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
 export function usePreferences() {
   const ctx = useContext(PreferencesContext);
   if (!ctx) {
-    return {
-      theme: "night" as Theme,
-      language: "id" as Language,
-      setTheme: () => undefined,
-      setLanguage: () => undefined,
-    };
+    throw new Error("usePreferences harus dipakai di dalam PreferencesProvider");
   }
   return ctx;
 }
