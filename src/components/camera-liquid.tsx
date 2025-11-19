@@ -335,6 +335,9 @@ export function CameraLiquidWidget({
   const frameHeight = variant === "full" ? "h-[30rem] lg:h-[32rem]" : "h-72";
   const padding = variant === "full" ? "p-8" : "p-5";
   const statusTone = statusCopy[permission];
+  const connectionBadge = profileId
+    ? { text: "Profil tersambung", tone: "text-emerald-200" }
+    : { text: "Mode demo (belum pilih profil)", tone: "text-amber-200" };
 
   return (
     <div className={`liquid-card ${padding} space-y-5`}>
@@ -346,7 +349,7 @@ export function CameraLiquidWidget({
           </h3>
           <span className="mirror-pill flex items-center gap-2 px-4 py-1 text-xs text-white/70">
             Realtime CV demo
-            {!profileId && <span className="text-[10px] text-rose-200">tidak terhubung ke profil</span>}
+            <span className={`text-[10px] ${connectionBadge.tone}`}>{connectionBadge.text}</span>
           </span>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -676,11 +679,11 @@ async function loadFaceMeshModule(): Promise<FaceMeshModule | null> {
         return null;
       });
   }
-  const module = await faceMeshModulePromise;
-  if (!module) {
+  const loadedModule = await faceMeshModulePromise;
+  if (!loadedModule) {
     faceMeshModulePromise = null;
   }
-  return module;
+  return loadedModule;
 }
 
 function loadScript(src: string): Promise<void> {

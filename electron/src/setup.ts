@@ -11,6 +11,7 @@ import electronIsDev from 'electron-is-dev';
 import electronServe from 'electron-serve';
 import windowStateKeeper from 'electron-window-state';
 import { join } from 'path';
+import { URL } from 'node:url';
 
 // Define components for a watcher to detect when the webapp is changed so we can reload in Dev mode.
 const reloadWatcher = {
@@ -56,7 +57,7 @@ export class ElectronCapacitorApp {
     { role: 'viewMenu' },
   ];
   private mainWindowState;
-  private loadWebApp;
+  private loadLocalWebApp;
   private customScheme: string;
 
   constructor(
@@ -77,7 +78,7 @@ export class ElectronCapacitorApp {
     }
 
     // Setup our web app loader, this lets us load apps like react, vue, and angular without changing their build chains.
-    this.loadWebApp = electronServe({
+    this.loadLocalWebApp = electronServe({
       directory: join(app.getAppPath(), 'app'),
       scheme: this.customScheme,
     });
@@ -85,7 +86,12 @@ export class ElectronCapacitorApp {
 
   // Helper function to load in the app.
   private async loadMainWindow(thisRef: any) {
-    await thisRef.loadWebApp(thisRef.MainWindow);
+    const remoteUrl = thisRef.getRemoteUrl();
+    if (remoteUrl) {
+      await thisRef.MainWindow.loadURL(remoteUrl);
+      return;
+    }
+    await thisRef.loadLocalWebApp(thisRef.MainWindow);
   }
 
   // Expose the mainWindow ref for use outside of the class.
@@ -95,6 +101,10 @@ export class ElectronCapacitorApp {
 
   getCustomURLScheme(): string {
     return this.customScheme;
+  }
+
+  getRemoteUrl(): string | null {
+    return process.env.MIRROR_APP_URL ?? this.CapacitorFileConfig.server?.url ?? null;
   }
 
   async init(): Promise<void> {
@@ -217,16 +227,39 @@ export class ElectronCapacitorApp {
 }
 
 // Set a CSP up for our application based on the custom scheme
-export function setupContentSecurityPolicy(customScheme: string): void {
+export function setupContentSecurityPolicy(customScheme: string, remoteUrl?: string): void {
+  const remoteOrigin = (() => {
+    if (!remoteUrl) return null;
+    try {
+      return new URL(remoteUrl).origin;
+    } catch {
+      return null;
+    }
+  })();
+
+  const allowedSources = [
+    `${customScheme}://*`,
+    remoteOrigin,
+    'https://*.vercel.app',
+    'https://*.supabase.co',
+    'https://*.supabase.in',
+    'https://cdn.jsdelivr.net',
+    'https://fonts.googleapis.com',
+    'https://fonts.gstatic.com',
+    'https://api.openai.com',
+    'blob:',
+    'data:',
+  ].filter(Boolean) as string[];
+
+  const basePolicy = `${allowedSources.join(' ')} 'unsafe-inline'${
+    electronIsDev ? " 'unsafe-eval' devtools://*" : " 'unsafe-eval'"
+  }`;
+
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
     callback({
       responseHeaders: {
         ...details.responseHeaders,
-        'Content-Security-Policy': [
-          electronIsDev
-            ? `default-src ${customScheme}://* 'unsafe-inline' devtools://* 'unsafe-eval' data:`
-            : `default-src ${customScheme}://* 'unsafe-inline' data:`,
-        ],
+        'Content-Security-Policy': [`default-src ${basePolicy}`],
       },
     });
   });
