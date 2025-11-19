@@ -3,10 +3,20 @@ import { z } from "zod";
 import { getSupabaseClient } from "@/lib/supabase";
 import type { Database } from "@/lib/database.types";
 
+const metricsSchema = z.object({
+  valence: z.number().min(-1).max(1),
+  energy: z.number().min(0).max(1),
+  tension: z.number().min(0).max(1),
+  focus: z.number().min(0).max(1),
+  tilt: z.number().min(-45).max(45).optional(),
+  cues: z.array(z.string()).optional(),
+});
+
 const emotionSchema = z.object({
   emotion: z.string().min(3).max(20),
   confidence: z.number().min(0).max(100).optional(),
   profileId: z.string().uuid().optional(),
+  metrics: metricsSchema.optional(),
 });
 
 const querySchema = z.object({
@@ -24,6 +34,16 @@ export async function POST(request: Request) {
       emotion: payload.emotion,
       confidence: payload.confidence ?? null,
       profile_id: payload.profileId ?? null,
+      metadata: payload.metrics
+        ? {
+            valence: payload.metrics.valence,
+            energy: payload.metrics.energy,
+            tension: payload.metrics.tension,
+            focus: payload.metrics.focus,
+            tilt: payload.metrics.tilt ?? null,
+            cues: payload.metrics.cues ?? [],
+          }
+        : null,
     };
     const { error } = await supabase.from("camera_emotion_log").insert([insertPayload]);
     if (error) {
@@ -47,7 +67,7 @@ export async function GET(request: Request) {
   const supabase = getSupabaseClient();
   let query = supabase
     .from("camera_emotion_log")
-    .select("id,emotion,confidence,created_at,profile_id")
+    .select("id,emotion,confidence,created_at,profile_id,metadata")
     .order("created_at", { ascending: false })
     .limit(limit);
 

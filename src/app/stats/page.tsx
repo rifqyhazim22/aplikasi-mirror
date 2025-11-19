@@ -8,6 +8,14 @@ type CameraLog = {
   confidence: number | null;
   created_at: string;
   profile_id: string | null;
+  metadata?: {
+    valence?: number | null;
+    energy?: number | null;
+    focus?: number | null;
+    tension?: number | null;
+    tilt?: number | null;
+    cues?: string[] | null;
+  } | null;
 };
 
 type MoodSummary = {
@@ -25,6 +33,16 @@ const moodEmoji = (text: string) => {
   if (normalized.includes("marah")) return "😡";
   return "🪞";
 };
+
+const valenceLabel = (value: number | null | undefined) => {
+  if (value === null || value === undefined) return "netral";
+  if (value > 0.25) return "positif";
+  if (value < -0.25) return "sedih";
+  return "netral";
+};
+
+const percentLabel = (value: number | null | undefined) =>
+  `${Math.round(Math.min(Math.max(value ?? 0, 0), 1) * 100)}%`;
 
 export default function StatsPage() {
   const [summary, setSummary] = useState<MoodSummary[]>([]);
@@ -201,6 +219,24 @@ export default function StatsPage() {
                     </div>
                     <p className="mt-1 text-right text-xs text-white/50">
                       Confidence {log.confidence ?? 0}%
+                    </p>
+                    {log.metadata && (
+                      <div className="mt-2 space-y-1 text-[11px] text-white/60">
+                        <p>
+                          Valence {valenceLabel(log.metadata.valence)} • Energi{" "}
+                          {percentLabel(log.metadata.energy)}
+                        </p>
+                        <p>
+                          Fokus {percentLabel(log.metadata.focus)} • Tensi{" "}
+                          {percentLabel(log.metadata.tension)}
+                        </p>
+                        {log.metadata.cues && log.metadata.cues.length > 0 && (
+                          <p>Cues: {log.metadata.cues.slice(0, 2).join(", ")}</p>
+                        )}
+                      </div>
+                    )}
+                    <p className="mt-1 text-[11px] text-white/50">
+                      Profil: {log.profile_id ? log.profile_id.slice(0, 8) : "tidak terhubung"}
                     </p>
                   </li>
                 ))}

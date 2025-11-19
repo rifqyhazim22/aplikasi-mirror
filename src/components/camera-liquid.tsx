@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as tf from "@tensorflow/tfjs";
 import * as blazeface from "@tensorflow-models/blazeface";
+import type * as FaceLandmarksDetection from "@tensorflow-models/face-landmarks-detection";
 import { mapAverageToEmotion } from "@/lib/emotion";
 
 type MoodInfo = {
@@ -55,6 +56,26 @@ const defaultMood: MoodInfo = {
 
 type WidgetVariant = "full" | "compact";
 
+type SensorMetrics = {
+  valence: number;
+  energy: number;
+  tension: number;
+  focus: number;
+  tilt: number | null;
+  cues: string[];
+};
+
+const defaultMetrics: SensorMetrics = {
+  valence: 0,
+  energy: 0.5,
+  tension: 0.3,
+  focus: 0.5,
+  tilt: null,
+  cues: [],
+};
+
+type FaceMeshModule = typeof import("@tensorflow-models/face-landmarks-detection");
+
 export function CameraLiquidWidget({
   variant = "full",
   profileId = null,
@@ -69,11 +90,21 @@ export function CameraLiquidWidget({
   const [mood, setMood] = useState<MoodInfo>(defaultMood);
   const [box, setBox] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
   const modelRef = useRef<blazeface.BlazeFaceModel | null>(null);
+  const meshDetectorRef = useRef<FaceLandmarksDetection.FaceLandmarksDetector | null>(null);
   const lastSentRef = useRef<number>(0);
+  const metricsRef = useRef<SensorMetrics>(defaultMetrics);
   const [isCameraOn, setIsCameraOn] = useState(true);
   const [brightnessHistory, setBrightnessHistory] = useState<number[]>([]);
+  const brightnessRef = useRef<number[]>([]);
   const [lastCapture, setLastCapture] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [sensorMetrics, setSensorMetrics] = useState<SensorMetrics>(defaultMetrics);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      (window as typeof window & { tf?: typeof tf }).tf = tf;
+    }
+  }, []);
 
   const stopStream = () => {
     if (streamRef.current) {
@@ -113,6 +144,49 @@ export function CameraLiquidWidget({
       stopStream();
     };
   }, [isCameraOn]);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!isCameraOn) {
+      meshDetectorRef.current?.dispose?.();
+      meshDetectorRef.current = null;
+      return;
+    }
+    const loadDetector = async () => {
+      try {
+        const faceModule = await loadFaceMeshModule();
+        if (!faceModule) {
+          return;
+        }
+        const detector = await faceModule.createDetector(faceModule.SupportedModels.MediaPipeFaceMesh, {
+          runtime: "mediapipe",
+          solutionPath: `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh`,
+          refineLandmarks: true,
+        });
+        if (!cancelled) {
+          meshDetectorRef.current = detector;
+        } else {
+          detector.dispose();
+        }
+      } catch (error) {
+        console.error("Gagal memuat face mesh detector", error);
+      }
+    };
+    loadDetector();
+    return () => {
+      cancelled = true;
+      meshDetectorRef.current?.dispose?.();
+      meshDetectorRef.current = null;
+    };
+  }, [isCameraOn]);
+
+  useEffect(() => {
+    metricsRef.current = sensorMetrics;
+  }, [sensorMetrics]);
+
+  useEffect(() => {
+    brightnessRef.current = brightnessHistory;
+  }, [brightnessHistory]);
 
   useEffect(() => {
     if (permission !== "granted") return;
@@ -164,13 +238,7 @@ export function CameraLiquidWidget({
       } else {
         imageData = ctx.getImageData(0, 0, width, height);
       }
-      const data = imageData.data;
-      let total = 0;
-      const step = 4 * 8;
-      for (let i = 0; i < data.length; i += step) {
-        total += (data[i] + data[i + 1] + data[i + 2]) / 3;
-      }
-      const avg = total / (data.length / step);
+      const avg = averageBrightness(imageData.data);
       const emotion = mapAverageToEmotion(avg);
       const copy = emotionCopy[emotion.value];
       setMood({
@@ -179,7 +247,26 @@ export function CameraLiquidWidget({
         description: copy.text,
         confidence: Math.round(emotion.confidence * 100),
       });
-      setBrightnessHistory((prev) => [...prev.slice(-19), Math.round(avg)]);
+      const nextHistory = [...brightnessRef.current.slice(-19), Math.round(avg)];
+      brightnessRef.current = nextHistory;
+      setBrightnessHistory(nextHistory);
+      const boxForMetric = faceBox
+        ? { w: faceBox.x2 - faceBox.x1, h: faceBox.y2 - faceBox.y1 }
+        : null;
+      let computedMetrics = deriveMetrics(avg, nextHistory, boxForMetric, video);
+      const meshDetector = meshDetectorRef.current;
+      if (meshDetector) {
+        try {
+          const faces = await meshDetector.estimateFaces(video, { flipHorizontal: true });
+          if (faces.length > 0 && faces[0].keypoints) {
+            computedMetrics = analyzeLandmarks(faces[0].keypoints as Landmark[]);
+          }
+        } catch (error) {
+          console.warn("Gagal menganalisis landmark wajah", error);
+        }
+      }
+      metricsRef.current = computedMetrics;
+      setSensorMetrics(computedMetrics);
       const now = Date.now();
       if (now - lastSentRef.current > 10000) {
         lastSentRef.current = now;
@@ -190,6 +277,7 @@ export function CameraLiquidWidget({
             emotion: emotion.value,
             confidence: Math.round(emotion.confidence * 100),
             profileId: profileId ?? undefined,
+            metrics: metricsRef.current,
           }),
         }).catch((err) => console.error("emotion log", err));
       }
@@ -392,7 +480,230 @@ export function CameraLiquidWidget({
           </p>
         </div>
       </div>
+      <section className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <p className="text-xs uppercase tracking-[0.35em] text-white/50">Valence & energy</p>
+          <div className="mt-3 space-y-3">
+            <MetricBar
+              label="Valence"
+              value={(sensorMetrics.valence + 1) / 2}
+              description={
+                sensorMetrics.valence > 0.2
+                  ? "Nada optimis"
+                  : sensorMetrics.valence < -0.2
+                    ? "Nada mellow"
+                    : "Netral"
+              }
+            />
+            <MetricBar
+              label="Energy"
+              value={sensorMetrics.energy}
+              description={sensorMetrics.energy > 0.6 ? "Semangat tinggi" : "Energi cenderung lembut"}
+            />
+          </div>
+        </div>
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <p className="text-xs uppercase tracking-[0.35em] text-white/50">Focus & tension</p>
+          <div className="mt-3 space-y-3">
+            <MetricBar
+              label="Focus"
+              value={sensorMetrics.focus}
+              description={sensorMetrics.focus > 0.5 ? "Mata terbuka lebar" : "Kelopak mata berat"}
+            />
+            <MetricBar
+              label="Tension"
+              value={sensorMetrics.tension}
+              description={sensorMetrics.tension > 0.6 ? "Alis menegang" : "Rahang cukup rileks"}
+            />
+            <p className="text-xs text-white/60">
+              Tilt kepala: {sensorMetrics.tilt ? `${sensorMetrics.tilt.toFixed(1)}°` : "stabil"}
+            </p>
+            {sensorMetrics.cues.length > 0 ? (
+              <ul className="list-disc pl-4 text-xs text-white/70">
+                {sensorMetrics.cues.map((cue) => (
+                  <li key={cue}>{cue}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-xs text-white/60">Belum ada cues khusus dari kamera.</p>
+            )}
+          </div>
+        </div>
+      </section>
       <canvas ref={canvasRef} className="hidden" />
     </div>
   );
+}
+
+function MetricBar({
+  label,
+  value,
+  description,
+}: {
+  label: string;
+  value: number;
+  description: string;
+}) {
+  const clamped = Math.min(Math.max(value, 0), 1);
+  return (
+    <div>
+      <div className="flex items-center justify-between text-xs text-white/70">
+        <span>{label}</span>
+        <span>{Math.round(clamped * 100)}%</span>
+      </div>
+      <div className="mt-1 h-2 w-full rounded-full bg-white/10">
+        <span
+          className="block h-full rounded-full bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400"
+          style={{ width: `${clamped * 100}%` }}
+        />
+      </div>
+      <p className="text-[11px] text-white/60">{description}</p>
+    </div>
+  );
+}
+
+type Landmark = FaceLandmarksDetection.Keypoint;
+
+function analyzeLandmarks(points: Landmark[]): SensorMetrics {
+  if (!points || points.length < 400) {
+    return { ...defaultMetrics };
+  }
+  const dist = (a: Landmark, b: Landmark) =>
+    Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2 + ((a.z ?? 0) - (b.z ?? 0)) ** 2);
+  const clamp = (val: number, min: number, max: number) => Math.min(Math.max(val, min), max);
+
+  const mouthWidth = dist(points[61], points[291]);
+  const mouthHeight = dist(points[13], points[14]);
+  const smileRaw = mouthWidth / (mouthHeight || 0.001);
+  const smileScore = clamp((smileRaw - 1.6) / 1.2, 0, 1);
+
+  const leftBrowGap = dist(points[70], points[159]);
+  const rightBrowGap = dist(points[300], points[386]);
+  const browGap = (leftBrowGap + rightBrowGap) / 2;
+  const tension = clamp(1 - (browGap - 0.01) * 180, 0, 1);
+
+  const leftEyeOpen = dist(points[159], points[145]);
+  const rightEyeOpen = dist(points[386], points[374]);
+  const eyeOpenness = (leftEyeOpen + rightEyeOpen) / 2;
+  const focus = clamp((eyeOpenness - 0.008) * 140, 0, 1);
+
+  const valence = clamp(smileScore * 1.2 - tension * 0.4, -1, 1);
+  const energy = clamp(focus * 0.4 + smileScore * 0.6, 0, 1);
+
+  const leftEye = points[33];
+  const rightEye = points[263];
+  const tilt =
+    (Math.atan2(leftEye.y - rightEye.y, leftEye.x - rightEye.x) * 180) / Math.PI || null;
+
+  const cues: string[] = [];
+  if (smileScore > 0.55) cues.push("Senyum hangat terdeteksi.");
+  if (tension > 0.65) cues.push("Alis menegang, bantu relaksasi.");
+  if (focus < 0.3) cues.push("Kelopak mata berat, tawarkan jeda.");
+  if (tilt && Math.abs(tilt) > 8) cues.push("Kepala miring, ajak stabilisasi postur.");
+
+  return {
+    valence: Number(valence.toFixed(2)),
+    energy: Number(energy.toFixed(2)),
+    tension: Number(tension.toFixed(2)),
+    focus: Number(focus.toFixed(2)),
+    tilt: tilt ? Number(tilt.toFixed(1)) : null,
+    cues,
+  };
+}
+function averageBrightness(data: Uint8ClampedArray) {
+  let total = 0;
+  const step = 4 * 8;
+  for (let i = 0; i < data.length; i += step) {
+    total += (data[i] + data[i + 1] + data[i + 2]) / 3;
+  }
+  return total / (data.length / step);
+}
+
+function deriveMetrics(
+  brightness: number,
+  history: number[],
+  box: { w: number; h: number } | null,
+  video: HTMLVideoElement | null,
+): SensorMetrics {
+  const clamp = (val: number, min: number, max: number) => Math.min(Math.max(val, min), max);
+  const normalized = clamp(brightness / 255, 0, 1);
+  const previous = history.length > 0 ? (history.at(-1) ?? brightness) / 255 : normalized;
+  const delta = Math.abs(normalized - previous);
+  const area =
+    box && video
+      ? clamp((box.w * box.h) / ((video.videoWidth || 1) * (video.videoHeight || 1)), 0, 1)
+      : 0;
+  const valence = clamp(normalized * 2 - 1, -1, 1);
+  const energy = clamp(delta * 8 + area * 0.4, 0, 1);
+  const focus = clamp(area * 1.5 + (1 - delta) * 0.2, 0, 1);
+  const tension = clamp(1 - focus * 0.7 - (normalized - 0.35), 0, 1);
+  const cues: string[] = [];
+  if (valence > 0.3) cues.push("Senyum hangat terdeteksi.");
+  if (valence < -0.3) cues.push("Nada mellow / butuh validasi tenang.");
+  if (tension > 0.6) cues.push("Rahang terlihat kaku, ajak relaksasi.");
+  if (energy > 0.65) cues.push("Energi tinggi, tawarkan grounding.");
+  if (delta < 0.04 && focus < 0.35) cues.push("Kelopak mata berat, tawarkan jeda.");
+  return {
+    valence: Number(valence.toFixed(2)),
+    energy: Number(energy.toFixed(2)),
+    tension: Number(tension.toFixed(2)),
+    focus: Number(focus.toFixed(2)),
+    tilt: null,
+    cues,
+  };
+}
+
+declare global {
+  interface Window {
+    faceLandmarksDetection?: FaceMeshModule;
+  }
+}
+
+let faceMeshModulePromise: Promise<FaceMeshModule | null> | null = null;
+
+async function loadFaceMeshModule(): Promise<FaceMeshModule | null> {
+  if (typeof window === "undefined") return null;
+  if (window.faceLandmarksDetection) {
+    return window.faceLandmarksDetection as FaceMeshModule;
+  }
+  if (!faceMeshModulePromise) {
+    faceMeshModulePromise = loadScript(
+      "https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection@1.0.6/dist/face-landmarks-detection.min.js",
+    )
+      .then(() => window.faceLandmarksDetection ?? null)
+      .catch((error) => {
+        console.error("Gagal memuat modul face-landmarks-detection", error);
+        return null;
+      });
+  }
+  const module = await faceMeshModulePromise;
+  if (!module) {
+    faceMeshModulePromise = null;
+  }
+  return module;
+}
+
+function loadScript(src: string): Promise<void> {
+  if (typeof document === "undefined") return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector<HTMLScriptElement>(`script[src="${src}"]`);
+    if (existing) {
+      if (existing.dataset.loaded === "true") {
+        resolve();
+        return;
+      }
+      existing.addEventListener("load", () => resolve(), { once: true });
+      existing.addEventListener("error", (event) => reject(event), { once: true });
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = src;
+    script.async = true;
+    script.onload = () => {
+      script.dataset.loaded = "true";
+      resolve();
+    };
+    script.onerror = (event) => reject(event);
+    document.body.appendChild(script);
+  });
 }

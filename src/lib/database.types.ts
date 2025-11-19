@@ -124,6 +124,7 @@ export type Database = {
           profile_id: string | null;
           emotion: string;
           confidence: number | null;
+          metadata: Json | null;
           created_at: string;
         };
         Insert: {
@@ -131,6 +132,7 @@ export type Database = {
           profile_id?: string | null;
           emotion: string;
           confidence?: number | null;
+          metadata?: Json | null;
           created_at?: string;
         };
         Update: {
@@ -138,6 +140,7 @@ export type Database = {
           profile_id?: string | null;
           emotion?: string;
           confidence?: number | null;
+          metadata?: Json | null;
           created_at?: string;
         };
         Relationships: [

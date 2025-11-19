@@ -49,6 +49,7 @@ create table if not exists public.camera_emotion_log (
   profile_id uuid references public.profile(id) on delete set null,
   emotion text not null,
   confidence numeric default 0,
+  metadata jsonb,
   created_at timestamptz default now()
 );
 
@@ -57,6 +58,8 @@ alter table if exists public.profile
 
 alter table if exists public.camera_emotion_log
   add column if not exists profile_id uuid references public.profile(id) on delete set null;
+alter table if exists public.camera_emotion_log
+  add column if not exists metadata jsonb;
 
 alter table public.profile enable row level security;
 alter table public.mood_entry enable row level security;
