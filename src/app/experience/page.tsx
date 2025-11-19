@@ -3,6 +3,8 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { z } from "zod";
+import { usePreferences } from "@/contexts/preferences-context";
+import { onboardingCopy } from "@/lib/onboarding-i18n";
 
 const focusCatalog = [
   { id: "stress", label: "Stress akademik", emoji: "📚", blurb: "Deadline, tugas, dan rasa takut gagal." },
@@ -174,6 +176,8 @@ function OptionCard({
 }
 
 export default function ExperiencePage() {
+  const { language } = usePreferences();
+  const copy = onboardingCopy[language] ?? onboardingCopy.id;
   const [form, setForm] = useState<ProfileForm>(initialForm);
   const [status, setStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
@@ -283,12 +287,8 @@ export default function ExperiencePage() {
     <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-10 px-6 py-16 text-white">
       <header className="space-y-4">
         <p className="emoji-heading">Teman dalam genggaman</p>
-        <h1 className="text-4xl font-semibold leading-tight sm:text-5xl">
-          Onboarding eksklusif Mirror • siap lanjut ke Lab Kamera & Studio 💗🪞
-        </h1>
-        <p className="text-lg text-white/80">
-          Bahasa pitch lama kita sederhanakan supaya tetap empatik. Tinggal ikuti tiga langkah ini dan balikin rasa personal Mirror.
-        </p>
+        <h1 className="text-4xl font-semibold leading-tight sm:text-5xl">{copy.heroTitle}</h1>
+        <p className="text-lg text-white/80">{copy.heroDescription}</p>
       </header>
 
       <nav className="glass-card flex flex-col gap-4 p-5 text-sm text-white/70">
