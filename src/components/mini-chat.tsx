@@ -14,6 +14,41 @@ type ChatMessage = {
   content: string;
 };
 
+type MiniChatCopy = {
+  description: string;
+  visionSynced: string;
+  visionHint: string;
+  selectPlaceholder: string;
+  fetchProfilesError: string;
+  emptyNoProfile: string;
+  emptyChat: string;
+  inputPlaceholderNoProfile: string;
+  inputPlaceholder: string;
+  sendLabel: string;
+  sendingLabel: string;
+  noResponse: string;
+  logsLoading: string;
+  selectProfilePrompt: string;
+};
+
+const defaultCopy: MiniChatCopy = {
+  description:
+    "Pilih profil dari ritual onboarding lalu kirim pesan cepat untuk menunjukkan respon Mirror.",
+  visionSynced: "CV sinkron ⚡ {emotion} ({confidence}%)",
+  visionHint: "Aktifkan kamera di lab supaya chat punya konteks ekspresi real-time.",
+  selectPlaceholder: "Pilih profil",
+  fetchProfilesError: "Mirror belum menemukan profil. Simpan ritual dulu.",
+  emptyNoProfile: "Belum ada profil tersimpan.",
+  emptyChat: "Belum ada chat. Tulis pesan di bawah untuk mulai.",
+  inputPlaceholderNoProfile: "Simpan ritual dulu...",
+  inputPlaceholder: "Ketik pesan ke Mirror di sini...",
+  sendLabel: "Kirim ke Mirror",
+  sendingLabel: "Mirror menulis...",
+  noResponse: "Mirror belum merespons. Coba beberapa detik lagi.",
+  logsLoading: "Memuat log percakapan...",
+  selectProfilePrompt: "Pilih profil dulu untuk memulai.",
+};
+
 type MiniChatProps = {
   title?: string;
   compact?: boolean;
@@ -21,6 +56,7 @@ type MiniChatProps = {
   selectedProfileId?: string;
   onSelectProfile?: (id: string) => void;
   visionSignal?: VisionSignal | null;
+  copy?: Partial<MiniChatCopy>;
 };
 
 export function MiniChat({
@@ -30,7 +66,9 @@ export function MiniChat({
   selectedProfileId: controlledSelectedProfileId,
   onSelectProfile,
   visionSignal,
+  copy: copyOverride,
 }: MiniChatProps) {
+  const copy = { ...defaultCopy, ...(copyOverride ?? {}) };
   const [profiles, setProfiles] = useState<ProfileOption[]>(controlledProfiles ?? []);
   const [selectedProfileId, setSelectedProfileId] = useState(controlledSelectedProfileId ?? "");
   const [logs, setLogs] = useState<ChatMessage[]>([]);
@@ -45,6 +83,11 @@ export function MiniChat({
     });
     return () => unsubscribe();
   }, []);
+
+  const formatVisionSynced = (emotion: string, confidence?: number | null) =>
+    copy.visionSynced
+      .replace("{emotion}", emotion)
+      .replace("{confidence}", String(confidence ?? 0));
 
   const freshVision = useMemo(() => {
     const source = visionSignal ?? broadcastVision;
@@ -83,11 +126,11 @@ export function MiniChat({
         });
       } catch (error) {
         console.error(error);
-        setInfo("Mirror belum menemukan profil. Simpan ritual dulu.");
+        setInfo(copy.fetchProfilesError);
       }
     };
     loadProfiles();
-  }, [controlledProfiles, onSelectProfile]);
+  }, [controlledProfiles, onSelectProfile, copy.fetchProfilesError]);
 
   useEffect(() => {
     if (controlledSelectedProfileId) {
@@ -132,7 +175,7 @@ export function MiniChat({
       setLogs((prev) => [...prev, { role: "assistant", content: payload.reply }]);
     } catch (error) {
       console.error(error);
-      setInfo("Mirror belum merespons. Coba beberapa detik lagi.");
+      setInfo(copy.noResponse);
     } finally {
       setLoading(false);
     }
@@ -143,17 +186,11 @@ export function MiniChat({
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-1">
           <p className="text-xs uppercase tracking-[0.35em] text-white/50">{title}</p>
-          <p className="text-sm text-white/70">
-            Pilih profil dari ritual onboarding lalu kirim pesan cepat untuk menunjukkan respon Mirror.
-          </p>
+          <p className="text-sm text-white/70">{copy.description}</p>
           {freshVision ? (
-            <p className="text-xs text-emerald-200">
-              CV sinkron ⚡ {freshVision.emotion} ({freshVision.confidence}%)
-            </p>
+            <p className="text-xs text-emerald-200">{formatVisionSynced(freshVision.emotion, freshVision.confidence)}</p>
           ) : (
-            <p className="text-xs text-white/40">
-              Aktifkan kamera di lab supaya chat punya konteks ekspresi real-time.
-            </p>
+            <p className="text-xs text-white/40">{copy.visionHint}</p>
           )}
         </div>
         <select
@@ -168,7 +205,7 @@ export function MiniChat({
           }}
           disabled={resolvedProfiles.length === 0}
         >
-          <option value="">Pilih profil</option>
+          <option value="">{copy.selectPlaceholder}</option>
           {resolvedProfiles.map((profile) => (
             <option key={profile.id} value={profile.id} className="bg-purple-900 text-white">
               {profile.nickname}
@@ -179,8 +216,8 @@ export function MiniChat({
           {logs.length === 0 ? (
             <p className="text-sm text-white/60">
               {resolvedProfiles.length === 0
-                ? "Belum ada profil tersimpan."
-                : "Belum ada chat. Tulis pesan di bawah untuk mulai."}
+                ? copy.emptyNoProfile
+                : copy.emptyChat}
             </p>
           ) : (
             logs.map((chat, idx) => (
@@ -199,7 +236,7 @@ export function MiniChat({
           <input
             className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 disabled:opacity-40"
             placeholder={
-              profiles.length === 0 ? "Simpan ritual dulu..." : "Ketik pesan ke Mirror di sini..."
+              profiles.length === 0 ? copy.inputPlaceholderNoProfile : copy.inputPlaceholder
             }
             value={message}
             onChange={(event) => setMessage(event.target.value)}
@@ -210,7 +247,7 @@ export function MiniChat({
             disabled={!activeProfile || !message.trim() || loading}
             className="white-pill rounded-full bg-white px-3 py-2 text-xs transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {loading ? "Mirror menulis..." : "Kirim ke Mirror"}
+            {loading ? copy.sendingLabel : copy.sendLabel}
           </button>
           {info && <p className="text-xs text-rose-300">{info}</p>}
         </form>

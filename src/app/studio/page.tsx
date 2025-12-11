@@ -6,6 +6,7 @@ import { MiniChat } from "@/components/mini-chat";
 import { usePreferences } from "@/contexts/preferences-context";
 import { onboardingCopy } from "@/lib/onboarding-i18n";
 import { getBrowserSupabaseClient } from "@/lib/supabase-browser";
+import { resolveApiUrl } from "@/lib/api";
 
 type RecentProfile = {
   id: string;
@@ -42,11 +43,129 @@ type CameraSnapshot = {
   createdAt: string;
 };
 
-const promptPresets = [
-  "Aku lagi overthinking tugas besok, bisa bantu tenangin?",
-  "Boleh kasih refleksi dari mood baseline ku?",
-  "Rekomendasi latihan singkat buat malam ini dong",
-];
+const studioCopy = {
+  id: {
+    heroBadge: "Studio Kamera",
+    heroTitle: "Chat lanjutan setelah check-in 💬🪞",
+    heroDescription:
+      "Di sini Mirror udah ngerti vibe kamu (dari kamera + form) terus ngobrol kayak sahabat. Panel sensor di bawah nunjukkin dari mana emosinya kebaca, jadi kamu bisa jelasin ke pengguna tanpa harus buka backend.",
+    profileLabel: "Profil aktif",
+    profilePlaceholder: "Pilih profil dari onboarding",
+    profileHint:
+      "Ingatkan audiens bahwa profil ini sudah melalui ritual kamera sehingga log yang muncul terasa hidup.",
+    profileEmpty: "Belum ada profil? buka halaman onboarding terlebih dahulu.",
+    focusLabel: "Fokus",
+    moodBaselineLabel: "Mood baseline",
+    mirrorCamBadge: "Mirror Cam",
+    mirrorCamDescription: "Kamera dan chat cepat sengaja ditempatkan dalam satu kolom supaya terasa seperti cermin interaktif.",
+    sensorBadge: "Sensor emosi",
+    sensorLoading: "Menyelaraskan data kamera & mood...",
+    cvTitle: "Computer vision",
+    cvEmpty: "Belum ada log kamera terbaru. Nyalakan mirror cam untuk memperbarui data.",
+    moodEntryTitle: "Mood entry",
+    noteLabel: "Catatan",
+    confidenceLabel: "Confidence",
+    moodSourceFallback: "demo",
+    moodEmpty: "Belum ada mood entry. Isi form onboarding atau catat mood cepat.",
+    presetBadge: "Preset cepat",
+    presetDescription: "Pakai kalimat ini ketika ingin menunjukkan bagaimana Mirror menyesuaikan respon terhadap tema berbeda.",
+    logsBadge: "Log percakapan",
+    logsEmpty: "Pilih profil dulu untuk memulai.",
+    logsLoading: "Memuat log percakapan...",
+    sendPlaceholder: "Tulis pesanmu",
+    sendButton: "Kirim",
+    sending: "Mengirim...",
+    typing: "Mirror sedang menulis...",
+    miniChat: {
+      description:
+        "Pilih profil dari ritual onboarding lalu kirim pesan cepat untuk menunjukkan respon Mirror.",
+      visionSynced: "CV sinkron ⚡ {emotion} ({confidence}%)",
+      visionHint: "Aktifkan kamera di lab supaya chat punya konteks ekspresi real-time.",
+      selectPlaceholder: "Pilih profil",
+      fetchProfilesError: "Mirror belum menemukan profil. Simpan ritual dulu.",
+      emptyNoProfile: "Belum ada profil tersimpan.",
+      emptyChat: "Belum ada chat. Tulis pesan di bawah untuk mulai.",
+      inputPlaceholderNoProfile: "Simpan ritual dulu...",
+      inputPlaceholder: "Ketik pesan ke Mirror di sini...",
+      sendLabel: "Kirim ke Mirror",
+      sendingLabel: "Mirror menulis...",
+      noResponse: "Mirror belum merespons. Coba beberapa detik lagi.",
+      logsLoading: "Memuat log percakapan...",
+      selectProfilePrompt: "Pilih profil dulu untuk memulai.",
+    },
+    infoLoadProfiles: "Belum bisa memuat profil. Cek koneksi Supabase.",
+    infoLoadLogs: "Belum bisa memuat log percakapan.",
+    infoSensor: "Sensor emosi belum bisa dimuat. Coba refresh.",
+    infoNoResponse: "Mirror tidak merespons. Coba lagi sebentar.",
+    warmupMessage:
+      "Hai {nickname}! Aku siap jadi teman curhatmu. Ceritakan saja apa yang ingin kamu uji di sesi demo ini.",
+    presetList: [
+      "Aku lagi overthinking tugas besok, bisa bantu tenangin?",
+      "Boleh kasih refleksi dari mood baseline ku?",
+      "Rekomendasi latihan singkat buat malam ini dong",
+    ],
+  },
+  en: {
+    heroBadge: "Camera Studio",
+    heroTitle: "Post check-in chat 💬🪞",
+    heroDescription:
+      "Here Mirror already knows your vibe (camera + forms) and chats like a friend. The sensor panel shows where emotions are read so you can explain without opening the backend.",
+    profileLabel: "Active profile",
+    profilePlaceholder: "Choose a profile from onboarding",
+    profileHint:
+      "Remind testers this profile already used the camera ritual so the logs feel alive.",
+    profileEmpty: "No profile yet? Open the onboarding page first.",
+    focusLabel: "Focus",
+    moodBaselineLabel: "Mood baseline",
+    mirrorCamBadge: "Mirror Cam",
+    mirrorCamDescription: "Camera and quick chat live in one column so it feels like an interactive mirror.",
+    sensorBadge: "Emotion sensors",
+    sensorLoading: "Syncing camera & mood data...",
+    cvTitle: "Computer vision",
+    cvEmpty: "No recent camera log. Turn on the mirror cam to refresh.",
+    moodEntryTitle: "Mood entry",
+    noteLabel: "Note",
+    confidenceLabel: "Confidence",
+    moodSourceFallback: "demo",
+    moodEmpty: "No mood entry yet. Fill onboarding or log a quick mood.",
+    presetBadge: "Quick presets",
+    presetDescription: "Use these lines to show how Mirror adapts responses to different themes.",
+    logsBadge: "Chat log",
+    logsEmpty: "Pick a profile to start.",
+    logsLoading: "Loading chat logs...",
+    sendPlaceholder: "Write your message",
+    sendButton: "Send",
+    sending: "Sending...",
+    typing: "Mirror is typing...",
+    miniChat: {
+      description: "Pick an onboarding profile then send a quick message to demo Mirror’s reply.",
+      visionSynced: "Vision synced ⚡ {emotion} ({confidence}%)",
+      visionHint: "Turn on the lab camera to give chat realtime expression context.",
+      selectPlaceholder: "Choose profile",
+      fetchProfilesError: "No profile found. Save the onboarding ritual first.",
+      emptyNoProfile: "No profile yet.",
+      emptyChat: "No chat yet. Type a message to start.",
+      inputPlaceholderNoProfile: "Save onboarding first...",
+      inputPlaceholder: "Type a message to Mirror...",
+      sendLabel: "Send to Mirror",
+      sendingLabel: "Mirror is typing...",
+      noResponse: "Mirror hasn’t responded yet. Try again shortly.",
+      logsLoading: "Loading chat logs...",
+      selectProfilePrompt: "Pick a profile to start.",
+    },
+    infoLoadProfiles: "Profiles failed to load. Check Supabase connectivity.",
+    infoLoadLogs: "Unable to load chat logs.",
+    infoSensor: "Emotion sensors failed to load. Refresh the page.",
+    infoNoResponse: "Mirror didn’t respond. Please try again.",
+    warmupMessage:
+      "Hi {nickname}! I’m ready to chat. Tell me what you want to test in this demo session.",
+    presetList: [
+      "I’m overthinking tomorrow’s tasks—help me calm down?",
+      "Can you reflect on my mood baseline?",
+      "Give me a quick practice for tonight.",
+    ],
+  },
+} as const;
 
 export default function StudioPage() {
   const [profiles, setProfiles] = useState<RecentProfile[]>([]);
@@ -59,6 +178,8 @@ export default function StudioPage() {
   const [sensorLoading, setSensorLoading] = useState(false);
   const [sensors, setSensors] = useState<{ mood?: MoodSnapshot; camera?: CameraSnapshot }>({});
   const { language } = usePreferences();
+  const locale = language === "en" ? "en-US" : "id-ID";
+  const copy = studioCopy[language] ?? studioCopy.id;
   const focusCopy = onboardingCopy[language] ?? onboardingCopy.id;
   const focusLookup = useMemo(() => {
     const map = new Map<string, string>();
@@ -80,18 +201,18 @@ export default function StudioPage() {
   useEffect(() => {
     const loadProfiles = async () => {
       try {
-        const response = await fetch("/api/profiles");
+        const response = await fetch(resolveApiUrl("/api/profiles"));
         if (!response.ok) throw new Error("Gagal memuat profil");
         const payload = (await response.json()) as RecentProfile[];
         setProfiles(payload);
         setSelectedProfileId((prev) => prev || payload[0]?.id || "");
       } catch (error) {
         console.error(error);
-        setInfo("Belum bisa memuat profil. Cek koneksi Supabase.");
+        setInfo(copy.infoLoadProfiles);
       }
     };
     loadProfiles();
-  }, []);
+  }, [copy.infoLoadProfiles]);
 
   const fetchLogs = useCallback(
     async (profileId: string) => {
@@ -101,7 +222,7 @@ export default function StudioPage() {
       }
       setLogsLoading(true);
       try {
-        const response = await fetch(`/api/chat/logs?profileId=${profileId}`);
+        const response = await fetch(resolveApiUrl(`/api/chat/logs?profileId=${profileId}`));
         if (!response.ok) {
           throw new Error("Gagal memuat log");
         }
@@ -113,7 +234,7 @@ export default function StudioPage() {
           setChat([
             {
               role: "assistant",
-              content: `Hai ${activeProfile.nickname}! Aku siap jadi teman curhatmu. Ceritakan saja apa yang ingin kamu uji di sesi demo ini.`,
+              content: copy.warmupMessage.replace("{nickname}", activeProfile.nickname),
             },
           ]);
         } else {
@@ -121,12 +242,12 @@ export default function StudioPage() {
         }
       } catch (error) {
         console.error(error);
-        setInfo("Belum bisa memuat log percakapan.");
+        setInfo(copy.infoLoadLogs);
       } finally {
         setLogsLoading(false);
       }
     },
-    [activeProfile],
+    [activeProfile, copy.warmupMessage, copy.infoLoadLogs],
   );
 
   useEffect(() => {
@@ -142,8 +263,8 @@ export default function StudioPage() {
       setSensorLoading(true);
       try {
         const [moodRes, cameraRes] = await Promise.all([
-          fetch(`/api/moods?profileId=${selectedProfileId}`),
-          fetch(`/api/emotions?profileId=${selectedProfileId}&limit=1`),
+          fetch(resolveApiUrl(`/api/moods?profileId=${selectedProfileId}`)),
+          fetch(resolveApiUrl(`/api/emotions?profileId=${selectedProfileId}&limit=1`)),
         ]);
         if (!moodRes.ok || !cameraRes.ok) {
           throw new Error("Sensor gagal dimuat");
@@ -168,13 +289,13 @@ export default function StudioPage() {
         });
       } catch (error) {
         console.error(error);
-        setInfo("Sensor emosi belum bisa dimuat. Coba refresh.");
+        setInfo(copy.infoSensor);
       } finally {
         setSensorLoading(false);
       }
     };
     loadSensors();
-  }, [selectedProfileId]);
+  }, [selectedProfileId, copy.infoSensor]);
 
   useEffect(() => {
     if (!selectedProfileId) return;
@@ -224,7 +345,7 @@ export default function StudioPage() {
     setLoading(true);
     setInfo(null);
     try {
-      const response = await fetch("/api/chat", {
+      const response = await fetch(resolveApiUrl("/api/chat"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -241,7 +362,7 @@ export default function StudioPage() {
       fetchLogs(activeProfile.id);
     } catch (error) {
       console.error(error);
-      setInfo("Mirror tidak merespons. Coba lagi sebentar.");
+      setInfo(copy.infoNoResponse);
     } finally {
       setLoading(false);
     }
@@ -250,23 +371,20 @@ export default function StudioPage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-8 px-6 py-16 text-white">
       <header className="space-y-3">
-        <p className="text-sm uppercase tracking-[0.4em] text-white/60">Studio Kamera</p>
-        <h1 className="text-4xl font-semibold">Chat lanjutan setelah check-in 💬🪞</h1>
-        <p className="text-white/75">
-          Di sini Mirror udah ngerti vibe kamu (dari kamera + form) terus ngobrol kayak sahabat. Panel sensor di bawah
-          nunjukkin dari mana emosinya kebaca, jadi kamu bisa jelasin ke pengguna tanpa harus buka backend.
-        </p>
+        <p className="text-sm uppercase tracking-[0.4em] text-white/60">{copy.heroBadge}</p>
+        <h1 className="text-4xl font-semibold">{copy.heroTitle}</h1>
+        <p className="text-white/75">{copy.heroDescription}</p>
       </header>
 
       <section className="glass-card space-y-4 p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <label className="text-sm uppercase tracking-[0.3em] text-white/50">Profil aktif</label>
+          <label className="text-sm uppercase tracking-[0.3em] text-white/50">{copy.profileLabel}</label>
           <select
             className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white sm:max-w-xs"
             value={selectedProfileId}
             onChange={(event) => setSelectedProfileId(event.target.value)}
           >
-            <option value="">Pilih profil dari onboarding</option>
+            <option value="">{copy.profilePlaceholder}</option>
             {profiles.map((profile) => (
               <option key={profile.id} value={profile.id} className="bg-purple-900 text-white">
                 {profile.nickname} • {formatFocusAreas(profile.focusAreas)[0] ?? "-"}
@@ -274,17 +392,16 @@ export default function StudioPage() {
             ))}
           </select>
           <p className="text-xs text-white/50">
-            Ingatkan audiens bahwa profil ini sudah melalui ritual kamera sehingga log yang muncul terasa hidup.
+            {copy.profileHint}
           </p>
           {!profiles.length && (
-            <p className="text-sm text-white/60">
-              Belum ada profil? buka halaman onboarding terlebih dahulu.
-            </p>
+            <p className="text-sm text-white/60">{copy.profileEmpty}</p>
           )}
         </div>
         {activeProfile && (
           <p className="text-sm text-white/70">
-            Fokus: {formatFocusAreas(activeProfile.focusAreas).join(", ") || "-"} | Mood baseline: {activeProfile.moodBaseline}
+            {copy.focusLabel}: {formatFocusAreas(activeProfile.focusAreas).join(", ") || "-"} | {copy.moodBaselineLabel}:{" "}
+            {activeProfile.moodBaseline}
           </p>
         )}
       </section>
@@ -293,58 +410,54 @@ export default function StudioPage() {
         <div className="space-y-6">
           <div className="glass-card space-y-6 p-6">
             <div className="flex flex-col gap-1">
-              <p className="text-xs uppercase tracking-[0.4em] text-white/50">Mirror Cam</p>
-              <p className="text-sm text-white/70">
-                Kamera dan chat cepat sengaja ditempatkan dalam satu kolom supaya terasa seperti cermin interaktif.
-              </p>
+              <p className="text-xs uppercase tracking-[0.4em] text-white/50">{copy.mirrorCamBadge}</p>
+              <p className="text-sm text-white/70">{copy.mirrorCamDescription}</p>
             </div>
             <CameraLiquidWidget variant="full" profileId={selectedProfileId || null} />
-            <MiniChat title="Chat cepat" />
+            <MiniChat title={copy.logsBadge} copy={copy.miniChat} />
           </div>
           <section className="glass-card space-y-4 p-6">
-            <p className="text-xs uppercase tracking-[0.4em] text-white/50">Sensor emosi</p>
+            <p className="text-xs uppercase tracking-[0.4em] text-white/50">{copy.sensorBadge}</p>
             {sensorLoading ? (
-              <p className="text-sm text-white/60">Menyelaraskan data kamera & mood...</p>
+              <p className="text-sm text-white/60">{copy.sensorLoading}</p>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
-                  <p className="text-xs uppercase tracking-[0.3em] text-white/50">Computer vision</p>
+                  <p className="text-xs uppercase tracking-[0.3em] text-white/50">{copy.cvTitle}</p>
                   {sensors.camera ? (
                     <>
                       <p className="mt-2 text-lg font-semibold text-white capitalize">
                         {sensors.camera.emotion}
                       </p>
                       <p className="text-xs text-white/60">
-                        Confidence {sensors.camera.confidence ?? 0}% •{" "}
-                        {new Date(sensors.camera.createdAt).toLocaleTimeString("id-ID", {
+                        {copy.confidenceLabel} {sensors.camera.confidence ?? 0}% •{" "}
+                        {new Date(sensors.camera.createdAt).toLocaleTimeString(locale, {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
                       </p>
                     </>
                   ) : (
-                    <p className="mt-2 text-xs text-white/60">
-                      Belum ada log kamera terbaru. Nyalakan mirror cam untuk memperbarui data.
-                    </p>
+                    <p className="mt-2 text-xs text-white/60">{copy.cvEmpty}</p>
                   )}
                 </div>
                 <div className="rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
-                  <p className="text-xs uppercase tracking-[0.3em] text-white/50">Mood entry</p>
+                  <p className="text-xs uppercase tracking-[0.3em] text-white/50">{copy.moodEntryTitle}</p>
                   {sensors.mood ? (
                     <>
                       <p className="mt-2 text-lg font-semibold text-white">{sensors.mood.mood}</p>
                       <p className="text-xs text-white/60">
-                        {sensors.mood.source ?? "demo"} •{" "}
-                        {new Date(sensors.mood.createdAt).toLocaleString("id-ID")}
+                        {sensors.mood.source ?? copy.moodSourceFallback} •{" "}
+                        {new Date(sensors.mood.createdAt).toLocaleString(locale)}
                       </p>
                       {sensors.mood.note && (
-                        <p className="mt-1 text-xs text-white/60">Catatan: {sensors.mood.note}</p>
+                        <p className="mt-1 text-xs text-white/60">
+                          {copy.noteLabel}: {sensors.mood.note}
+                        </p>
                       )}
                     </>
                   ) : (
-                    <p className="mt-2 text-xs text-white/60">
-                      Belum ada mood entry. Isi form onboarding atau catat mood cepat.
-                    </p>
+                    <p className="mt-2 text-xs text-white/60">{copy.moodEmpty}</p>
                   )}
                 </div>
               </div>
@@ -353,12 +466,10 @@ export default function StudioPage() {
         </div>
         <section className="glass-card space-y-6 p-6">
           <div className="space-y-3">
-            <p className="text-xs uppercase tracking-[0.4em] text-white/50">Preset cepat</p>
-            <p className="text-sm text-white/70">
-              Pakai kalimat ini ketika ingin menunjukkan bagaimana Mirror menyesuaikan respon terhadap tema berbeda.
-            </p>
+            <p className="text-xs uppercase tracking-[0.4em] text-white/50">{copy.presetBadge}</p>
+            <p className="text-sm text-white/70">{copy.presetDescription}</p>
             <div className="flex flex-wrap gap-3">
-              {promptPresets.map((preset) => (
+              {(copy.presetList ?? studioCopy.id.presetList).map((preset) => (
                 <button
                   key={preset}
                   type="button"
@@ -371,11 +482,11 @@ export default function StudioPage() {
             </div>
           </div>
           <div className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.4em] text-white/50">Log percakapan</p>
+            <p className="text-xs uppercase tracking-[0.4em] text-white/50">{copy.logsBadge}</p>
             <div className="h-80 overflow-y-auto rounded-3xl border border-white/5 bg-white/5 p-4">
               {chat.length === 0 ? (
                 <p className="text-sm text-white/60">
-                  {logsLoading ? "Memuat log percakapan..." : "Pilih profil dulu untuk memulai."}
+                  {logsLoading ? copy.logsLoading : copy.logsEmpty}
                 </p>
               ) : (
                 <div className="flex flex-col gap-4">
@@ -391,15 +502,15 @@ export default function StudioPage() {
                       {message.content}
                     </div>
                   ))}
-                  {loading && <p className="text-xs text-white/60">Mirror sedang menulis...</p>}
-                  {logsLoading && <p className="text-xs text-white/60">Memperbarui log...</p>}
+                  {loading && <p className="text-xs text-white/60">{copy.typing}</p>}
+                  {logsLoading && <p className="text-xs text-white/60">{copy.logsLoading}</p>}
                 </div>
               )}
             </div>
             <form onSubmit={handleSend} className="flex flex-col gap-3 sm:flex-row">
               <input
                 className="w-full rounded-full border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/30"
-                placeholder="Tulis pesanmu"
+                placeholder={copy.sendPlaceholder}
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
                 disabled={!activeProfile}
@@ -409,7 +520,7 @@ export default function StudioPage() {
                 disabled={!activeProfile || !input.trim() || loading}
                 className="white-pill rounded-full bg-white px-6 py-3 text-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {loading ? "Mengirim..." : "Kirim"}
+                {loading ? copy.sending : copy.sendButton}
               </button>
             </form>
             {info && <p className="text-sm text-rose-300">{info}</p>}
