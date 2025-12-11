@@ -55,6 +55,10 @@ export default function HomePage() {
           </div>
         </header>
 
+        <div className="glass-card flex flex-col gap-6 p-6 sm:p-8">
+          <PreferenceTogglePanel />
+        </div>
+
         <div className="glass-card flex flex-col gap-4 p-6 sm:p-8">
           <p className="emoji-heading">{copy.howTo.heading}</p>
           <h2 className="text-2xl font-semibold text-white">{copy.howTo.title}</h2>
