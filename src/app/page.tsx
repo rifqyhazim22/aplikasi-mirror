@@ -71,6 +71,8 @@ export default function HomePage() {
         </div>
       </section>
 
+      <PreferenceTogglePanel />
+
       <section className="grid gap-6 md:grid-cols-3">
         {copy.highlightFeatures.map((item) => (
           <article key={item.title} className="glass-card p-6 text-sm text-white/80">
@@ -107,7 +109,6 @@ export default function HomePage() {
       </section>
 
       <section className="glass-card space-y-6 p-8 text-white/80">
-        <PreferenceTogglePanel />
         <div className="space-y-2">
           <p className="emoji-heading">{copy.downloadSection.heading}</p>
           <h2 className="text-2xl font-semibold text-white">{copy.downloadSection.title}</h2>
