@@ -56,25 +56,18 @@ export default function HomePage() {
         </header>
 
         <div className="glass-card flex flex-col gap-4 p-6 sm:p-8">
-          <p className="emoji-heading">Cara pakainya</p>
-          <h2 className="text-2xl font-semibold text-white">“Tatap kamera, tarik napas, cerita jujur.”</h2>
-          <p className="text-sm text-white/70">
-            Udah nggak ada bahasa pitch lagi. Kamu tinggal jelasin ke pengguna bahwa Mirror cuma baca vibe
-            lewat brightness & bounding box di device mereka. Abis itu semuanya jadi teks Supabase + prompt AI.
-          </p>
+          <p className="emoji-heading">{copy.howTo.heading}</p>
+          <h2 className="text-2xl font-semibold text-white">{copy.howTo.title}</h2>
+          <p className="text-sm text-white/70">{copy.howTo.description}</p>
           <div className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-white/80">
-            <p className="font-semibold text-white">Flow favorit pengguna:</p>
+            <p className="font-semibold text-white">{copy.howTo.flowTitle}</p>
             <ol className="mt-3 list-decimal space-y-2 pl-4 text-white/70">
-              <li>Isi ritual onboarding sambil bercermin.</li>
-              <li>Nyalakan kamera besar biar berasa kayak selfie filter.</li>
-              <li>Catat mood singkat, terus buka chat Studio.</li>
-              <li>Liat timeline & insight buat track healing journey-mu.</li>
+              {copy.howTo.flowSteps.map((step, index) => (
+                <li key={`${step}-${index}`}>{step}</li>
+              ))}
             </ol>
           </div>
-          <p className="text-xs text-white/50">
-            Build ini tinggal kamu bungkus jadi apk/desktop via Capacitor, jadi bisa dites offline event atau
-            dibagikan ke teman tanpa harus ngobrolin backend lagi.
-          </p>
+          <p className="text-xs text-white/50">{copy.howTo.footnote}</p>
         </div>
       </section>
 
