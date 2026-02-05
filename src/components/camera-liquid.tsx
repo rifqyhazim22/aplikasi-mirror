@@ -509,7 +509,7 @@ export function CameraLiquidWidget({
       }
     }, 3000);
     return () => clearInterval(interval);
-  }, [permission, profileId, onVisionSignal]);
+  }, [permission, profileId, onVisionSignal, emotionCopy, uiCopy]);
 
   const captureFrame = () => {
     const canvas = canvasRef.current;
@@ -539,15 +539,15 @@ export function CameraLiquidWidget({
   const handleToggleCamera = () => {
     setIsCameraOn((prev) => {
       const next = !prev;
-    if (!next) {
-      stopStream();
-      setPermission("paused");
-      setMood(uiCopy.defaultMood);
-      setBox(null);
-      setBrightnessHistory([]);
-      setLastCapture(null);
-    } else {
-      setPermission("idle");
+      if (!next) {
+        stopStream();
+        setPermission("paused");
+        setMood(uiCopy.defaultMood);
+        setBox(null);
+        setBrightnessHistory([]);
+        setLastCapture(null);
+      } else {
+        setPermission("idle");
       }
       return next;
     });
@@ -564,9 +564,9 @@ export function CameraLiquidWidget({
   const connectionBadge = profileId
     ? { text: lang === "en" ? "Profile linked" : "Profil tersambung", tone: "text-emerald-200" }
     : {
-        text: lang === "en" ? "Demo mode (no profile selected)" : "Mode demo (belum pilih profil)",
-        tone: "text-amber-200",
-      };
+      text: lang === "en" ? "Demo mode (no profile selected)" : "Mode demo (belum pilih profil)",
+      tone: "text-amber-200",
+    };
 
   return (
     <div className={`liquid-card ${padding} space-y-5`}>
@@ -968,10 +968,10 @@ function applyHumanInsights(
       : baseline.attention ?? null;
   const headPose = face.rotation?.angle
     ? {
-        pitch: Number((face.rotation.angle.pitch ?? baseline.headPose?.pitch ?? 0).toFixed(1)),
-        yaw: Number((face.rotation.angle.yaw ?? baseline.headPose?.yaw ?? 0).toFixed(1)),
-        roll: Number((face.rotation.angle.roll ?? baseline.headPose?.roll ?? baseline.tilt ?? 0).toFixed(1)),
-      }
+      pitch: Number((face.rotation.angle.pitch ?? baseline.headPose?.pitch ?? 0).toFixed(1)),
+      yaw: Number((face.rotation.angle.yaw ?? baseline.headPose?.yaw ?? 0).toFixed(1)),
+      roll: Number((face.rotation.angle.roll ?? baseline.headPose?.roll ?? baseline.tilt ?? 0).toFixed(1)),
+    }
     : baseline.headPose ?? null;
   const cues = [...baseline.cues];
   if (attention !== null) {
@@ -1008,11 +1008,11 @@ function applyHumanInsights(
   const boundingBox =
     face.box?.raw && face.box.raw.length === 4
       ? {
-          x: face.box.raw[0],
-          y: face.box.raw[1],
-          w: face.box.raw[2],
-          h: face.box.raw[3],
-        }
+        x: face.box.raw[0],
+        y: face.box.raw[1],
+        w: face.box.raw[2],
+        h: face.box.raw[3],
+      }
       : undefined;
 
   return { metrics, overrideMood, boundingBox };

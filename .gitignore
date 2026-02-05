@@ -27,6 +27,7 @@ ios/App/build/
 ios/App/Pods/
 ios/build/
 electron/node_modules/
+electron/.next/
 electron/dist/
 release-artifacts/
 public/downloads/

@@ -12,6 +12,8 @@ import electronServe from 'electron-serve';
 import windowStateKeeper from 'electron-window-state';
 import { join } from 'path';
 import { URL } from 'node:url';
+import { existsSync, readFileSync } from 'fs';
+import { ChildProcess, spawn } from 'child_process';
 
 // Define components for a watcher to detect when the webapp is changed so we can reload in Dev mode.
 const reloadWatcher = {
@@ -59,6 +61,11 @@ export class ElectronCapacitorApp {
   private mainWindowState;
   private loadLocalWebApp;
   private customScheme: string;
+  private localServerUrl: string | null = null;
+  private localServerPort: number = parseInt(process.env.MIRROR_APP_PORT ?? '4173', 10);
+  private nextServerProcess: ChildProcess | null = null;
+  private envFromFile: Record<string, string> = {};
+  private requiredEnvKeys = ['NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_ANON_KEY', 'OPENAI_API_KEY'];
 
   constructor(
     capacitorFileConfig: CapacitorElectronConfig,
@@ -82,6 +89,115 @@ export class ElectronCapacitorApp {
       directory: join(app.getAppPath(), 'app'),
       scheme: this.customScheme,
     });
+
+    const appPath = app.getAppPath();
+    this.envFromFile = this.loadEnvFromFiles([
+      join(appPath, '.env.production'),
+      join(appPath, '.env.local'),
+    ]);
+  }
+
+  private async startLocalNextServer(): Promise<void> {
+    // Prefer local Next.js server (standalone output) so API routes & backend logic berjalan di desktop.
+    const appPath = app.getAppPath();
+    const serverPath = join(appPath, '.next', 'standalone', 'server.js');
+    if (!existsSync(serverPath)) {
+      return;
+    }
+    if (!this.hasRequiredEnv()) {
+      return;
+    }
+    if (this.nextServerProcess) {
+      return;
+    }
+    const port = this.localServerPort;
+    const env = {
+      ...process.env,
+      ...this.envFromFile,
+      PORT: String(port),
+      HOSTNAME: '127.0.0.1',
+      NODE_ENV: 'production',
+      ELECTRON_RUN_AS_NODE: '1',
+    };
+    try {
+      this.nextServerProcess = spawn(process.execPath, [serverPath], {
+        env,
+        cwd: join(appPath, '.next', 'standalone'),
+        stdio: 'inherit',
+      });
+      this.localServerUrl = `http://127.0.0.1:${port}`;
+      this.nextServerProcess.on('exit', () => {
+        this.nextServerProcess = null;
+      });
+      await this.waitForServer(this.localServerUrl);
+    } catch (error) {
+      console.error('Gagal menyalakan Next standalone server', error);
+      this.localServerUrl = null;
+    }
+  }
+
+  private stopLocalNextServer(): void {
+    if (this.nextServerProcess) {
+      try {
+        this.nextServerProcess.kill();
+      } catch (error) {
+        console.warn('Gagal mematikan server lokal', error);
+      } finally {
+        this.nextServerProcess = null;
+      }
+    }
+  }
+
+  private async waitForServer(url: string, timeoutMs = 12000): Promise<void> {
+    const started = Date.now();
+    while (Date.now() - started < timeoutMs) {
+      try {
+        const res = await fetch(url, { method: 'HEAD' });
+        if (res.ok) {
+          return;
+        }
+      } catch {
+        // ignore until timeout
+      }
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    }
+  }
+
+  private loadEnvFromFiles(paths: string[]): Record<string, string> {
+    const result: Record<string, string> = {};
+    paths.forEach((p) => {
+      if (!existsSync(p)) return;
+      try {
+        const content = readFileSync(p, 'utf8');
+        content
+          .split('\n')
+          .map((line) => line.trim())
+          .filter((line) => line && !line.startsWith('#'))
+          .forEach((line) => {
+            const eqIdx = line.indexOf('=');
+            if (eqIdx === -1) return;
+            const key = line.slice(0, eqIdx).trim();
+            let val = line.slice(eqIdx + 1).trim();
+            if (
+              (val.startsWith('"') && val.endsWith('"')) ||
+              (val.startsWith("'") && val.endsWith("'"))
+            ) {
+              val = val.slice(1, -1);
+            }
+            if (key) {
+              result[key] = val;
+            }
+          });
+      } catch (error) {
+        console.warn(`Gagal membaca env file ${p}`, error);
+      }
+    });
+    return result;
+  }
+
+  private hasRequiredEnv(): boolean {
+    const env = { ...process.env, ...this.envFromFile };
+    return this.requiredEnvKeys.every((key) => !!env[key]);
   }
 
   // Helper function to load in the app.
@@ -104,6 +220,9 @@ export class ElectronCapacitorApp {
   }
 
   getRemoteUrl(): string | null {
+    if (this.localServerUrl) {
+      return this.localServerUrl;
+    }
     return process.env.MIRROR_APP_URL ?? this.CapacitorFileConfig.server?.url ?? null;
   }
 
@@ -115,6 +234,7 @@ export class ElectronCapacitorApp {
       defaultWidth: 1000,
       defaultHeight: 800,
     });
+    await this.startLocalNextServer();
     // Setup preload script path and construct our main window.
     const preloadPath = join(app.getAppPath(), 'build', 'src', 'preload.js');
     this.MainWindow = new BrowserWindow({
@@ -127,6 +247,7 @@ export class ElectronCapacitorApp {
       webPreferences: {
         nodeIntegration: true,
         contextIsolation: true,
+        autoplayPolicy: 'no-user-gesture-required',
         // Use preload to inject the electron varriant overrides for capacitor plugins.
         // preload: join(app.getAppPath(), "node_modules", "@capacitor-community", "electron", "dist", "runtime", "electron-rt.js"),
         preload: preloadPath,
@@ -223,6 +344,10 @@ export class ElectronCapacitorApp {
         CapElectronEventEmitter.emit('CAPELECTRON_DeeplinkListenerInitialized', '');
       }, 400);
     });
+
+    app.on('before-quit', () => {
+      this.stopLocalNextServer();
+    });
   }
 }
 
@@ -249,11 +374,11 @@ export function setupContentSecurityPolicy(customScheme: string, remoteUrl?: str
     'https://api.openai.com',
     'blob:',
     'data:',
+    'mediastream:',
   ].filter(Boolean) as string[];
 
-  const basePolicy = `${allowedSources.join(' ')} 'unsafe-inline'${
-    electronIsDev ? " 'unsafe-eval' devtools://*" : " 'unsafe-eval'"
-  }`;
+  const basePolicy = `${allowedSources.join(' ')} 'unsafe-inline'${electronIsDev ? " 'unsafe-eval' devtools://*" : " 'unsafe-eval'"
+    }`;
 
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
     callback({

@@ -1,7 +1,7 @@
 import type { CapacitorElectronConfig } from '@capacitor-community/electron';
 import { getCapacitorElectronConfig, setupElectronDeepLinking } from '@capacitor-community/electron';
 import type { MenuItemConstructorOptions } from 'electron';
-import { app, MenuItem, session } from 'electron';
+import { app, MenuItem, session, systemPreferences } from 'electron';
 import electronIsDev from 'electron-is-dev';
 import unhandled from 'electron-unhandled';
 
@@ -9,6 +9,9 @@ import { ElectronCapacitorApp, setupContentSecurityPolicy, setupReloadWatcher } 
 
 // Graceful handling of unhandled errors.
 unhandled();
+
+// Auto-approve media permission UI so getUserMedia tidak blok.
+app.commandLine.appendSwitch('use-fake-ui-for-media-stream');
 
 // Define our menu templates (these are optional)
 const trayMenuTemplate: (MenuItemConstructorOptions | MenuItem)[] = [new MenuItem({ label: 'Quit App', role: 'quit' })];
@@ -40,13 +43,29 @@ if (electronIsDev) {
 (async () => {
   // Wait for electron app to be ready.
   await app.whenReady();
-  session.defaultSession.setPermissionRequestHandler((_, permission, callback) => {
-    if (permission === 'media') {
-      callback(true);
-      return;
+  // Pastikan izin kamera/mikrofon otomatis disetujui tanpa prompt browser.
+  const allowed = new Set(['media', 'camera', 'microphone', 'videoCapture', 'audioCapture']);
+  // On macOS, proactively ask for system camera permission if not granted yet.
+  if (process.platform === 'darwin') {
+    const camStatus = systemPreferences.getMediaAccessStatus('camera');
+    if (camStatus !== 'granted') {
+      await systemPreferences.askForMediaAccess('camera');
     }
-    callback(false);
+    const micStatus = systemPreferences.getMediaAccessStatus('microphone');
+    if (micStatus !== 'granted') {
+      await systemPreferences.askForMediaAccess('microphone');
+    }
+  }
+  session.defaultSession.setPermissionCheckHandler((_wc, permission, _origin, _details) => {
+    return allowed.has(permission);
   });
+  session.defaultSession.setPermissionRequestHandler((_wc, permission, callback) => {
+    callback(allowed.has(permission));
+  });
+  // Electron 25+ device-level handler for capture permissions.
+  if (session.defaultSession.setDevicePermissionHandler) {
+    session.defaultSession.setDevicePermissionHandler(() => true);
+  }
   // Security - Set Content-Security-Policy based on whether or not we are in dev mode.
   setupContentSecurityPolicy(myCapacitorApp.getCustomURLScheme(), myCapacitorApp.getRemoteUrl() ?? undefined);
   // Initialize our app, build windows, and load content.

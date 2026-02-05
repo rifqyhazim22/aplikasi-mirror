@@ -7,7 +7,9 @@
     "assets/**/*",
     "build/**/*",
     "capacitor.config.*",
-    "app/**/*"
+    "app/**/*",
+    ".next/standalone/**/*",
+    ".next/static/**/*"
   ],
   "publish": null,
   "nsis": {
@@ -21,6 +23,13 @@
   },
   "mac": {
     "category": "your.app.category.type",
-    "target": "dmg"
+    "target": "dmg",
+    "hardenedRuntime": true,
+    "entitlements": "entitlements.mac.plist",
+    "entitlementsInherit": "entitlements.mac.plist",
+    "extendInfo": {
+      "NSCameraUsageDescription": "Aplikasi ini membutuhkan akses kamera untuk fitur Mirror.",
+      "NSMicrophoneUsageDescription": "Aplikasi ini membutuhkan akses mikrofon untuk fitur Mirror."
+    }
   }
 }

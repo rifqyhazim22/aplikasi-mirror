@@ -5,6 +5,7 @@ import Link from "next/link";
 import { z } from "zod";
 import { usePreferences } from "@/contexts/preferences-context";
 import { onboardingCopy, type StepLiteral } from "@/lib/onboarding-i18n";
+import { resolveApiUrl } from "@/lib/api";
 
 const FALLBACK_COPY = onboardingCopy.id;
 const MOOD_VALUES = ["tenang", "bersemangat", "lelah"] as const;
@@ -185,7 +186,7 @@ export default function ExperiencePage() {
   const fetchProfiles = async () => {
     try {
       setRecentLoading(true);
-      const response = await fetch("/api/profiles");
+      const response = await fetch(resolveApiUrl("/api/profiles"));
       if (!response.ok) throw new Error("Gagal mengambil data");
       const payload = (await response.json()) as RecentProfile[];
       setRecentProfiles(payload);
@@ -208,7 +209,7 @@ export default function ExperiencePage() {
     setMessage(null);
     try {
       profileSchema.parse(form);
-      const response = await fetch("/api/profiles", {
+      const response = await fetch(resolveApiUrl("/api/profiles"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -235,7 +236,7 @@ export default function ExperiencePage() {
     setMoodStatus("saving");
     setMoodMessage(null);
     try {
-      const response = await fetch("/api/moods", {
+      const response = await fetch(resolveApiUrl("/api/moods"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
