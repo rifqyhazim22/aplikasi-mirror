@@ -182,7 +182,7 @@ export default function CameraPage() {
         </div>
         {info && <p className="text-xs text-rose-300">{info}</p>}
         <CameraLiquidWidget
-          variant="compact"
+          variant="full"
           profileId={activeProfileId || null}
           onVisionSignal={(signal) => setVisionSignal(signal)}
         />
