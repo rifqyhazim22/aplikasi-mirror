@@ -31,6 +31,39 @@ export default function LoginPage() {
         }
     };
 
+    const handleDeveloperLogin = async () => {
+        setLoading(true);
+        setError(null);
+
+        const supabase = createClient();
+        const devEmail = 'developer@mirror.app';
+        const devPassword = 'developerpassword123';
+
+        // Coba login dulu
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+            email: devEmail,
+            password: devPassword,
+        });
+
+        if (signInError) {
+            // Kalau gagal karena akun belum ada, buat akunnya
+            const { error: signUpError } = await supabase.auth.signUp({
+                email: devEmail,
+                password: devPassword,
+            });
+
+            if (signUpError) {
+                setError('Gagal membuat akun developer otomatis: ' + signUpError.message);
+                setLoading(false);
+            } else {
+                router.push('/experience');
+            }
+        } else {
+            // Berhasil login
+            router.push('/experience');
+        }
+    };
+
     return (
         <main className="relative flex min-h-screen w-full flex-col overflow-hidden items-center justify-center p-4">
 
@@ -39,7 +72,7 @@ export default function LoginPage() {
                     <div className="h-16 w-16 bg-white/10 rounded-full flex items-center justify-center mb-4 shadow-sm border border-white/5">
                         <span className="text-sky-400 text-3xl font-black">✨</span>
                     </div>
-                    <h1 className="text-3xl font-light tracking-tight text-white">Mirror <span className="font-semibold text-sky-400">V2</span></h1>
+                    <h1 className="text-3xl font-light tracking-tight text-white">Mirror</h1>
                     <p className="text-white/50 text-sm font-medium tracking-wide">Welcome back to the future.</p>
                 </div>
 
@@ -73,14 +106,29 @@ export default function LoginPage() {
 
                     {error && <p className="text-[10px] text-red-300 bg-red-500/10 p-4 rounded-2xl border border-red-500/20 text-center uppercase tracking-widest">{error}</p>}
 
-                    <div className="pt-4">
+                    <div className="pt-4 flex flex-col gap-3">
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-sky-400 hover:bg-sky-400/90 text-white shadow-[0_0_20px_rgba(56,189,248,0.3)] hover:shadow-[0_0_25px_rgba(56,189,248,0.5)] rounded-full h-14 px-6 font-medium text-base transition-all duration-300 flex items-center justify-center gap-2 group disabled:opacity-50"
+                            className="w-full bg-sky-400 hover:bg-sky-400/90 text-[#111e21] shadow-[0_0_20px_rgba(56,189,248,0.3)] hover:shadow-[0_0_25px_rgba(56,189,248,0.5)] rounded-full h-14 px-6 font-medium text-base transition-all duration-300 flex items-center justify-center gap-2 group disabled:opacity-50"
                         >
                             <span>{loading ? 'Memproses...' : 'Continue'}</span>
                             {!loading && <span className="font-black text-sm group-hover:translate-x-1 transition-transform">→</span>}
+                        </button>
+
+                        <div className="relative flex py-2 items-center">
+                            <div className="flex-grow border-t border-white/10"></div>
+                            <span className="flex-shrink-0 mx-4 text-white/30 text-[10px] tracking-widest uppercase">atau</span>
+                            <div className="flex-grow border-t border-white/10"></div>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={handleDeveloperLogin}
+                            disabled={loading}
+                            className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-full h-14 px-6 font-medium text-sm transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50"
+                        >
+                            <span>{loading ? 'Memproses...' : '🚀 Masuk Instan (Developer)'}</span>
                         </button>
                     </div>
                 </form>

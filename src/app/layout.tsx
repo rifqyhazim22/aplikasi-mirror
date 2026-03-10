@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { AppProviders } from "@/components/app-providers";
+import { PreferenceTogglePanel } from "@/components/preference-toggle";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -22,7 +23,10 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body className={`${spaceGrotesk.variable} antialiased`}>
-        <AppProviders>{children}</AppProviders>
+        <AppProviders>
+          {children}
+          <PreferenceTogglePanel />
+        </AppProviders>
       </body>
     </html>
   );

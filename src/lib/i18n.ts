@@ -1,9 +1,9 @@
 export const translations = {
   id: {
     heroTagline: "Mirror playground",
-    heroTitle: "Cermin digital buat Gen Z: buka kamera, ngomong jujur soal mood, Mirror jawab sebagai teman baikmu. 💜",
+    heroTitle: "Refleksi diri harian, diberdayakan oleh AI. 💜",
     heroDescription:
-      "Ini bukan deck investor—ini versi yang bisa kamu pakai langsung buat daily check-in. Tinggal kasih izin kamera, pilih fokus, terus Mirror baca ekspresi + teks kamu untuk bikin chat yang relate.",
+      "Jelajahi sisi lain dirimu. Buka kamera, tuangkan perasaanmu, dan biarkan Mirror memahami suasana hatimu seperti seorang sahabat lama.",
     ctaExperience: "Mulai ritual sekarang",
     ctaCamera: "Uji kamera 🔮",
     highlightFeatures: [
@@ -69,9 +69,9 @@ export const translations = {
   },
   en: {
     heroTagline: "Mirror playground",
-    heroTitle: "A digital mirror for Gen Z: turn on the cam, speak your mood, Mirror replies like your best friend. 💜",
+    heroTitle: "Daily self-reflection, empowered by AI. 💜",
     heroDescription:
-      "This isn’t an investor deck—it’s the live ritual. Give camera access, pick your focus, and Mirror blends expression + text to craft a relatable chat.",
+      "Discover the other side of you. Turn on your camera, speak your mind, and let Mirror understand your emotional state like an old friend.",
     ctaExperience: "Start the ritual",
     ctaCamera: "Try the camera 🔮",
     highlightFeatures: [

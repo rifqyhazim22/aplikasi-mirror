@@ -24,38 +24,23 @@ export function PreferenceTogglePanel() {
   const copy = preferenceCopy[language] ?? preferenceCopy.id;
   const isDay = theme === "day";
   return (
-    <div
-      className={`rounded-3xl border p-6 transition ${
-        isDay ? "border-[rgba(19,4,41,0.15)] bg-white text-[var(--mirror-ink)]" : "border-white/10 bg-gradient-to-r from-white/10 to-white/5 text-white"
-      }`}
-    >
-      <span
-        className={`text-xs uppercase tracking-[0.4em] ${isDay ? "text-[rgba(19,4,41,0.45)]" : "text-white/50"}`}
+    <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3">
+      <button
+        type="button"
+        onClick={() => setLanguage(language === "id" ? "en" : "id")}
+        className="glass-card flex h-12 w-12 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-110 group bg-[#111e21]/40 hover:bg-[#111e21]/60"
+        title={language === "id" ? "Ganti ke Bahasa Inggris" : "Switch to Indonesian"}
       >
-        {copy.badge}
-      </span>
-      <h2 className="mt-2 text-3xl font-semibold">{copy.title}</h2>
-      <p className={`mt-2 text-sm ${isDay ? "text-[rgba(19,4,41,0.7)]" : "text-white/70"}`}>{copy.description}</p>
-      <div className={`mt-4 flex flex-wrap gap-3 text-xs ${isDay ? "text-[rgba(19,4,41,0.65)]" : "text-white/70"}`}>
-        <button
-          type="button"
-          onClick={() => setTheme(theme === "night" ? "day" : "night")}
-          className={`rounded-full border px-4 py-2 transition ${
-            isDay ? "border-[rgba(19,4,41,0.2)] hover:border-[rgba(19,4,41,0.35)]" : "border-white/20 hover:border-white"
-          }`}
-        >
-          {copy.modePrefix}: {theme === "night" ? "Night 🌙" : "Day ☀️"}
-        </button>
-        <button
-          type="button"
-          onClick={() => setLanguage(language === "id" ? "en" : "id")}
-          className={`rounded-full border px-4 py-2 transition ${
-            isDay ? "border-[rgba(19,4,41,0.2)] hover:border-[rgba(19,4,41,0.35)]" : "border-white/20 hover:border-white"
-          }`}
-        >
-          {copy.languagePrefix}: {language === "id" ? "Indonesia" : "English"}
-        </button>
-      </div>
+        <span className="text-white text-sm font-bold tracking-wider">{language === "id" ? "ID" : "EN"}</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => setTheme(theme === "night" ? "day" : "night")}
+        className="glass-card flex h-12 w-12 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-110 text-xl group bg-[#111e21]/40 hover:bg-[#111e21]/60 text-white"
+        title={theme === "night" ? "Switch to light mode" : "Switch to dark mode"}
+      >
+        {theme === "night" ? "🌙" : "☀️"}
+      </button>
     </div>
   );
 }
