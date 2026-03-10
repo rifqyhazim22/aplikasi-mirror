@@ -974,14 +974,14 @@ function applyHumanInsights(
   const attention =
     typeof face.attention === "number"
       ? Number(face.attention.toFixed(2))
-      : baseline.attention ?? null;
+      : baseline.attention ?? 0;
   const headPose = face.rotation?.angle
     ? {
-      pitch: Number((face.rotation.angle.pitch ?? baseline.headPose?.pitch ?? 0).toFixed(1)),
-      yaw: Number((face.rotation.angle.yaw ?? baseline.headPose?.yaw ?? 0).toFixed(1)),
-      roll: Number((face.rotation.angle.roll ?? baseline.headPose?.roll ?? baseline.tilt ?? 0).toFixed(1)),
+      pitch: Number((face.rotation.angle.pitch ?? 0).toFixed(1)),
+      yaw: Number((face.rotation.angle.yaw ?? 0).toFixed(1)),
+      roll: Number((face.rotation.angle.roll ?? 0).toFixed(1)),
     }
-    : baseline.headPose ?? null;
+    : null;
   const cues = [...baseline.cues];
   if (attention !== null) {
     if (attention < 0.35) cues.push(uiCopy.cueFocus);
