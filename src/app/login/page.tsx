@@ -17,17 +17,27 @@ export default function LoginPage() {
         setLoading(true);
         setError(null);
 
-        const supabase = createClient();
-        const { error: authError } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-        });
+        try {
+            const supabase = createClient();
+            const { data, error: authError } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            });
 
-        if (authError) {
-            setError(authError.message);
+            if (authError) {
+                setError(authError.message);
+                setLoading(false);
+            } else if (!data.session) {
+                setError('Login berhasil, namun butuh verifikasi email. Tolong matikan "Confirm Email" di Supabase.');
+                setLoading(false);
+            } else {
+                router.push('/experience');
+                // Fallback timeout in case redirect is intercepted
+                setTimeout(() => setLoading(false), 3000);
+            }
+        } catch (err: any) {
+            setError(err?.message || 'Terjadi kesalahan sistem');
             setLoading(false);
-        } else {
-            router.push('/experience');
         }
     };
 
@@ -35,32 +45,45 @@ export default function LoginPage() {
         setLoading(true);
         setError(null);
 
-        const supabase = createClient();
-        const devEmail = 'developer@mirror.app';
-        const devPassword = 'developerpassword123';
+        try {
+            const supabase = createClient();
+            const devEmail = 'developer@mirror.app';
+            const devPassword = 'developerpassword123';
 
-        // Coba login dulu
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-            email: devEmail,
-            password: devPassword,
-        });
-
-        if (signInError) {
-            // Kalau gagal karena akun belum ada, buat akunnya
-            const { error: signUpError } = await supabase.auth.signUp({
+            // Coba login dulu
+            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
                 email: devEmail,
                 password: devPassword,
             });
 
-            if (signUpError) {
-                setError('Gagal membuat akun developer otomatis: ' + signUpError.message);
+            if (signInError) {
+                // Kalau gagal karena akun belum ada, buat akunnya
+                const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+                    email: devEmail,
+                    password: devPassword,
+                });
+
+                if (signUpError) {
+                    setError('Gagal membuat akun otomatis: ' + signUpError.message);
+                    setLoading(false);
+                } else if (!signUpData.session) {
+                    setError('Akun terbuat, tetapi tertahan verifikasi email! Silakan matikan "Confirm Email" di Supabase Auth.');
+                    setLoading(false);
+                } else {
+                    router.push('/experience');
+                    setTimeout(() => setLoading(false), 3000);
+                }
+            } else if (!signInData.session) {
+                setError('Gagal masuk: Verifikasi email diperlukan. Matikan "Confirm Email" di Supabase Auth Settings.');
                 setLoading(false);
             } else {
+                // Berhasil login
                 router.push('/experience');
+                setTimeout(() => setLoading(false), 3000);
             }
-        } else {
-            // Berhasil login
-            router.push('/experience');
+        } catch (err: any) {
+            setError(err?.message || 'Kesalahan saat Developer Login');
+            setLoading(false);
         }
     };
 
