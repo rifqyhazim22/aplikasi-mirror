@@ -36,13 +36,13 @@ export async function POST(request: Request) {
       profile_id: payload.profileId ?? null,
       metadata: payload.metrics
         ? {
-            valence: payload.metrics.valence,
-            energy: payload.metrics.energy,
-            tension: payload.metrics.tension,
-            focus: payload.metrics.focus,
-            tilt: payload.metrics.tilt ?? null,
-            cues: payload.metrics.cues ?? [],
-          }
+          valence: payload.metrics.valence,
+          energy: payload.metrics.energy,
+          tension: payload.metrics.tension,
+          focus: payload.metrics.focus,
+          tilt: payload.metrics.tilt ?? null,
+          cues: payload.metrics.cues ?? [],
+        }
         : null,
     };
     const { error } = await supabase.from("camera_emotion_log").insert([insertPayload]);
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       throw error;
     }
     return NextResponse.json({ status: "stored" });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error(error);
     return NextResponse.json({ message: "Gagal menyimpan emosi kamera" }, { status: 400 });
   }

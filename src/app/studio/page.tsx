@@ -2,7 +2,6 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CameraLiquidWidget } from "@/components/camera-liquid";
-import { MiniChat } from "@/components/mini-chat";
 import { usePreferences } from "@/contexts/preferences-context";
 import { onboardingCopy } from "@/lib/onboarding-i18n";
 import { getBrowserSupabaseClient } from "@/lib/supabase-browser";
@@ -179,7 +178,7 @@ export default function StudioPage() {
   const [loading, setLoading] = useState(false);
   const [info, setInfo] = useState<string | null>(null);
   const [logsLoading, setLogsLoading] = useState(false);
-  const [sensorLoading, setSensorLoading] = useState(false);
+  const [sensorReady, setSensorReady] = useState(false);
   const [sensors, setSensors] = useState<{ mood?: MoodSnapshot; camera?: CameraSnapshot }>({});
   const [isListening, setIsListening] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -268,39 +267,41 @@ export default function StudioPage() {
         setSensors({});
         return;
       }
-      setSensorLoading(true);
-      try {
-        const [moodRes, cameraRes] = await Promise.all([
-          fetch(resolveApiUrl(`/api/moods?profileId=${selectedProfileId}`)),
-          fetch(resolveApiUrl(`/api/emotions?profileId=${selectedProfileId}&limit=1`)),
-        ]);
-        if (!moodRes.ok || !cameraRes.ok) {
-          throw new Error("Sensor gagal dimuat");
+      // Start connecting to components
+      setTimeout(async () => {
+        try {
+          const [moodRes, cameraRes] = await Promise.all([
+            fetch(resolveApiUrl(`/api/moods?profileId=${selectedProfileId}`)),
+            fetch(resolveApiUrl(`/api/emotions?profileId=${selectedProfileId}&limit=1`)),
+          ]);
+          if (!moodRes.ok || !cameraRes.ok) {
+            throw new Error("Sensor gagal dimuat");
+          }
+          const moodPayload = (await moodRes.json()) as MoodSnapshot[];
+          const cameraPayload = (await cameraRes.json()) as {
+            id: string;
+            emotion: string;
+            confidence: number | null;
+            created_at: string;
+          }[];
+          setSensors({
+            mood: moodPayload[0],
+            camera: cameraPayload[0]
+              ? {
+                id: cameraPayload[0].id,
+                emotion: cameraPayload[0].emotion,
+                confidence: cameraPayload[0].confidence,
+                createdAt: cameraPayload[0].created_at,
+              }
+              : undefined,
+          });
+        } catch (error) {
+          console.error(error);
+          setInfo(copy.infoSensor);
+        } finally {
+          setSensorReady(true);
         }
-        const moodPayload = (await moodRes.json()) as MoodSnapshot[];
-        const cameraPayload = (await cameraRes.json()) as {
-          id: string;
-          emotion: string;
-          confidence: number | null;
-          created_at: string;
-        }[];
-        setSensors({
-          mood: moodPayload[0],
-          camera: cameraPayload[0]
-            ? {
-              id: cameraPayload[0].id,
-              emotion: cameraPayload[0].emotion,
-              confidence: cameraPayload[0].confidence,
-              createdAt: cameraPayload[0].created_at,
-            }
-            : undefined,
-        });
-      } catch (error) {
-        console.error(error);
-        setInfo(copy.infoSensor);
-      } finally {
-        setSensorLoading(false);
-      }
+      }, 1500);
     };
     loadSensors();
   }, [selectedProfileId, copy.infoSensor]);

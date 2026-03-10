@@ -91,7 +91,7 @@ export default function InsightsPage() {
             {/* Left Column: Aura Energy Orb */}
             <div className="w-full lg:w-1/3 flex flex-col gap-6">
               <div className="glass-card rounded-3xl p-8 flex flex-col items-center justify-center min-h-[500px] relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-sky-400/10 to-transparent"></div>
+                <div className="absolute inset-0 z-0 bg-[url('/insights-noise.png')] opacity-20 mix-blend-overlay"></div>
                 <div className="z-10 text-center mb-12">
                   <p className="text-white text-2xl font-semibold tracking-wide">Aura Scan</p>
                   <p className="text-white/50 text-xs font-medium uppercase tracking-widest mt-2">{insight.nickname}</p>
@@ -125,7 +125,7 @@ export default function InsightsPage() {
                   <h3 className="text-lg font-semibold tracking-wide">AI Reflection</h3>
                 </div>
                 <p className="text-white/90 text-lg md:text-xl leading-relaxed font-light italic relative z-10">
-                  "{insight.suggestion}"
+                  &quot;{insight.suggestion}&quot;
                 </p>
               </div>
 

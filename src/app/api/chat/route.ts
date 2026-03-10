@@ -203,9 +203,9 @@ export async function POST(request: Request) {
       reply,
       usage: completion.usage,
     });
-  } catch (error) {
-    console.error(error);
-    if (error instanceof z.ZodError) {
+  } catch (err: unknown) {
+    console.error(err);
+    if (err instanceof z.ZodError) {
       return NextResponse.json({ message: "Payload tidak valid" }, { status: 400 });
     }
     return NextResponse.json({ message: "Mirror lagi sibuk" }, { status: 500 });

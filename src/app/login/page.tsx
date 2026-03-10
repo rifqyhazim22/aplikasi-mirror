@@ -35,8 +35,9 @@ export default function LoginPage() {
                 // Fallback timeout in case redirect is intercepted
                 setTimeout(() => setLoading(false), 3000);
             }
-        } catch (err: any) {
-            setError(err?.message || 'Terjadi kesalahan sistem');
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Terjadi kesalahan sistem';
+            setError(msg);
             setLoading(false);
         }
     };
@@ -81,8 +82,9 @@ export default function LoginPage() {
                 router.push('/experience');
                 setTimeout(() => setLoading(false), 3000);
             }
-        } catch (err: any) {
-            setError(err?.message || 'Kesalahan saat Developer Login');
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Kesalahan saat Developer Login';
+            setError(msg);
             setLoading(false);
         }
     };

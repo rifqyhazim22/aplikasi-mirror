@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { CameraLiquidWidget } from "@/components/camera-liquid";
 import { MiniChat } from "@/components/mini-chat";
+import { VisionAnalyticsPanel } from "@/components/vision-analytics";
 import Link from "next/link";
 import type { VisionSignal } from "@/types/vision";
 import { resolveApiUrl } from "@/lib/api";
@@ -44,7 +45,26 @@ const cameraCopy = {
       logsLoading: "Mengumpulkan memori...",
       selectProfilePrompt: "Pilih personamu untuk memulai koneksi.",
     },
-    visionPanel: undefined,
+    toggleAnalyticsShow: "Buka Tabir Analisis",
+    toggleAnalyticsHide: "Tutup Tabir Analisis",
+    visionPanel: {
+      idleHeading: "Jejak Hening",
+      idleDescription: "Kamera sedang tertidur. Buka mata cermin untuk melihat pantulan emosimu.",
+      signalHeading: "Esensi Perasaan",
+      metricsLabel: "Kehangatan {valence} • Energi {energy}",
+      cuesTitle: "Isyarat Batin",
+      cuesEmpty: "Belum ada guratan emosi yang terbaca.",
+      headPoseTitle: "Bahasa Tubuh",
+      headPoseEmpty: "Postur tubuh belum terlihat jelas.",
+      focusTitle: "Kehadiran",
+      attentionHigh: "hadir sepenuhnya",
+      attentionLow: "butuh jeda rileks",
+      attentionBalanced: "selaras",
+      attentionLabel: "Fokus {percent} ({state})",
+      attentionEmpty: "Hening, matamu belum bercerita.",
+      expressionTitle: "Warna Dominan",
+      expressionEmpty: "Kanvas emosi masih kosong.",
+    },
   },
   en: {
     heroBadge: "Reflection lab",
@@ -75,23 +95,25 @@ const cameraCopy = {
       logsLoading: "Gathering memories...",
       selectProfilePrompt: "Select your persona to start connecting.",
     },
+    toggleAnalyticsShow: "Unveil Deep Insights",
+    toggleAnalyticsHide: "Hide Deep Insights",
     visionPanel: {
-      idleHeading: "Deep analytics",
-      idleDescription: "Camera resting or signal lost. Open Mirror Cam for live reflection.",
-      signalHeading: "Realtime essence",
-      metricsLabel: "Valence {valence} • Energy {energy}",
-      cuesTitle: "Visual cues",
-      cuesEmpty: "No recent cues caught.",
-      headPoseTitle: "Posture",
-      headPoseEmpty: "Posture unclear.",
-      focusTitle: "Attention",
-      attentionHigh: "deeply focused",
-      attentionLow: "drifting",
-      attentionBalanced: "balanced",
-      attentionLabel: "Attention {percent} ({state})",
-      attentionEmpty: "Attention reading unavailable.",
-      expressionTitle: "Core expressions",
-      expressionEmpty: "No expressions caught.",
+      idleHeading: "Silent Echoes",
+      idleDescription: "The mirror is resting. Open its eyes to see your inner reflection.",
+      signalHeading: "Realtime Essence",
+      metricsLabel: "Warmth {valence} • Energy {energy}",
+      cuesTitle: "Subtle Cues",
+      cuesEmpty: "No emotional traces caught yet.",
+      headPoseTitle: "Body Language",
+      headPoseEmpty: "Posture remains a mystery.",
+      focusTitle: "Presence",
+      attentionHigh: "deeply present",
+      attentionLow: "drifting gently",
+      attentionBalanced: "in harmony",
+      attentionLabel: "Focus {percent} ({state})",
+      attentionEmpty: "Stillness. Your eyes haven't spoken yet.",
+      expressionTitle: "Dominant Hues",
+      expressionEmpty: "Your emotional canvas is resting.",
     },
   },
 } as const;
@@ -102,6 +124,7 @@ export default function CameraPage() {
   const [profiles, setProfiles] = useState<ProfileOption[]>([]);
   const [activeProfileId, setActiveProfileId] = useState("");
   const [info, setInfo] = useState<string | null>(null);
+  const [showAnalytics, setShowAnalytics] = useState(false);
   const [visionSignal, setVisionSignal] = useState<VisionSignal | null>(null);
   const synchronizedVision = useMemo(() => {
     if (!visionSignal) return null;
@@ -171,6 +194,19 @@ export default function CameraPage() {
           onSelectProfile={setActiveProfileId}
           visionSignal={synchronizedVision}
         />
+        <div className="flex justify-center pt-4 border-t border-white/5">
+          <button
+            onClick={() => setShowAnalytics((prev) => !prev)}
+            className="text-xs tracking-widest uppercase font-semibold text-white/40 hover:text-white transition-colors py-2 px-6 rounded-full border border-white/10 glass-pill"
+          >
+            {showAnalytics ? copy.toggleAnalyticsHide : copy.toggleAnalyticsShow}
+          </button>
+        </div>
+        {showAnalytics && (
+          <div className="animate-in fade-in slide-in-from-top-4 duration-500 w-full mt-4">
+            <VisionAnalyticsPanel signal={synchronizedVision} copy={copy.visionPanel} />
+          </div>
+        )}
       </section>
       <div className="liquid-card flex flex-col gap-3 p-6 text-sm text-white/80 sm:flex-row sm:items-center sm:justify-between">
         <div>

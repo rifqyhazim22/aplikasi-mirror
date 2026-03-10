@@ -21,8 +21,6 @@ const preferenceCopy = {
 
 export function PreferenceTogglePanel() {
   const { theme, language, setTheme, setLanguage } = usePreferences();
-  const copy = preferenceCopy[language] ?? preferenceCopy.id;
-  const isDay = theme === "day";
   return (
     <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3">
       <button
