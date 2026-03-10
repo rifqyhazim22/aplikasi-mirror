@@ -211,10 +211,14 @@ type FaceMeshModule = typeof import("@tensorflow-models/face-landmarks-detection
 export function CameraLiquidWidget({
   variant = "full",
   profileId = null,
+  showAnalytics = true,
+  children,
   onVisionSignal,
 }: {
   variant?: WidgetVariant;
   profileId?: string | null;
+  showAnalytics?: boolean;
+  children?: React.ReactNode;
   onVisionSignal?: (signal: VisionSignal) => void;
 }) {
   const { language } = usePreferences();
@@ -647,136 +651,141 @@ export function CameraLiquidWidget({
           </div>
         )}
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-          <p className="text-xs uppercase tracking-[0.35em] text-white/50">{uiCopy.statusHeading}</p>
-          <p className={`mt-2 text-lg font-semibold ${statusTone.color}`}>{statusTone.label}</p>
-          <p className="text-xs text-white/60">{statusTone.detail}</p>
-          <p className="mt-2 text-[11px] text-white/40">
-            CV lanjutan:{" "}
-            {humanStatus === "ready"
-              ? uiCopy.humanReady
-              : humanStatus === "loading"
-                ? uiCopy.humanLoading
-                : humanStatus === "error"
-                  ? uiCopy.humanError
-                  : uiCopy.humanIdle}
-          </p>
-        </div>
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-          <p className="text-xs uppercase tracking-[0.35em] text-white/50">{uiCopy.moodHeading}</p>
-          <p className="mt-2 flex items-center gap-2 text-xl font-semibold text-white">
-            <span>{mood.emoji}</span> {mood.label}
-          </p>
-          <p className="text-xs text-white/60">{mood.description}</p>
-          <div className="mt-3 h-2 w-full rounded-full bg-white/10">
-            <span
-              className="block h-full rounded-full bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-300"
-              style={{ width: `${Math.min(Math.max(mood.confidence, 5), 100)}%` }}
-            />
-          </div>
-          <p className="mt-1 text-right text-xs text-white/50">
-            {permission === "granted" ? `${mood.confidence}% confidence` : uiCopy.waitingCamera}
-          </p>
-        </div>
-      </div>
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-          <p className="text-xs uppercase tracking-[0.35em] text-white/50">{uiCopy.brightnessHeading}</p>
-          <div className="mt-3 flex h-24 items-end gap-1">
-            {brightnessHistory.length === 0 ? (
-              <p className="text-xs text-white/60">{uiCopy.brightnessEmpty}</p>
-            ) : (
-              brightnessHistory.map((value, index) => (
+      {children}
+      {showAnalytics && variant === "full" && (
+        <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <p className="text-xs uppercase tracking-[0.35em] text-white/50">{uiCopy.statusHeading}</p>
+              <p className={`mt-2 text-lg font-semibold ${statusTone.color}`}>{statusTone.label}</p>
+              <p className="text-xs text-white/60">{statusTone.detail}</p>
+              <p className="mt-2 text-[11px] text-white/40">
+                CV lanjutan:{" "}
+                {humanStatus === "ready"
+                  ? uiCopy.humanReady
+                  : humanStatus === "loading"
+                    ? uiCopy.humanLoading
+                    : humanStatus === "error"
+                      ? uiCopy.humanError
+                      : uiCopy.humanIdle}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <p className="text-xs uppercase tracking-[0.35em] text-white/50">{uiCopy.moodHeading}</p>
+              <p className="mt-2 flex items-center gap-2 text-xl font-semibold text-white">
+                <span>{mood.emoji}</span> {mood.label}
+              </p>
+              <p className="text-xs text-white/60">{mood.description}</p>
+              <div className="mt-3 h-2 w-full rounded-full bg-white/10">
                 <span
-                  key={`${value}-${index}`}
-                  className="block w-2 rounded-full bg-gradient-to-t from-cyan-400 via-purple-400 to-pink-400"
-                  style={{ height: `${Math.max((value / 255) * 100, 5)}%` }}
+                  className="block h-full rounded-full bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-300"
+                  style={{ width: `${Math.min(Math.max(mood.confidence, 5), 100)}%` }}
                 />
-              ))
-            )}
+              </div>
+              <p className="mt-1 text-right text-xs text-white/50">
+                {permission === "granted" ? `${mood.confidence}% confidence` : uiCopy.waitingCamera}
+              </p>
+            </div>
           </div>
-          <p className="mt-2 text-xs text-white/60">
-            {uiCopy.brightnessAverage.replace(
-              "{value}",
-              String(brightnessHistory.length ? Math.round(brightnessHistory.at(-1) ?? 0) : 0),
-            )}
-          </p>
-        </div>
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4 space-y-2">
-          <p className="text-xs uppercase tracking-[0.35em] text-white/50">{uiCopy.freezeHeading}</p>
-          <button
-            type="button"
-            onClick={startCountdown}
-            disabled={permission !== "granted" || countdown !== null}
-            className="white-pill rounded-full bg-white px-4 py-2 text-xs text-purple-900 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {countdown !== null
-              ? uiCopy.freezeCountdown.replace("{count}", String(countdown))
-              : uiCopy.freezeButton}
-          </button>
-          {lastCapture && (
-            <>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={lastCapture} alt="Snapshot Mirror" className="h-32 w-full rounded-2xl object-cover" />
-            </>
-          )}
-        </div>
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
-          <p className="text-xs uppercase tracking-[0.35em] text-white/50">{uiCopy.tipsHeading}</p>
-          <p>{uiCopy.tipsBody}</p>
-        </div>
-      </div>
-      <section className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-          <p className="text-xs uppercase tracking-[0.35em] text-white/50">{uiCopy.valenceHeading}</p>
-          <div className="mt-3 space-y-3">
-            <MetricBar
-              label="Valence"
-              value={(sensorMetrics.valence + 1) / 2}
-              description={
-                sensorMetrics.valence > 0.2
-                  ? uiCopy.valencePositive
-                  : sensorMetrics.valence < -0.2
-                    ? uiCopy.valenceNegative
-                    : uiCopy.valenceNeutral
-              }
-            />
-            <MetricBar
-              label="Energy"
-              value={sensorMetrics.energy}
-              description={sensorMetrics.energy > 0.6 ? uiCopy.energyHigh : uiCopy.energyLow}
-            />
+          <div className="grid gap-4 lg:grid-cols-3">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <p className="text-xs uppercase tracking-[0.35em] text-white/50">{uiCopy.brightnessHeading}</p>
+              <div className="mt-3 flex h-24 items-end gap-1">
+                {brightnessHistory.length === 0 ? (
+                  <p className="text-xs text-white/60">{uiCopy.brightnessEmpty}</p>
+                ) : (
+                  brightnessHistory.map((value, index) => (
+                    <span
+                      key={`${value}-${index}`}
+                      className="block w-2 rounded-full bg-gradient-to-t from-cyan-400 via-purple-400 to-pink-400"
+                      style={{ height: `${Math.max((value / 255) * 100, 5)}%` }}
+                    />
+                  ))
+                )}
+              </div>
+              <p className="mt-2 text-xs text-white/60">
+                {uiCopy.brightnessAverage.replace(
+                  "{value}",
+                  String(brightnessHistory.length ? Math.round(brightnessHistory.at(-1) ?? 0) : 0),
+                )}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4 space-y-2">
+              <p className="text-xs uppercase tracking-[0.35em] text-white/50">{uiCopy.freezeHeading}</p>
+              <button
+                type="button"
+                onClick={startCountdown}
+                disabled={permission !== "granted" || countdown !== null}
+                className="white-pill rounded-full bg-white px-4 py-2 text-xs text-purple-900 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {countdown !== null
+                  ? uiCopy.freezeCountdown.replace("{count}", String(countdown))
+                  : uiCopy.freezeButton}
+              </button>
+              {lastCapture && (
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={lastCapture} alt="Snapshot Mirror" className="h-32 w-full rounded-2xl object-cover" />
+                </>
+              )}
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
+              <p className="text-xs uppercase tracking-[0.35em] text-white/50">{uiCopy.tipsHeading}</p>
+              <p>{uiCopy.tipsBody}</p>
+            </div>
           </div>
+          <section className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <p className="text-xs uppercase tracking-[0.35em] text-white/50">{uiCopy.valenceHeading}</p>
+              <div className="mt-3 space-y-3">
+                <MetricBar
+                  label="Valence"
+                  value={(sensorMetrics.valence + 1) / 2}
+                  description={
+                    sensorMetrics.valence > 0.2
+                      ? uiCopy.valencePositive
+                      : sensorMetrics.valence < -0.2
+                        ? uiCopy.valenceNegative
+                        : uiCopy.valenceNeutral
+                  }
+                />
+                <MetricBar
+                  label="Energy"
+                  value={sensorMetrics.energy}
+                  description={sensorMetrics.energy > 0.6 ? uiCopy.energyHigh : uiCopy.energyLow}
+                />
+              </div>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <p className="text-xs uppercase tracking-[0.35em] text-white/50">{uiCopy.focusHeading}</p>
+              <div className="mt-3 space-y-3">
+                <MetricBar
+                  label="Focus"
+                  value={sensorMetrics.focus}
+                  description={sensorMetrics.focus > 0.5 ? uiCopy.focusHigh : uiCopy.focusLow}
+                />
+                <MetricBar
+                  label="Tension"
+                  value={sensorMetrics.tension}
+                  description={sensorMetrics.tension > 0.6 ? uiCopy.tensionHigh : uiCopy.tensionLow}
+                />
+                <p className="text-xs text-white/60">
+                  {uiCopy.tiltLabel}: {sensorMetrics.tilt ? `${sensorMetrics.tilt.toFixed(1)}°` : uiCopy.tiltStable}
+                </p>
+                {sensorMetrics.cues.length > 0 ? (
+                  <ul className="list-disc pl-4 text-xs text-white/70">
+                    {sensorMetrics.cues.map((cue) => (
+                      <li key={cue}>{cue}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-xs text-white/60">{uiCopy.cuesEmpty}</p>
+                )}
+              </div>
+            </div>
+          </section>
         </div>
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-          <p className="text-xs uppercase tracking-[0.35em] text-white/50">{uiCopy.focusHeading}</p>
-          <div className="mt-3 space-y-3">
-            <MetricBar
-              label="Focus"
-              value={sensorMetrics.focus}
-              description={sensorMetrics.focus > 0.5 ? uiCopy.focusHigh : uiCopy.focusLow}
-            />
-            <MetricBar
-              label="Tension"
-              value={sensorMetrics.tension}
-              description={sensorMetrics.tension > 0.6 ? uiCopy.tensionHigh : uiCopy.tensionLow}
-            />
-            <p className="text-xs text-white/60">
-              {uiCopy.tiltLabel}: {sensorMetrics.tilt ? `${sensorMetrics.tilt.toFixed(1)}°` : uiCopy.tiltStable}
-            </p>
-            {sensorMetrics.cues.length > 0 ? (
-              <ul className="list-disc pl-4 text-xs text-white/70">
-                {sensorMetrics.cues.map((cue) => (
-                  <li key={cue}>{cue}</li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-xs text-white/60">{uiCopy.cuesEmpty}</p>
-            )}
-          </div>
-        </div>
-      </section>
+      )}
       <canvas ref={canvasRef} className="hidden" />
     </div>
   );

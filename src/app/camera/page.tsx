@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { CameraLiquidWidget } from "@/components/camera-liquid";
 import { MiniChat } from "@/components/mini-chat";
-import { VisionAnalyticsPanel } from "@/components/vision-analytics";
+
 import Link from "next/link";
 import type { VisionSignal } from "@/types/vision";
 import { resolveApiUrl } from "@/lib/api";
@@ -184,29 +184,28 @@ export default function CameraPage() {
         <CameraLiquidWidget
           variant="full"
           profileId={activeProfileId || null}
+          showAnalytics={showAnalytics}
           onVisionSignal={(signal) => setVisionSignal(signal)}
-        />
-        <MiniChat
-          title={copy.quickChatTitle}
-          copy={copy.miniChat}
-          profiles={profiles}
-          selectedProfileId={activeProfileId}
-          onSelectProfile={setActiveProfileId}
-          visionSignal={synchronizedVision}
-        />
-        <div className="flex justify-center pt-4 border-t border-white/5">
-          <button
-            onClick={() => setShowAnalytics((prev) => !prev)}
-            className="text-xs tracking-widest uppercase font-semibold text-white/40 hover:text-white transition-colors py-2 px-6 rounded-full border border-white/10 glass-pill"
-          >
-            {showAnalytics ? copy.toggleAnalyticsHide : copy.toggleAnalyticsShow}
-          </button>
-        </div>
-        {showAnalytics && (
-          <div className="animate-in fade-in slide-in-from-top-4 duration-500 w-full mt-4">
-            <VisionAnalyticsPanel signal={synchronizedVision} copy={copy.visionPanel} />
+        >
+          <div className="pt-2">
+            <MiniChat
+              title={copy.quickChatTitle}
+              copy={copy.miniChat}
+              profiles={profiles}
+              selectedProfileId={activeProfileId}
+              onSelectProfile={setActiveProfileId}
+              visionSignal={synchronizedVision}
+            />
           </div>
-        )}
+          <div className="flex justify-center pt-2">
+            <button
+              onClick={() => setShowAnalytics((prev) => !prev)}
+              className="text-xs tracking-widest uppercase font-semibold text-white/40 hover:text-white transition-colors py-2 px-6 rounded-full border border-white/10 glass-pill"
+            >
+              {showAnalytics ? copy.toggleAnalyticsHide : copy.toggleAnalyticsShow}
+            </button>
+          </div>
+        </CameraLiquidWidget>
       </section>
       <div className="liquid-card flex flex-col gap-3 p-6 text-sm text-white/80 sm:flex-row sm:items-center sm:justify-between">
         <div>
