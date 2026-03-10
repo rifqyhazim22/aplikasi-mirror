@@ -571,15 +571,6 @@ export default function ExperiencePage() {
             </div>
           </section>
           <section className="glass-card space-y-3 p-6">
-            <p className="emoji-heading">{copy.playbookHeading}</p>
-            <p className="text-lg font-semibold text-white">{copy.playbookTitle}</p>
-            <ul className={`space-y-2 text-sm ${subText}`}>
-              {copy.demoGuide.map((line) => (
-                <li key={line}>{line}</li>
-              ))}
-            </ul>
-          </section>
-          <section className="glass-card space-y-3 p-6">
             <p className="emoji-heading">{copy.historyTitle}</p>
             <p className={`text-sm ${subText}`}>{copy.historyDescription}</p>
             {recentLoading ? (
