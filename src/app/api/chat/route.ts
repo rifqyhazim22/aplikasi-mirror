@@ -67,10 +67,19 @@ type CameraSnapshot = {
 };
 type VisionSignalPayload = z.infer<typeof visionSignalSchema>;
 
+import { createClient } from "@/utils/supabase/server";
+
 const responderModel = process.env.OPENAI_RESPONDER_MODEL ?? "gpt-4o-mini";
 
 export async function POST(request: Request) {
   try {
+    const supabaseServer = await createClient();
+    const { data: { user } } = await supabaseServer.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ message: "Unauthorized: Please log in first." }, { status: 401 });
+    }
+
     const payload = requestSchema.parse(await request.json());
     const supabase = getSupabaseClient();
     const { data: profile, error } = await supabase
@@ -95,12 +104,12 @@ export async function POST(request: Request) {
       payload.visionSignal
         ? Promise.resolve({ data: null, error: null })
         : supabase
-            .from("camera_emotion_log")
-            .select("emotion,confidence,metadata,created_at")
-            .eq("profile_id", payload.profileId)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle(),
+          .from("camera_emotion_log")
+          .select("emotion,confidence,metadata,created_at")
+          .eq("profile_id", payload.profileId)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
     ]);
 
     if (moodResult.error) {
@@ -119,12 +128,12 @@ export async function POST(request: Request) {
 
     const normalizedCameraSnapshot: CameraSnapshot | null = cameraSource
       ? {
-          ...cameraSource,
-          metadata: (cameraSource.metadata as SensorMetrics | null) ?? null,
-        }
+        ...cameraSource,
+        metadata: (cameraSource.metadata as SensorMetrics | null) ?? null,
+      }
       : null;
 
-    
+
 
     const conversation: ChatCompletionMessageParam[] = buildMessages(
       profile,
@@ -212,17 +221,15 @@ function buildMessages(
   conversationSummary: string | null,
   liveVision: VisionSignalPayload | null,
 ): ChatCompletionMessageParam[] {
-  const profileSynopsis = `Nama: ${profile.nickname}. Mood baseline: ${profile.mood_baseline}. Fokus: ${
-    profile.focus_areas?.join(", ") || "-"
-  }. MBTI: ${profile.mbti_type ?? "-"}. Enneagram: ${profile.enneagram_type ?? "-"}. Archetype: ${
-    profile.primary_archetype ?? "-"
-  }. Catatan: ${profile.personality_notes ?? "-"}.`;
+  const profileSynopsis = `Nama: ${profile.nickname}. Mood baseline: ${profile.mood_baseline}. Fokus: ${profile.focus_areas?.join(", ") || "-"
+    }. MBTI: ${profile.mbti_type ?? "-"}. Enneagram: ${profile.enneagram_type ?? "-"}. Archetype: ${profile.primary_archetype ?? "-"
+    }. Catatan: ${profile.personality_notes ?? "-"}.`;
 
   const moodNote = latestMood?.note ? `dengan catatan ${latestMood.note} ` : "";
   const moodLine = latestMood
     ? `Mood entry terakhir (${latestMood.source ?? "demo"}) adalah "${latestMood.mood}" ${moodNote}pada ${new Date(
-        latestMood.created_at,
-      ).toLocaleString("id-ID")}.`
+      latestMood.created_at,
+    ).toLocaleString("id-ID")}.`
     : "Belum ada mood entry eksplisit untuk profil ini.";
 
   const visionInsight = buildVisionInsight(liveVision, cameraReading);
@@ -232,10 +239,9 @@ function buildMessages(
     `Konfirmasi konteks ini: ${profileSynopsis}`,
     `Data mood: ${moodLine}`,
     `Data computer vision: ${visionInsight.text}`,
-    `Ringkasan chat sebelumnya: ${
-      conversationSummary && conversationSummary.length > 0
-        ? conversationSummary
-        : "belum ada ringkasan"
+    `Ringkasan chat sebelumnya: ${conversationSummary && conversationSummary.length > 0
+      ? conversationSummary
+      : "belum ada ringkasan"
     }`,
     "Gunakan informasi di atas untuk mempersonalisasi respon dan validasi emosi pengguna.",
     "Boleh menawarkan latihan sederhana (breathing/journaling) namun jangan memberi diagnosa klinis.",

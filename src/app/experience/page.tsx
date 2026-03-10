@@ -99,25 +99,17 @@ function OptionCard({
   subtitle,
   active,
   onClick,
-  isDay,
 }: {
   title: string;
   subtitle: string;
   active: boolean;
   onClick: () => void;
-  isDay: boolean;
+  isDay: boolean; // retained for signature compatibility but ignored
 }) {
-  const nightClasses = active
-    ? "border-white bg-white/10 text-white shadow-lg"
-    : "border-white/20 text-white/70 hover:border-white/40";
-  const dayClasses = active
-    ? "border-[rgba(19,4,41,0.35)] bg-white text-[var(--mirror-ink)] shadow-lg"
-    : "border-[rgba(19,4,41,0.2)] bg-white/80 text-[var(--mirror-ink)] hover:border-[rgba(19,4,41,0.4)]";
-  const palette = isDay ? dayClasses : nightClasses;
   return (
-    <button type="button" onClick={onClick} className={`w-full rounded-3xl border px-4 py-3 text-left transition ${palette}`}>
-      <p className={`text-sm font-semibold ${isDay ? "text-[var(--mirror-ink)]" : "text-white"}`}>{title}</p>
-      <p className={`text-xs ${isDay ? "text-[rgba(19,4,41,0.65)]" : "text-white/60"}`}>{subtitle}</p>
+    <button type="button" onClick={onClick} className={`w-full text-left transition ${active ? 'glass-pill active' : 'glass-pill'} flex flex-col justify-center !rounded-2xl px-5 py-4 min-h-[5rem]`}>
+      <p className="text-sm font-semibold">{title}</p>
+      <p className="text-xs opacity-70 mt-1">{subtitle}</p>
     </button>
   );
 }
@@ -257,45 +249,34 @@ export default function ExperiencePage() {
     }
   };
 
-  const fieldClass = `mt-2 w-full rounded-3xl border px-4 py-3 text-sm transition focus:outline-none ${
-    isDay
-      ? "border-[rgba(19,4,41,0.18)] bg-white text-[var(--mirror-ink)] placeholder:text-[rgba(19,4,41,0.55)] shadow-[0_15px_35px_rgba(19,4,41,0.08)] focus:border-[rgba(19,4,41,0.45)]"
-      : "border-white/10 bg-white/5 text-white placeholder:text-white/35 focus:border-white/60"
-  }`;
+  const fieldClass = "glass-input mt-2 w-full rounded-2xl h-12 px-5 text-sm transition focus:outline-none placeholder:text-white/40";
+  const selectClass = fieldClass + " appearance-none";
 
-  const textareaClass = `${fieldClass} resize-none`;
-  const selectClass = fieldClass;
-  const mutedText = isDay ? "text-[rgba(19,4,41,0.55)]" : "text-white/50";
-  const subText = isDay ? "text-[rgba(19,4,41,0.7)]" : "text-white/70";
-  const primaryButtonClass = `white-pill rounded-full px-6 py-3 text-sm font-semibold transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 ${
-    isDay ? "bg-[var(--mirror-ink)] text-white shadow-lg" : "bg-white text-purple-900"
-  }`;
-  const secondaryButtonClass = `rounded-full border px-6 py-3 text-sm transition ${
-    isDay
-      ? "border-[rgba(19,4,41,0.25)] text-[var(--mirror-ink)] hover:border-[rgba(19,4,41,0.45)]"
-      : "border-white/30 text-white/70 hover:border-white hover:text-white"
-  }`;
+  const textareaClass = "glass-input mt-2 w-full rounded-2xl p-5 text-sm transition focus:outline-none placeholder:text-white/40 resize-none";
+  const mutedText = "text-white/50";
+  const subText = "text-white/70";
+
+  const primaryButtonClass = "px-6 py-3 rounded-full font-medium tracking-wide transition-all bg-sky-400 hover:bg-sky-400/90 text-slate-900 shadow-[0_0_20px_rgba(54,198,226,0.3)] hover:shadow-[0_0_30px_rgba(54,198,226,0.5)] flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed";
+
+  const secondaryButtonClass = "glass-pill rounded-full px-6 py-3 text-sm transition flex items-center justify-center font-medium";
 
   const navButtonClass = (state: "active" | "completed" | "idle") => {
-    if (isDay) {
-      if (state === "active") return "border-[rgba(19,4,41,0.45)] bg-white text-[var(--mirror-ink)] shadow-lg";
-      if (state === "completed") return "border-[rgba(19,4,41,0.18)] bg-white/80 text-[var(--mirror-ink)]";
-      return "border-[rgba(19,4,41,0.18)] text-[rgba(19,4,41,0.6)] hover:border-[rgba(19,4,41,0.4)]";
-    }
-    if (state === "active") return "border-white bg-white/10 text-white shadow-lg";
-    if (state === "completed") return "border-emerald-300/40 text-emerald-100 hover:border-emerald-200/70";
-    return "border-white/15 text-white/60 hover:text-white";
+    if (state === "active") return "glass-pill active !rounded-3xl shadow-lg border-sky-400/30";
+    if (state === "completed") return "glass-pill !rounded-3xl border-emerald-400/30 text-emerald-100/80";
+    return "glass-pill !rounded-3xl text-white/60 hover:text-white";
   };
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-10 px-6 py-16 text-white">
-      <header className="space-y-4">
-        <p className="emoji-heading">{copy.tagline}</p>
-        <h1 className="text-4xl font-semibold leading-tight sm:text-5xl">{copy.heroTitle}</h1>
-        <p className="text-lg text-white/80">{copy.heroDescription}</p>
+    <main className="mx-auto flex min-h-screen max-w-[1100px] flex-col gap-10 px-6 py-16 text-white relative z-10 w-full">
+      <header className="flex flex-col gap-4 text-center md:text-left z-10 relative">
+        <div className="flex items-center gap-3 justify-center md:justify-start">
+          <span className="text-2xl">{copy.tagline.split(' ')[0] || '✨'}</span>
+          <h1 className="text-4xl md:text-5xl font-light tracking-tight">{copy.heroTitle}</h1>
+        </div>
+        <p className="text-white/60 text-lg font-light max-w-2xl mx-auto md:mx-0">{copy.heroDescription}</p>
       </header>
 
-      <nav className="glass-card flex flex-col gap-4 p-5 text-sm">
+      <nav className="glass-card flex flex-col gap-4 p-5 text-sm z-10">
         <div className="flex flex-wrap gap-4">
           {steps.map((step, index) => {
             const completed = index < activeIndex;
@@ -306,32 +287,35 @@ export default function ExperiencePage() {
                 key={step.id}
                 type="button"
                 onClick={() => setActiveStep(step.id)}
-                className={`flex min-w-[160px] flex-1 flex-col rounded-3xl border px-4 py-3 text-left transition ${navButtonClass(state)}`}
+                className={`flex min-w-[160px] flex-1 flex-col px-5 py-4 text-left transition ${navButtonClass(state)}`}
               >
-                <span className="text-xs uppercase tracking-[0.4em] text-white/40">
+                <span className={`text-xs uppercase tracking-[0.4em] mb-1 font-semibold ${isActive ? 'text-sky-400/80' : 'text-white/40'}`}>
                   {navBadgePrefix} {index + 1}
                 </span>
-                <span className="text-base font-semibold text-white">{step.title}</span>
-                <span className="text-[11px] text-white/60">{step.subtitle}</span>
+                <span className="text-base font-semibold text-white tracking-wide">{step.title}</span>
+                <span className={`text-xs mt-1 ${isActive ? 'text-sky-100' : 'text-white/60'}`}>{step.subtitle}</span>
               </button>
             );
           })}
         </div>
-        <p className={`text-xs ${mutedText}`}>{copy.stepOverview}</p>
+        <p className={`text-xs text-center md:text-left mt-2 ${mutedText}`}>{copy.stepOverview}</p>
       </nav>
 
-      <div className="grid gap-8 lg:grid-cols-[1.2fr,0.8fr]">
+      <div className="grid gap-8 lg:grid-cols-[6fr,4fr] z-10">
         <div className="space-y-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             {activeStep === "persona" && (
-              <section className="glass-card space-y-6 p-6 sm:p-8">
-                <div className="space-y-2">
-                  <p className="emoji-heading">{navBadgePrefix} 1</p>
-                  <h2 className="text-2xl font-semibold text-white">{copy.personaHeading}</h2>
-                  <p className={`text-sm ${subText}`}>{copy.personaSub}</p>
+              <section className="glass-card space-y-8 p-6 sm:p-10 relative overflow-hidden">
+                <div className="absolute top-0 right-0 -mt-20 -mr-20 w-64 h-64 bg-sky-400/10 blur-[80px] rounded-full pointer-events-none"></div>
+                <div className="flex items-center gap-4 mb-2">
+                  <span className="text-sky-400 text-3xl font-light">1</span>
+                  <div className="flex flex-col">
+                    <h2 className="text-xl font-medium tracking-wide">{copy.personaHeading}</h2>
+                    <p className={`text-sm ${subText}`}>{copy.personaSub}</p>
+                  </div>
                 </div>
-                <div>
-                  <label className={`text-sm ${subText}`}>{copy.nicknameLabel}</label>
+                <div className="space-y-2">
+                  <label className={`text-xs font-semibold tracking-wider uppercase px-1 ${subText}`}>{copy.nicknameLabel}</label>
                   <input
                     className={fieldClass}
                     value={form.nickname}
@@ -339,9 +323,10 @@ export default function ExperiencePage() {
                     placeholder={copy.nicknamePlaceholder}
                   />
                 </div>
-                <div>
-                  <p className={`text-sm ${subText}`}>{copy.focusLabel}</p>
-                  <p className={`text-xs ${mutedText}`}>{copy.focusHint}</p>
+                <div className="space-y-2">
+                  <label className={`text-xs font-semibold tracking-wider uppercase px-1 flex items-center gap-2 ${subText}`}>
+                    {copy.focusLabel} <span className="opacity-60 lowercase font-normal">({copy.focusHint})</span>
+                  </label>
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
                     {focusOptions.map((option) => (
                       <OptionCard
@@ -355,22 +340,19 @@ export default function ExperiencePage() {
                     ))}
                   </div>
                 </div>
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-4 sm:grid-cols-2 pt-4 border-t border-white/5">
                   {consentFields.map(({ key, label }) => (
                     <label
                       key={key}
-                      className={`flex items-center gap-3 rounded-3xl border p-4 text-sm ${
-                        isDay
-                          ? "border-[rgba(19,4,41,0.18)] bg-white text-[var(--mirror-ink)]"
-                          : "border-white/10 bg-white/5 text-white/80"
-                      }`}
+                      className="glass-pill flex items-center gap-3 !rounded-2xl p-4 text-sm cursor-pointer group"
                     >
                       <input
                         type="checkbox"
                         checked={form[key]}
                         onChange={(event) => updateField(key, event.target.checked)}
+                        className="rounded border-white/20 bg-white/5 text-sky-400 focus:ring-sky-400 focus:ring-offset-slate-900"
                       />
-                      {label}
+                      <span className="text-white/80 group-hover:text-white transition-colors">{label}</span>
                     </label>
                   ))}
                 </div>
@@ -384,14 +366,17 @@ export default function ExperiencePage() {
             )}
 
             {activeStep === "traits" && (
-              <section className="glass-card space-y-6 p-6 sm:p-8">
-                <div className="space-y-2">
-                  <p className="emoji-heading">{navBadgePrefix} 2</p>
-                  <h2 className="text-2xl font-semibold text-white">{copy.traitsHeading}</h2>
-                  <p className={`text-sm ${subText}`}>{copy.traitsSub}</p>
+              <section className="glass-card space-y-8 p-6 sm:p-10 relative overflow-hidden">
+                <div className="absolute top-0 right-0 -mt-20 -mr-20 w-64 h-64 bg-purple-400/10 blur-[80px] rounded-full pointer-events-none"></div>
+                <div className="flex items-center gap-4 mb-2">
+                  <span className="text-purple-400 text-3xl font-light">2</span>
+                  <div className="flex flex-col">
+                    <h2 className="text-xl font-medium tracking-wide">{copy.traitsHeading}</h2>
+                    <p className={`text-sm ${subText}`}>{copy.traitsSub}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className={`text-sm ${subText}`}>{copy.moodLabel}</p>
+                <div className="space-y-2">
+                  <label className={`text-xs font-semibold tracking-wider uppercase px-1 ${subText}`}>{copy.moodLabel}</label>
                   <div className="mt-4 grid gap-3 sm:grid-cols-3">
                     {moodOptions.map((mood) => (
                       <OptionCard
@@ -405,9 +390,9 @@ export default function ExperiencePage() {
                     ))}
                   </div>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <p className={`text-sm ${subText}`}>{copy.mbtiLabel}</p>
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <div className="space-y-3">
+                    <label className={`text-xs font-semibold tracking-wider uppercase px-1 ${subText}`}>{copy.mbtiLabel}</label>
                     <div className="grid gap-2">
                       {mbtiOptions.map((item) => (
                         <OptionCard
@@ -421,8 +406,8 @@ export default function ExperiencePage() {
                       ))}
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <p className={`text-sm ${subText}`}>{copy.enneagramLabel}</p>
+                  <div className="space-y-3">
+                    <label className={`text-xs font-semibold tracking-wider uppercase px-1 ${subText}`}>{copy.enneagramLabel}</label>
                     <div className="grid gap-2">
                       {enneagramOptions.map((item) => (
                         <OptionCard
@@ -437,9 +422,9 @@ export default function ExperiencePage() {
                     </div>
                   </div>
                 </div>
-                <div>
-                  <p className={`text-sm ${subText}`}>{copy.archetypeLabel}</p>
-                  <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                <div className="space-y-3 mt-6">
+                  <label className={`text-xs font-semibold tracking-wider uppercase px-1 ${subText}`}>{copy.archetypeLabel}</label>
+                  <div className="grid gap-3 sm:grid-cols-3">
                     {archetypeOptions.map((item) => (
                       <OptionCard
                         key={item.id}
@@ -452,16 +437,16 @@ export default function ExperiencePage() {
                     ))}
                   </div>
                 </div>
-                <div>
-                  <p className={`text-sm ${subText}`}>{copy.birthHint}</p>
+                <div className="space-y-2 mt-6">
+                  <label className={`text-xs font-semibold tracking-wider uppercase px-1 ${subText}`}>{copy.birthHint}</label>
                   <input type="date" value={birthDate} onChange={(event) => setBirthDate(event.target.value)} className={fieldClass} />
                   {zodiacInsight && (
-                    <p className={`mt-2 text-sm ${subText}`}>
-                      {(copy.birthNote ?? "{sign}").replace("{sign}", zodiacInsight.label)}
+                    <p className={`mt-2 text-sm text-purple-400`}>
+                      {(copy.birthNote ?? "Zodiak: {sign}").replace("{sign}", zodiacInsight.label)}
                     </p>
                   )}
                 </div>
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-3 pt-6 mt-6 border-t border-white/5">
                   <button type="button" onClick={() => setActiveStep("persona")} className={secondaryButtonClass}>
                     {copy.backToStepOne}
                   </button>
@@ -471,11 +456,10 @@ export default function ExperiencePage() {
                 </div>
                 {message && (
                   <p
-                    className={`text-sm ${
-                      status === "success"
-                        ? isDay ? "text-emerald-600" : "text-emerald-300"
-                        : isDay ? "text-rose-500" : "text-rose-300"
-                    }`}
+                    className={`text-sm ${status === "success"
+                      ? isDay ? "text-emerald-600" : "text-emerald-300"
+                      : isDay ? "text-rose-500" : "text-rose-300"
+                      }`}
                   >
                     {message}
                   </p>
@@ -484,80 +468,84 @@ export default function ExperiencePage() {
             )}
           </form>
 
-          {activeStep === "ritual" && (
-            <section className="glass-card space-y-5 p-6 sm:p-8">
-              <div className="space-y-2">
-                <p className="emoji-heading">{navBadgePrefix} 3</p>
-                <h2 className="text-2xl font-semibold text-white">{copy.ritualHeading}</h2>
-                <p className={`text-sm ${subText}`}>{copy.ritualSub}</p>
-              </div>
-              <form onSubmit={handleMoodSubmit} className="space-y-4">
-                <div>
-                  <label className={`text-sm ${subText}`}>{copy.moodSelectLabel}</label>
-                  <select
-                    className={selectClass}
-                    value={moodForm.profileId}
-                    onChange={(event) => setMoodForm((prev) => ({ ...prev, profileId: event.target.value }))}
-                  >
-                    <option value="">{copy.moodSelectPlaceholder}</option>
-                    {recentProfiles.map((profile) => (
-                      <option key={profile.id} value={profile.id}>
-                        {profile.nickname}
-                      </option>
-                    ))}
-                  </select>
+          {
+            activeStep === "ritual" && (
+              <section className="glass-card space-y-8 p-6 sm:p-10 relative overflow-hidden">
+                <div className="absolute top-0 right-0 -mt-20 -mr-20 w-64 h-64 bg-emerald-400/10 blur-[80px] rounded-full pointer-events-none"></div>
+                <div className="flex items-center gap-4 mb-2">
+                  <span className="text-emerald-400 text-3xl font-light">3</span>
+                  <div className="flex flex-col">
+                    <h2 className="text-xl font-medium tracking-wide">{copy.ritualHeading}</h2>
+                    <p className={`text-sm ${subText}`}>{copy.ritualSub}</p>
+                  </div>
                 </div>
-                <div>
-                  <label className={`text-sm ${subText}`}>{copy.moodField}</label>
-                  <input
-                    className={fieldClass}
-                    value={moodForm.mood}
-                    onChange={(event) => setMoodForm((prev) => ({ ...prev, mood: event.target.value }))}
-                    placeholder={copy.moodPlaceholder}
-                  />
-                </div>
-                <div>
-                  <label className={`text-sm ${subText}`}>{copy.noteField}</label>
-                  <textarea
-                    className={textareaClass}
-                    rows={3}
-                    value={moodForm.note}
-                    onChange={(event) => setMoodForm((prev) => ({ ...prev, note: event.target.value }))}
-                    placeholder={copy.notePlaceholder}
-                  />
-                </div>
-                <div className="flex flex-wrap items-center gap-3">
-                  <button type="submit" className={primaryButtonClass} disabled={!moodForm.profileId || moodStatus === "saving"}>
-                    {moodStatus === "saving" ? copy.ritualSaving : copy.ritualCta}
-                  </button>
-                  {moodMessage && (
-                    <span
-                      className={`text-xs ${
-                        moodStatus === "success"
+                <form onSubmit={handleMoodSubmit} className="space-y-6">
+                  <div className="space-y-2">
+                    <label className={`text-xs font-semibold tracking-wider uppercase px-1 ${subText}`}>{copy.moodSelectLabel}</label>
+                    <select
+                      className={selectClass}
+                      value={moodForm.profileId}
+                      onChange={(event) => setMoodForm((prev) => ({ ...prev, profileId: event.target.value }))}
+                    >
+                      <option value="">{copy.moodSelectPlaceholder}</option>
+                      {recentProfiles.map((profile) => (
+                        <option key={profile.id} value={profile.id}>
+                          {profile.nickname}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={`text-sm ${subText}`}>{copy.moodField}</label>
+                    <input
+                      className={fieldClass}
+                      value={moodForm.mood}
+                      onChange={(event) => setMoodForm((prev) => ({ ...prev, mood: event.target.value }))}
+                      placeholder={copy.moodPlaceholder}
+                    />
+                  </div>
+                  <div>
+                    <label className={`text-sm ${subText}`}>{copy.noteField}</label>
+                    <textarea
+                      className={textareaClass}
+                      rows={3}
+                      value={moodForm.note}
+                      onChange={(event) => setMoodForm((prev) => ({ ...prev, note: event.target.value }))}
+                      placeholder={copy.notePlaceholder}
+                    />
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button type="submit" className={primaryButtonClass} disabled={!moodForm.profileId || moodStatus === "saving"}>
+                      {moodStatus === "saving" ? copy.ritualSaving : copy.ritualCta}
+                    </button>
+                    {moodMessage && (
+                      <span
+                        className={`text-xs ${moodStatus === "success"
                           ? isDay ? "text-emerald-600" : "text-emerald-300"
                           : isDay ? "text-rose-500" : "text-rose-300"
-                      }`}
-                    >
-                      {moodMessage}
-                    </span>
-                  )}
-                </div>
-              </form>
-              <p className={`text-xs ${mutedText}`}>
-                {copy.postRitualHint}{" "}
-                <Link href="/camera" className="underline">
-                  Lab Kamera
-                </Link>
-                {" "}
-                ·
-                {" "}
-                <Link href="/studio" className="underline">
-                  Studio
-                </Link>
-              </p>
-            </section>
-          )}
-        </div>
+                          }`}
+                      >
+                        {moodMessage}
+                      </span>
+                    )}
+                  </div>
+                </form>
+                <p className={`text-xs ${mutedText}`}>
+                  {copy.postRitualHint}{" "}
+                  <Link href="/camera" className="underline">
+                    Lab Kamera
+                  </Link>
+                  {" "}
+                  ·
+                  {" "}
+                  <Link href="/studio" className="underline">
+                    Studio
+                  </Link>
+                </p>
+              </section>
+            )
+          }
+        </div >
 
         <aside className="space-y-6">
           <section className="glass-card space-y-4 p-6">
@@ -568,11 +556,10 @@ export default function ExperiencePage() {
                 <Link
                   href={module.href}
                   key={module.href}
-                  className={`flex items-center justify-between rounded-3xl border px-4 py-3 text-sm transition ${
-                    isDay
-                      ? "border-[rgba(19,4,41,0.15)] bg-white/85 text-[var(--mirror-ink)] hover:border-[rgba(19,4,41,0.35)]"
-                      : "border-white/10 bg-white/5 text-white/80 hover:border-white hover:text-white"
-                  }`}
+                  className={`flex items-center justify-between rounded-3xl border px-4 py-3 text-sm transition ${isDay
+                    ? "border-[rgba(19,4,41,0.15)] bg-white/85 text-[var(--mirror-ink)] hover:border-[rgba(19,4,41,0.35)]"
+                    : "border-white/10 bg-white/5 text-white/80 hover:border-white hover:text-white"
+                    }`}
                 >
                   <span>
                     <span className="mr-2 text-lg">{module.emoji}</span>
@@ -615,7 +602,7 @@ export default function ExperiencePage() {
             )}
           </section>
         </aside>
-      </div>
-    </main>
+      </div >
+    </main >
   );
 }

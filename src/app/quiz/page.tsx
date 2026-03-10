@@ -102,101 +102,136 @@ export default function QuizPage() {
   };
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-8 px-6 py-16 text-white">
-      <header className="space-y-3 text-center">
-        <p className="text-sm uppercase tracking-[0.4em] text-white/60">{copy.badge}</p>
-        <h1 className="text-4xl font-semibold">{copy.title}</h1>
-        <p className="text-white/75">{copy.description}</p>
-      </header>
+    <div className="relative flex min-h-screen w-full flex-col font-display text-white z-10 overflow-hidden">
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {step === 1 && (
-          <section className="glass-card space-y-4 p-6">
-            <p className="text-sm uppercase tracking-[0.4em] text-white/60">
-              {copy.stepLabel} 1
-            </p>
-            <h2 className="text-2xl font-semibold text-white">{copy.stepOneTitle}</h2>
-            <input
-              className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white"
-              value={nickname}
-              onChange={(event) => setNickname(event.target.value)}
-            />
-            <button type="button" onClick={() => setStep(2)} className="white-pill rounded-full bg-white px-5 py-2 text-sm">
-              {copy.next}
-            </button>
-          </section>
-        )}
-
-        {step === 2 && (
-          <section className="glass-card space-y-4 p-6">
-            <p className="text-sm uppercase tracking-[0.4em] text-white/60">
-              {copy.stepLabel} 2
-            </p>
-            <h2 className="text-2xl font-semibold text-white">{copy.stepTwoTitle}</h2>
-            <div className="flex flex-wrap gap-2">
-              {mbtiOptions.map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  className={`rounded-full px-4 py-2 text-sm ${
-                    option === mbti ? "white-pill bg-white shadow-lg" : "border border-white/20 text-white/70"
-                  }`}
-                  onClick={() => setMbti(option)}
-                >
-                  {option}
-                </button>
-              ))}
+      <div className="relative z-10 flex h-full grow flex-col">
+        {/* Top Navigation */}
+        <header className="flex items-center justify-between whitespace-nowrap px-6 md:px-10 py-6 w-full max-w-[1200px] mx-auto">
+          <div className="flex items-center gap-3">
+            <div className="size-8 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-sky-400">
+              ✨
             </div>
-            <div className="flex items-center gap-3">
-              <button type="button" onClick={() => setStep(1)} className="rounded-full border border-white/30 px-4 py-2 text-sm">
-                {copy.back}
-              </button>
-              <button type="button" onClick={() => setStep(3)} className="white-pill rounded-full bg-white px-5 py-2 text-sm">
-                {copy.next}
-              </button>
-            </div>
-          </section>
-        )}
+            <h2 className="text-xl font-medium tracking-tight text-white/90">{copy.title.replace('✨', '').trim()}</h2>
+          </div>
+        </header>
 
-        {step === 3 && (
-          <section className="glass-card space-y-4 p-6">
-            <p className="text-sm uppercase tracking-[0.4em] text-white/60">
-              {copy.stepLabel} 3
-            </p>
-            <h2 className="text-2xl font-semibold text-white">{copy.stepThreeTitle}</h2>
-            <select
-              className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white"
-              value={enneagram}
-              onChange={(event) => setEnneagram(event.target.value)}
-            >
-              {enneagramOptions.map((option) => (
-                <option key={option} value={option} className="bg-purple-900 text-white">
-                  {option}
-                </option>
-              ))}
-            </select>
-            <textarea
-              className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white"
-              value={focus}
-              onChange={(event) => setFocus(event.target.value)}
-            />
-            <div className="flex items-center gap-3">
-              <button type="button" onClick={() => setStep(2)} className="rounded-full border border-white/30 px-4 py-2 text-sm">
-                {copy.back}
-              </button>
-              <button type="submit" disabled={status === "saving"} className="white-pill rounded-full bg-white px-6 py-3 text-sm">
-                {status === "saving" ? copy.saving : copy.save}
-              </button>
-            </div>
-          </section>
-        )}
-      </form>
+        {/* Main Content Area */}
+        <div className="flex flex-1 items-center justify-center px-4 py-8">
+          <div className="glass-card w-full max-w-[720px] rounded-[2rem] p-8 md:p-14 flex flex-col items-center relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none"></div>
 
-      {message && (
-        <p className={`text-center text-sm ${status === "success" ? "text-emerald-300" : "text-rose-300"}`}>
-          {message}
-        </p>
-      )}
-    </main>
+            {/* Circular Progress */}
+            <div className="relative w-16 h-16 mb-10 flex items-center justify-center z-10">
+              <svg className="w-full h-full transform -rotate-90 absolute inset-0" viewBox="0 0 36 36">
+                <path className="text-white/10" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="2"></path>
+                <path className="text-sky-400 transition-all duration-500 ease-out" strokeDasharray={`${(step / 3) * 100}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2.5"></path>
+              </svg>
+              <span className="text-sm font-medium text-white/90">{step}<span className="text-xs text-white/40">/3</span></span>
+            </div>
+
+            <form onSubmit={handleSubmit} className="w-full flex flex-col items-center z-10">
+              {step === 1 && (
+                <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <div className="text-center w-full mb-10">
+                    <p className="text-sky-400 text-xs font-medium tracking-widest uppercase mb-4">{copy.badge}</p>
+                    <h1 className="text-3xl md:text-5xl font-light leading-tight tracking-tight text-white mb-4">
+                      {copy.stepOneTitle}
+                    </h1>
+                    <p className="text-white/50 text-sm md:text-base font-light max-w-md mx-auto">
+                      {copy.description}
+                    </p>
+                  </div>
+                  <div className="w-full max-w-sm mb-12">
+                    <input
+                      className="glass-input w-full rounded-2xl px-6 py-4 text-white text-center text-lg md:text-xl font-light focus:outline-none focus:ring-2 focus:ring-sky-400/50 transition-all placeholder-white/30"
+                      value={nickname}
+                      onChange={(event) => setNickname(event.target.value)}
+                      placeholder={copy.defaultNickname}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {step === 2 && (
+                <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <div className="text-center w-full mb-10">
+                    <p className="text-purple-400 text-xs font-medium tracking-widest uppercase mb-4">{copy.badge}</p>
+                    <h1 className="text-3xl md:text-5xl font-light leading-tight tracking-tight text-white mb-4">
+                      {copy.stepTwoTitle}
+                    </h1>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full mb-12">
+                    {mbtiOptions.map((option) => (
+                      <label key={option} className="relative group cursor-pointer w-full text-center">
+                        <input type="radio" className="peer sr-only" name="mbti" checked={mbti === option} onChange={() => setMbti(option)} />
+                        <div className="glass-pill w-full rounded-2xl p-4 flex flex-col items-center justify-center transition-all border border-white/5 peer-checked:border-sky-400/50 peer-checked:bg-sky-400/10 peer-checked:shadow-[0_0_15px_rgba(56,189,248,0.2)]">
+                          <span className={`text-base md:text-lg font-medium tracking-wide ${mbti === option ? 'text-sky-400' : 'text-white/70 group-hover:text-white'}`}>{option}</span>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {step === 3 && (
+                <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <div className="text-center w-full mb-10">
+                    <p className="text-emerald-400 text-xs font-medium tracking-widest uppercase mb-4">{copy.badge}</p>
+                    <h1 className="text-3xl md:text-4xl font-light leading-tight tracking-tight text-white mb-4">
+                      {copy.stepThreeTitle}
+                    </h1>
+                  </div>
+                  <div className="w-full max-w-lg mb-12 space-y-4">
+                    <select
+                      className="glass-input w-full rounded-2xl px-6 py-4 text-white text-base md:text-lg font-light focus:outline-none focus:ring-2 focus:ring-emerald-400/50 transition-all appearance-none"
+                      value={enneagram}
+                      onChange={(event) => setEnneagram(event.target.value)}
+                    >
+                      {enneagramOptions.map((option) => (
+                        <option key={option} value={option} className="text-slate-900 dark:text-white">
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                    <textarea
+                      className="glass-input w-full rounded-2xl px-6 py-4 text-white text-base md:text-lg font-light focus:outline-none focus:ring-2 focus:ring-emerald-400/50 transition-all min-h-[120px] resize-none"
+                      value={focus}
+                      onChange={(event) => setFocus(event.target.value)}
+                      placeholder={copy.defaultFocus}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="flex w-full justify-between items-center mt-auto border-t border-white/10 pt-8">
+                {step > 1 ? (
+                  <button type="button" onClick={() => setStep((s) => (s - 1) as Step)} className="flex items-center justify-center px-6 py-3 rounded-full bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white transition-all font-medium tracking-wide">
+                    {copy.back}
+                  </button>
+                ) : <div></div>}
+
+                {step < 3 ? (
+                  <button type="button" onClick={() => setStep((s) => (s + 1) as Step)} className="flex items-center justify-center px-8 py-3 rounded-full bg-sky-400 text-slate-900 hover:bg-sky-300 hover:shadow-[0_0_20px_rgba(56,189,248,0.3)] transition-all font-medium tracking-wide">
+                    {copy.next}
+                  </button>
+                ) : (
+                  <button type="submit" disabled={status === "saving"} className="flex items-center justify-center px-8 py-3 rounded-full bg-emerald-400 text-slate-900 hover:bg-emerald-300 hover:shadow-[0_0_20px_rgba(52,211,153,0.3)] transition-all font-medium tracking-wide disabled:opacity-50 disabled:cursor-not-allowed">
+                    {status === "saving" ? copy.saving : copy.save}
+                  </button>
+                )}
+              </div>
+            </form>
+
+            {message && (
+              <div className="absolute top-6 left-1/2 -translate-x-1/2 w-full max-w-sm px-4">
+                <p className={`text-center text-sm py-2 px-4 rounded-full border backdrop-blur-md ${status === "success" ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-300" : "bg-rose-500/20 border-rose-500/30 text-rose-300"} animate-in slide-in-from-top-4`}>
+                  {message}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

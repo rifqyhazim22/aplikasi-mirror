@@ -171,180 +171,166 @@ export default function StatsPage() {
   }, [summary]);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-8 px-6 py-16 text-white">
-      <header className="space-y-3 text-center">
-        <p className="emoji-heading">{copy.heroBadge}</p>
-        <h1 className="text-4xl font-semibold">{copy.heroTitle}</h1>
-        <p className="text-white/75">{copy.heroDescription}</p>
+    <main className="mx-auto flex min-h-screen max-w-[1200px] flex-col gap-8 px-6 py-16 text-white relative z-10 w-full">
+      <header className="flex flex-col gap-2 mb-8 mt-4 relative z-10 w-full">
+        <h1 className="text-5xl font-light tracking-tight">{copy.heroTitle.replace(/📅💜/, '').trim()}</h1>
+        <p className="text-white/60 text-lg font-light">{copy.heroDescription}</p>
       </header>
 
       {loading ? (
-        <p className="text-center text-white/70">{copy.loading}</p>
-      ) : error ? (
-        <p className="text-center text-rose-300">{error}</p>
-      ) : summary.length === 0 ? (
-        <p className="text-center text-white/50">{copy.empty}</p>
-      ) : (
-        <>
-        <section className="glass-card space-y-6 p-6">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="emoji-heading text-left">{copy.vibeBadge}</p>
-              <h2 className="text-2xl font-semibold text-white">{copy.vibeTitle}</h2>
-            </div>
-            <div className="rounded-3xl border border-white/10 bg-white/5 px-4 py-2 text-sm">
-              <p className="text-white">
-                {copy.topMood}: <span className="font-semibold">{topMood}</span>
-              </p>
-              <p className="text-xs text-white/60">
-                {copy.totalEntries}: {chartData.reduce((sum, day) => sum + day.count, 0)}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-end gap-3">
-            {chartData.map((day) => (
-              <div key={day.date} className="flex-1 text-center text-xs text-white/60">
-                <div className="relative mx-auto flex h-32 w-4 items-end justify-center rounded-full bg-white/10">
-                  <span
-                    className="block w-full rounded-full bg-gradient-to-t from-pink-400 via-purple-400 to-cyan-300"
-                    style={{ height: `${Math.max((day.count / maxCount) * 100, 5)}%` }}
-                  />
-                </div>
-                <p className="mt-1 text-xs text-white/60">
-                  {day.label}
-                </p>
-                <p className="text-[10px] text-white/40">{day.mood}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-        <div className="grid gap-8 lg:grid-cols-[1.1fr,0.9fr]">
-          <section className="glass-card space-y-5 p-6">
-            <div className="flex flex-col gap-2">
-              <p className="emoji-heading text-left">Chronicle</p>
-              <h2 className="text-2xl font-semibold text-white">Riwayat mood harian</h2>
-              <p className="text-sm text-white/70">
-                Data diurutkan dari yang terbaru. Ajarkan pengguna cara membaca chip sumber (kamera / self-report)
-                untuk menunjukkan integrasi computer vision Mirror.
-              </p>
-            </div>
-            <div className="space-y-4">
-              {summary.map((item) => {
-                const titleEmoji = moodEmoji(item.moods[0] ?? "");
-                return (
-                  <article
-                    key={item.date}
-                    className="rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-white/80"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.4em] text-white/60">{item.date}</p>
-                        <p className="text-2xl font-semibold text-white">
-                          {titleEmoji} {item.count} {copy.entrySuffix}
-                        </p>
-                      </div>
-                      <span className="mirror-pill px-3 py-1 text-xs text-white/70">
-                        {item.sources.includes("camera") ? copy.sourceCamera : copy.sourceSelfReport}
-                      </span>
-                    </div>
-                    <p className="mt-2 text-white/70">
-                      {item.moods.length > 0
-                        ? `${copy.moodMainPrefix} ${item.moods.slice(0, 3).join(", ")}`
-                        : copy.noMood}
-                    </p>
-                  </article>
-                );
-              })}
-            </div>
-          </section>
-
-          <section className="glass-card space-y-5 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="emoji-heading text-left">{copy.camBadge}</p>
-                <h2 className="text-xl font-semibold text-white">{copy.camTitle}</h2>
-              </div>
-              <span className="text-sm text-white/60">
-                {cameraLogs.length} {copy.camCountSuffix}
-              </span>
-            </div>
-            {cameraLogs.length === 0 ? (
-              <p className="text-sm text-white/60">{copy.camEmpty}</p>
-            ) : (
-              <ul className="space-y-3">
-                {cameraLogs.map((log) => (
-                  <li
-                    key={log.id}
-                    className="rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/80"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold capitalize text-white">{log.emotion}</span>
-                      <span className="text-xs text-white/60">
-                        {new Date(log.created_at).toLocaleTimeString(locale, {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-white/50">
-                      {copy.profileLabel}: {log.profile_id ? log.profile_id.slice(0, 8) : copy.notLinked}
-                    </p>
-                    <div className="mt-2 h-1.5 rounded-full bg-white/10">
-                      <span
-                        className="block h-full rounded-full bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-300"
-                        style={{ width: `${Math.min(log.confidence ?? 20, 100)}%` }}
-                      />
-                    </div>
-                    <p className="mt-1 text-right text-xs text-white/50">
-                      {copy.confidenceLabel} {log.confidence ?? 0}%
-                    </p>
-                    {log.metadata && (
-                      <div className="mt-2 space-y-1 text-[11px] text-white/60">
-                        <p>
-                          Valence {valenceLabel(log.metadata.valence, copy)} • {copy.energyLabel}{" "}
-                          {percentLabel(log.metadata.energy)}
-                        </p>
-                        <p>
-                          {copy.focusLabel} {percentLabel(log.metadata.focus)} • {copy.tensionLabel}{" "}
-                          {percentLabel(log.metadata.tension)}
-                        </p>
-                        {typeof log.metadata.attention === "number" && (
-                          <p>
-                            {copy.attentionLabel} {percentLabel(log.metadata.attention)}
-                          </p>
-                        )}
-                        {log.metadata.headPose && (
-                          <p>
-                            Head pose pitch {log.metadata.headPose.pitch}° yaw {log.metadata.headPose.yaw}° roll{" "}
-                            {log.metadata.headPose.roll}°
-                          </p>
-                        )}
-                        {log.metadata.expressions && log.metadata.expressions.length > 0 && (
-                          <p>
-                            {copy.expressionsLabel}{" "}
-                            {log.metadata.expressions
-                              .slice(0, 2)
-                              .map((expr) => `${expr.label} ${percentLabel(expr.score)}`)
-                              .join(", ")}
-                          </p>
-                        )}
-                        {log.metadata.cues && log.metadata.cues.length > 0 && (
-                          <p>
-                            {copy.cuesLabel}: {log.metadata.cues.slice(0, 2).join(", ")}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-            <p className="text-xs text-white/50">
-              {copy.camFootnote}
-            </p>
-          </section>
+        <div className="flex flex-1 items-center justify-center min-h-[400px]">
+          <p className="text-white/50 text-xl tracking-widest uppercase animate-pulse">{copy.loading}</p>
         </div>
-        </>
+      ) : error ? (
+        <div className="flex flex-1 items-center justify-center min-h-[400px]">
+          <p className="text-rose-400 max-w-sm text-center bg-rose-500/10 p-6 rounded-3xl border border-rose-500/20">{error}</p>
+        </div>
+      ) : summary.length === 0 ? (
+        <div className="flex flex-1 items-center justify-center min-h-[400px]">
+          <p className="text-white/50 text-center">{copy.empty}</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
+
+          {/* Mood Fluctuation Chart */}
+          <div className="glass-card rounded-3xl p-6 lg:p-8 flex flex-col gap-8 lg:col-span-2 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+            <div className="flex justify-between items-start z-10 relative">
+              <div className="flex flex-col gap-1">
+                <p className="text-white/50 text-sm font-medium tracking-wider uppercase">{copy.vibeBadge}</p>
+                <div className="flex items-baseline gap-3">
+                  <p className="text-white text-4xl font-light tracking-tight">{copy.vibeTitle}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-white/50 text-xs uppercase tracking-widest">{copy.totalEntries}</p>
+                <p className="text-xl font-medium text-sky-400">{chartData.reduce((sum, day) => sum + day.count, 0)}</p>
+              </div>
+            </div>
+
+            <div className="flex items-end gap-2 sm:gap-4 mt-auto min-h-[220px] relative z-10 border-b border-white/10 pb-4 pt-8">
+              {chartData.map((day) => (
+                <div key={day.date} className="flex-1 flex flex-col items-center gap-3">
+                  <div className="relative flex h-32 w-4 sm:w-6 items-end justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors group/bar cursor-pointer">
+                    <span
+                      className="block w-full rounded-full bg-gradient-to-t from-sky-500/50 to-sky-300 shadow-[0_0_15px_rgba(56,189,248,0.3)] transition-all duration-500 group-hover/bar:shadow-[0_0_20px_rgba(56,189,248,0.6)]"
+                      style={{ height: `${Math.max((day.count / maxCount) * 100, 5)}%` }}
+                    />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-[10px] sm:text-xs text-white/50 uppercase tracking-widest">{day.label.slice(0, 3)}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Dominant Focus radial */}
+          <div className="glass-card rounded-3xl p-6 lg:p-8 flex flex-col gap-6 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+            <div className="flex justify-between items-start z-10 relative">
+              <div className="flex flex-col gap-1">
+                <p className="text-white/50 text-sm font-medium tracking-wider uppercase">{copy.topMood}</p>
+                <p className="text-white text-3xl font-light tracking-tight capitalize">{topMood}</p>
+              </div>
+            </div>
+            <div className="flex-1 flex items-center justify-center relative min-h-[200px] py-4 z-10">
+              <div className="relative size-40">
+                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" fill="none" r="45" stroke="rgba(255,255,255,0.05)" strokeWidth="4"></circle>
+                  <circle className="drop-shadow-[0_0_8px_rgba(168,85,247,0.4)] transition-all duration-1000" cx="50" cy="50" fill="none" r="45" stroke="#a855f7" strokeDasharray="282.7" strokeDashoffset="50" strokeLinecap="round" strokeWidth="4"></circle>
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-3xl font-light text-white">{moodEmoji(topMood)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* AI Insights & Chronicle (Full Width) */}
+          <div className="glass-card rounded-3xl p-6 lg:p-8 flex flex-col gap-6 lg:col-span-3 bg-gradient-to-br from-white/5 to-transparent relative overflow-hidden border-t border-white/5">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-purple-500/10 rounded-full blur-[100px] -mr-20 -mt-20 pointer-events-none"></div>
+            <div className="grid gap-12 lg:grid-cols-2 relative z-10">
+
+              {/* Daily Mood History */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-purple-400 text-xl">✽</span>
+                  <p className="text-white/50 text-sm font-medium tracking-wider uppercase">{copy.chronicleTitle}</p>
+                </div>
+                <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                  {summary.map((item) => {
+                    const titleEmoji = moodEmoji(item.moods[0] ?? "");
+                    return (
+                      <div key={item.date} className="glass-pill !rounded-2xl p-5 relative overflow-hidden group/entry cursor-default transition-all hover:bg-white/10 border border-white/5 hover:border-white/10">
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <p className="text-[10px] text-white/40 uppercase tracking-[0.3em] mb-1">{item.date}</p>
+                            <p className="text-xl font-medium">{titleEmoji} {item.count} <span className="text-sm text-white/50 font-normal">{copy.entrySuffix}</span></p>
+                          </div>
+                          <span className="px-3 py-1 rounded-full border border-white/10 bg-white/5 text-[10px] uppercase tracking-widest text-white/60">
+                            {item.sources.includes("camera") ? copy.sourceCamera : copy.sourceSelfReport}
+                          </span>
+                        </div>
+                        <p className="text-sm text-white/70">
+                          <span className="font-semibold text-white/90">{copy.moodMainPrefix}</span> {item.moods.slice(0, 3).join(", ") || copy.noMood}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Latest Camera Logs */}
+              <div className="space-y-6">
+                <div className="flex items-center justify-between gap-3 mb-2">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sky-400 text-xl">👁</span>
+                    <p className="text-white/50 text-sm font-medium tracking-wider uppercase">{copy.camTitle}</p>
+                  </div>
+                  <span className="text-xs text-white/40 px-3 py-1 bg-white/5 rounded-full border border-white/10">{cameraLogs.length} {copy.camCountSuffix}</span>
+                </div>
+
+                {cameraLogs.length === 0 ? (
+                  <p className="text-white/40 text-sm italic py-4">{copy.camEmpty}</p>
+                ) : (
+                  <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                    {cameraLogs.map((log) => (
+                      <div key={log.id} className="glass-pill !rounded-2xl p-4 flex flex-col gap-3 group/log hover:bg-white/10 transition-colors border-white/5 hover:border-white/10">
+                        <div className="flex items-center justify-between border-b border-white/5 pb-3">
+                          <div className="flex items-center gap-3">
+                            <span className="size-8 rounded-full bg-sky-400/20 text-sky-400 flex items-center justify-center text-xs border border-sky-400/30">
+                              {percentLabel(log.confidence ?? 0).replace('%', '')}
+                            </span>
+                            <span className="font-medium capitalize tracking-wide text-white/90">{log.emotion}</span>
+                          </div>
+                          <span className="text-[10px] uppercase font-medium tracking-widest text-white/40">
+                            {new Date(log.created_at).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                        </div>
+
+                        {log.metadata ? (
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-xs text-white/50 mt-1 bg-black/20 rounded-xl p-3 border border-white/5">
+                            <p><span className="text-white/30 uppercase tracking-widest text-[9px] block mb-1">Valence</span> <span className="text-white/80">{valenceLabel(log.metadata.valence, copy)}</span></p>
+                            <p><span className="text-white/30 uppercase tracking-widest text-[9px] block mb-1">{copy.energyLabel}</span> <span className="text-white/80">{percentLabel(log.metadata.energy)}</span></p>
+                            <p><span className="text-white/30 uppercase tracking-widest text-[9px] block mb-1">{copy.focusLabel}</span> <span className="text-white/80">{percentLabel(log.metadata.focus)}</span></p>
+                            <p><span className="text-white/30 uppercase tracking-widest text-[9px] block mb-1">{copy.tensionLabel}</span> <span className="text-white/80">{percentLabel(log.metadata.tension)}</span></p>
+                          </div>
+                        ) : (
+                          <p className="text-[10px] text-white/30 uppercase tracking-widest mt-1">No telemetry available</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <p className="text-[10px] text-white/30 uppercase tracking-widest mt-6 italic pt-4 border-t border-white/5">
+                  {copy.camFootnote}
+                </p>
+              </div>
+
+            </div>
+          </div>
+        </div>
       )}
     </main>
   );
