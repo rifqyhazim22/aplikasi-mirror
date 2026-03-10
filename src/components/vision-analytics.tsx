@@ -22,22 +22,22 @@ type VisionAnalyticsCopy = {
 };
 
 const defaultCopy: VisionAnalyticsCopy = {
-  idleHeading: "Vision analytics",
-  idleDescription: "Kamera belum aktif atau sinyalnya tua. Buka Mirror Cam supaya panel ini menampilkan data realtime.",
-  signalHeading: "Realtime mood signal",
-  metricsLabel: "Valence {valence} • Energi {energy}",
-  cuesTitle: "Cues kamera",
-  cuesEmpty: "Belum ada cues spesifik dari deteksi terakhir.",
-  headPoseTitle: "Head pose",
-  headPoseEmpty: "Belum ada estimasi kemiringan kepala.",
-  focusTitle: "Fokus kamera",
-  attentionHigh: "sangat fokus",
-  attentionLow: "perlu dirilekskan",
-  attentionBalanced: "seimbang",
-  attentionLabel: "Attention {percent} ({state})",
-  attentionEmpty: "Human CV belum membaca perhatian visual.",
-  expressionTitle: "Ekspresi dominan",
-  expressionEmpty: "Belum ada data dari engine Human.",
+  idleHeading: "Jejak Hening",
+  idleDescription: "Kamera sedang tertidur. Buka mata cermin untuk melihat pantulan emosimu.",
+  signalHeading: "Esensi Perasaan",
+  metricsLabel: "Kehangatan {valence} • Energi {energy}",
+  cuesTitle: "Isyarat Batin",
+  cuesEmpty: "Belum ada guratan emosi yang terbaca.",
+  headPoseTitle: "Bahasa Tubuh",
+  headPoseEmpty: "Postur tubuh belum terlihat jelas.",
+  focusTitle: "Kehadiran",
+  attentionHigh: "hadir sepenuhnya",
+  attentionLow: "butuh jeda rileks",
+  attentionBalanced: "selaras",
+  attentionLabel: "Fokus {percent} ({state})",
+  attentionEmpty: "Hening, matamu belum bercerita.",
+  expressionTitle: "Warna Dominan",
+  expressionEmpty: "Kanvas emosi masih kosong.",
 };
 
 type Props = {
