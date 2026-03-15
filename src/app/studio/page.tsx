@@ -6,6 +6,7 @@ import { usePreferences } from "@/contexts/preferences-context";
 import { onboardingCopy } from "@/lib/onboarding-i18n";
 import { getBrowserSupabaseClient } from "@/lib/supabase-browser";
 import { resolveApiUrl } from "@/lib/api";
+import type { VisionSignal } from "@/types/vision";
 
 type RecentProfile = {
   id: string;
@@ -196,6 +197,7 @@ export default function StudioPage() {
   const [logsLoading, setLogsLoading] = useState(false);
   const [sensorReady, setSensorReady] = useState(false);
   const [sensors, setSensors] = useState<{ mood?: MoodSnapshot; camera?: CameraSnapshot }>({});
+  const [visionSignal, setVisionSignal] = useState<VisionSignal | null>(null);
   const [isListening, setIsListening] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
@@ -463,7 +465,30 @@ export default function StudioPage() {
         {/* Left Column: Video Feed (70%) */}
         <section className="flex-[7] relative rounded-[2rem] overflow-hidden glass-card border border-white/10 shadow-2xl flex flex-col">
 
-          <CameraLiquidWidget variant="full" profileId={selectedProfileId || null} />
+          <CameraLiquidWidget
+            variant="full"
+            profileId={selectedProfileId || null}
+            showAnalytics={false}
+            onVisionSignal={(signal) => setVisionSignal(signal)}
+          />
+
+          {/* Two Live Pills */}
+          <div className="absolute bottom-6 left-0 right-0 flex justify-center flex-wrap gap-3 z-10 px-6 pointer-events-none">
+            <div className="glass-card bg-black/50 rounded-full px-4 py-2.5 flex items-center gap-2.5 shadow-lg backdrop-blur-md border border-white/10">
+              <span className="text-sky-400 text-lg">👁️</span>
+              <div className="flex flex-col">
+                <span className="text-[9px] text-white/50 uppercase tracking-widest font-semibold">{copy.expressionLabel}</span>
+                <span className="text-sm font-medium text-white">{visionSignal?.emotion || copy.expressionFallback} <span className="text-sky-400 ml-1">{visionSignal?.confidence ?? 0}%</span></span>
+              </div>
+            </div>
+            <div className="glass-card bg-black/50 rounded-full px-4 py-2.5 flex items-center gap-2.5 shadow-lg backdrop-blur-md border border-white/10">
+              <span className="text-purple-400 text-lg">✨</span>
+              <div className="flex flex-col">
+                <span className="text-[9px] text-white/50 uppercase tracking-widest font-semibold">{copy.moodContextLabel}</span>
+                <span className="text-sm font-medium text-white">{sensors.mood?.mood || copy.moodContextFallback}</span>
+              </div>
+            </div>
+          </div>
 
         </section>
 
