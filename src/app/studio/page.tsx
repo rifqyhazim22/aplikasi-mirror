@@ -462,17 +462,8 @@ export default function StudioPage() {
       <section className="flex flex-col lg:flex-row gap-6 mt-2 relative z-10" style={{ height: 'max(65vh, 600px)' }}>
         {/* Left Column: Video Feed (70%) */}
         <section className="flex-[7] relative rounded-[2rem] overflow-hidden glass-card border border-white/10 shadow-2xl flex flex-col">
-          {/* Top Overlay */}
-          <div className="absolute top-6 left-6 right-6 flex justify-between items-start z-10 pointer-events-none">
-            <div className="glass-card rounded-full px-4 py-2 flex items-center gap-2 shadow-lg bg-black/40">
-              <div className="size-2 rounded-full bg-rose-500 animate-pulse"></div>
-              <span className="text-xs font-semibold uppercase tracking-wider text-white">{copy.liveBadge}</span>
-            </div>
-          </div>
 
-          <div className="h-full w-full relative -m-4 sm:m-0">
-            <CameraLiquidWidget variant="full" profileId={selectedProfileId || null} />
-          </div>
+          <CameraLiquidWidget variant="full" profileId={selectedProfileId || null} />
 
           {/* Bottom Telemetry Pills */}
           <div className="absolute bottom-8 left-0 right-0 flex justify-center flex-wrap gap-4 z-10 px-8 pointer-events-none">
