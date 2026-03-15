@@ -49,9 +49,9 @@ type CameraSnapshot = {
 const studioCopy = {
   id: {
     heroBadge: "Ruang Cermin",
-    heroTitle: "Lanjutkan obrolan hangat bersama Mirror 💬🪞",
+    heroTitle: "Obrolan lanjutan dengan Mirror 💬🪞",
     heroDescription:
-      "Mirror sudah mengenali getaran hatimu. Mulai percakapan dan biarkan ia membimbingmu tanpa syarat.",
+      "Lanjutkan percakapan setelah check-in. Mirror akan merespon berdasarkan profil dan suasana yang sudah kamu bagikan.",
     profileLabel: "Profil aktif",
     profilePlaceholder: "Pilih personamu",
     profileHint:
@@ -118,9 +118,9 @@ const studioCopy = {
   },
   en: {
     heroBadge: "Mirror Room",
-    heroTitle: "Continue your warm conversation with Mirror 💬🪞",
+    heroTitle: "Continue chatting with Mirror 💬🪞",
     heroDescription:
-      "Mirror already senses your inner rhythm. Start a conversation and let it guide you, unconditionally.",
+      "Pick up the conversation after check-in. Mirror will respond based on the profile and mood you've shared.",
     profileLabel: "Active persona",
     profilePlaceholder: "Choose your persona",
     profileHint:

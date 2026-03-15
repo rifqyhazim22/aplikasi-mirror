@@ -88,10 +88,10 @@ const uiCopyMap = {
   id: {
     defaultMood: { label: "Hening...", emoji: "👀", description: "Menanti kejujuran ekspresimu", confidence: 0 },
     heading: "Cermin Batin",
-    subheading: "Ruang aman tanpa penghakiman",
-    badge: "Koneksi batin aktif",
+    subheading: "Ruang pribadimu",
+    badge: "Koneksi aktif",
     description:
-      "Di sini, Mirror hanya membaca esensi perasaanmu dan membiarkannya pergi. Tidak ada jejak visual yang disimpan. Lepaskan pelindungmu.",
+      "Kamera ini hanya membaca ekspresi wajahmu secara real-time. Tidak ada rekaman yang disimpan.",
     toggleOn: "Buka cermin",
     toggleOff: "Tutup cermin",
     overlayHeading: "Tatapan Mirror",
@@ -138,10 +138,10 @@ const uiCopyMap = {
   en: {
     defaultMood: { label: "Stillness...", emoji: "👀", description: "Awaiting your honest face", confidence: 0 },
     heading: "Inner Mirror",
-    subheading: "A safe space without judgment",
-    badge: "Active essence connection",
+    subheading: "Your private space",
+    badge: "Active connection",
     description:
-      "Here, Mirror only reads the essence of your feelings and lets them go. No visual traces are kept. Let your guard down.",
+      "This camera reads your facial expressions in real-time. No recordings are stored.",
     toggleOn: "Unveil mirror",
     toggleOff: "Veil mirror",
     overlayHeading: "Mirror's Gaze",
