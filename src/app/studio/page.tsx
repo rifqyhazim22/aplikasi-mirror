@@ -461,27 +461,10 @@ export default function StudioPage() {
 
       <section className="flex flex-col lg:flex-row gap-6 mt-2 relative z-10" style={{ minHeight: 'max(60vh, 500px)' }}>
         {/* Left Column: Video Feed (70%) */}
-        <section className="flex-[7] relative rounded-[2rem] glass-card border border-white/10 shadow-2xl flex flex-col">
+        <section className="flex-[7] relative rounded-[2rem] overflow-hidden glass-card border border-white/10 shadow-2xl flex flex-col">
 
           <CameraLiquidWidget variant="full" profileId={selectedProfileId || null} />
 
-          {/* Bottom Telemetry Pills */}
-          <div className="absolute bottom-8 left-0 right-0 flex justify-center flex-wrap gap-4 z-10 px-8 pointer-events-none">
-            <div className="glass-card bg-black/40 rounded-full px-5 py-3 flex items-center gap-3 shadow-lg backdrop-blur-md">
-              <span className="text-sky-400 text-xl">👁️</span>
-              <div className="flex flex-col">
-                <span className="text-[10px] text-white/60 uppercase tracking-widest font-semibold">{copy.expressionLabel}</span>
-                <span className="text-sm font-medium text-white">{sensors.camera?.emotion || copy.expressionFallback} <span className="text-sky-400 ml-1">{sensors.camera?.confidence || 0}%</span></span>
-              </div>
-            </div>
-            <div className="glass-card bg-black/40 rounded-full px-5 py-3 flex items-center gap-3 shadow-lg backdrop-blur-md">
-              <span className="text-purple-400 text-xl">✨</span>
-              <div className="flex flex-col">
-                <span className="text-[10px] text-white/60 uppercase tracking-widest font-semibold">{copy.moodContextLabel}</span>
-                <span className="text-sm font-medium text-white">{sensors.mood?.mood || copy.moodContextFallback}</span>
-              </div>
-            </div>
-          </div>
         </section>
 
         {/* Right Column: AI Chat (30%) */}
