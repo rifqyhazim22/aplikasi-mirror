@@ -459,9 +459,9 @@ export default function StudioPage() {
         )}
       </section>
 
-      <section className="flex flex-col lg:flex-row gap-6 mt-2 relative z-10" style={{ height: 'max(65vh, 600px)' }}>
+      <section className="flex flex-col lg:flex-row gap-6 mt-2 relative z-10" style={{ minHeight: 'max(60vh, 500px)' }}>
         {/* Left Column: Video Feed (70%) */}
-        <section className="flex-[7] relative rounded-[2rem] overflow-hidden glass-card border border-white/10 shadow-2xl flex flex-col">
+        <section className="flex-[7] relative rounded-[2rem] glass-card border border-white/10 shadow-2xl flex flex-col">
 
           <CameraLiquidWidget variant="full" profileId={selectedProfileId || null} />
 
