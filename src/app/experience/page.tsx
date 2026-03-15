@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { z } from "zod";
+import { BackButton } from "@/components/back-button";
 import { usePreferences } from "@/contexts/preferences-context";
 import { onboardingCopy, type StepLiteral } from "@/lib/onboarding-i18n";
 import { resolveApiUrl } from "@/lib/api";
@@ -268,6 +269,7 @@ export default function ExperiencePage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-[1100px] flex-col gap-10 px-6 py-16 text-white relative z-10 w-full">
+      <BackButton />
       <header className="flex flex-col gap-4 text-center md:text-left z-10 relative">
         <div className="flex items-center gap-3 justify-center md:justify-start">
           <span className="text-2xl">{copy.tagline.split(' ')[0] || '✨'}</span>

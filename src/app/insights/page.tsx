@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { resolveApiUrl } from "@/lib/api";
 import { usePreferences } from "@/contexts/preferences-context";
+import { BackButton } from "@/components/back-button";
 
 type Insight = {
   nickname: string;
@@ -70,6 +71,7 @@ export default function InsightsPage() {
   return (
     <div className="relative flex min-h-screen w-full flex-col font-display text-white z-10">
       <div className="flex flex-col flex-1 max-w-[1200px] w-full mx-auto px-6 lg:px-12 py-8">
+        <BackButton />
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 mt-4 z-10 relative">
           <div className="flex items-center gap-3">
             <span className="text-3xl">✨</span>

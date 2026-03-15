@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { BackButton } from '@/components/back-button';
 import { createClient } from '@/utils/supabase/client';
 
 export default function RegisterPage() {
@@ -33,6 +34,10 @@ export default function RegisterPage() {
 
     return (
         <main className="relative flex min-h-screen w-full flex-col overflow-hidden items-center justify-center p-4">
+
+            <div className="absolute top-6 left-6 z-20">
+              <BackButton />
+            </div>
 
             <div className="glass-card w-full max-w-[420px] rounded-[2rem] p-8 md:p-10 flex flex-col items-center relative z-10">
                 <div className="flex flex-col items-center gap-2 mb-10 w-full text-center">

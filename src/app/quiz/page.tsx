@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { resolveApiUrl } from "@/lib/api";
 import { usePreferences } from "@/contexts/preferences-context";
+import { BackButton } from "@/components/back-button";
 
 type Step = 1 | 2 | 3;
 
@@ -106,6 +107,9 @@ export default function QuizPage() {
 
       <div className="relative z-10 flex h-full grow flex-col">
         {/* Top Navigation */}
+        <div className="px-6 md:px-10 pt-6 max-w-[1200px] mx-auto w-full">
+          <BackButton />
+        </div>
         <header className="flex items-center justify-between whitespace-nowrap px-6 md:px-10 py-6 w-full max-w-[1200px] mx-auto">
           <div className="flex items-center gap-3">
             <div className="size-8 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-sky-400">

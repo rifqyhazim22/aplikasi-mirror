@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { CameraLiquidWidget } from "@/components/camera-liquid";
 import { MiniChat } from "@/components/mini-chat";
+import { BackButton } from "@/components/back-button";
 import { VisionAnalyticsPanel } from "@/components/vision-analytics";
 import Link from "next/link";
 import type { VisionSignal } from "@/types/vision";
@@ -155,6 +156,7 @@ export default function CameraPage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-8 px-6 py-16 text-white">
+      <BackButton />
       <header className="space-y-3 text-center">
         <p className="emoji-heading">{copy.heroBadge}</p>
         <h1 className="text-4xl font-semibold">{copy.heroTitle}</h1>

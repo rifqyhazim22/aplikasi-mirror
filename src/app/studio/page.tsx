@@ -7,6 +7,7 @@ import { onboardingCopy } from "@/lib/onboarding-i18n";
 import { getBrowserSupabaseClient } from "@/lib/supabase-browser";
 import { resolveApiUrl } from "@/lib/api";
 import type { VisionSignal } from "@/types/vision";
+import { BackButton } from "@/components/back-button";
 
 type RecentProfile = {
   id: string;
@@ -429,6 +430,7 @@ export default function StudioPage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-7xl flex-col gap-6 px-6 py-12 text-white">
+      <BackButton />
       <header className="flex flex-col gap-2 relative z-10">
         <div className="flex items-center gap-3">
           <span className="text-2xl">📸</span>

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { SensorMetrics } from "@/types/vision";
 import { resolveApiUrl } from "@/lib/api";
+import { BackButton } from "@/components/back-button";
 import { usePreferences } from "@/contexts/preferences-context";
 
 type CameraLog = {
@@ -172,6 +173,7 @@ export default function StatsPage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-[1200px] flex-col gap-8 px-6 py-16 text-white relative z-10 w-full">
+      <BackButton />
       <header className="flex flex-col gap-2 mb-8 mt-4 relative z-10 w-full">
         <h1 className="text-5xl font-light tracking-tight">{copy.heroTitle.replace(/📅💜/, '').trim()}</h1>
         <p className="text-white/60 text-lg font-light">{copy.heroDescription}</p>
