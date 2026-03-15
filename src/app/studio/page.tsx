@@ -48,123 +48,139 @@ type CameraSnapshot = {
 
 const studioCopy = {
   id: {
-    heroBadge: "Studio Kamera",
-    heroTitle: "Chat lanjutan setelah check-in 💬🪞",
+    heroBadge: "Ruang Cermin",
+    heroTitle: "Lanjutkan obrolan hangat bersama Mirror 💬🪞",
     heroDescription:
-      "Di sini Mirror udah ngerti vibe kamu (dari kamera + form) terus ngobrol kayak sahabat. Panel sensor di bawah nunjukkin dari mana emosinya kebaca, jadi kamu bisa jelasin ke pengguna tanpa harus buka backend.",
+      "Mirror sudah mengenali getaran hatimu. Mulai percakapan dan biarkan ia membimbingmu tanpa syarat.",
     profileLabel: "Profil aktif",
-    profilePlaceholder: "Pilih profil dari onboarding",
+    profilePlaceholder: "Pilih personamu",
     profileHint:
-      "Ingatkan audiens bahwa profil ini sudah melalui ritual kamera sehingga log yang muncul terasa hidup.",
-    profileEmpty: "Belum ada profil? buka halaman onboarding terlebih dahulu.",
+      "Profil ini sudah melewati ritual kamera — percakapan akan terasa lebih mendalam.",
+    profileEmpty: "Belum ada profil? Mulai dari ritual awal.",
     focusLabel: "Fokus",
-    moodBaselineLabel: "Mood baseline",
-    mirrorCamBadge: "Mirror Cam",
-    mirrorCamDescription: "Kamera dan chat cepat sengaja ditempatkan dalam satu kolom supaya terasa seperti cermin interaktif.",
-    sensorBadge: "Sensor emosi",
-    sensorLoading: "Menyelaraskan data kamera & mood...",
-    cvTitle: "Computer vision",
-    cvEmpty: "Belum ada log kamera terbaru. Nyalakan mirror cam untuk memperbarui data.",
-    moodEntryTitle: "Mood entry",
+    moodBaselineLabel: "Suasana dasar",
+    mirrorCamBadge: "Cermin Batin",
+    mirrorCamDescription: "Kamera dan percakapan berdampingan, seperti cermin yang bisa mendengar.",
+    sensorBadge: "Jejak perasaan",
+    sensorLoading: "Merangkai koneksi emosi...",
+    cvTitle: "Tatapan cermin",
+    cvEmpty: "Cermin belum membaca wajahmu. Nyalakan kamera.",
+    moodEntryTitle: "Catatan suasana",
     noteLabel: "Catatan",
-    confidenceLabel: "Confidence",
-    moodSourceFallback: "demo",
-    moodEmpty: "Belum ada mood entry. Isi form onboarding atau catat mood cepat.",
-    presetBadge: "Preset cepat",
-    presetDescription: "Pakai kalimat ini ketika ingin menunjukkan bagaimana Mirror menyesuaikan respon terhadap tema berbeda.",
-    logsBadge: "Log percakapan",
-    logsEmpty: "Pilih profil dulu untuk memulai.",
-    logsLoading: "Memuat log percakapan...",
-    sendPlaceholder: "Tulis pesanmu",
+    confidenceLabel: "Keyakinan",
+    moodSourceFallback: "refleksi",
+    moodEmpty: "Belum ada catatan suasana. Mulai ceritakan perasaanmu.",
+    presetBadge: "Sapaan awal",
+    presetDescription: "Awali perbincangan dengan salah satu sapaan hangat.",
+    logsBadge: "Riwayat obrolan",
+    logsEmpty: "Pilih personamu untuk memulai.",
+    logsLoading: "Mengumpulkan memori percakapan...",
+    sendPlaceholder: "Ungkapkan sesuatu...",
     sendButton: "Kirim",
     sending: "Mengirim...",
-    typing: "Mirror sedang menulis...",
+    typing: "Mirror sedang meresapi...",
+    liveBadge: "Membaca Ekspresi",
+    chatHeading: "Mirror",
+    chatStatus: "Terhubung denganmu",
+    expressionLabel: "Ekspresi",
+    expressionFallback: "Menanti...",
+    moodContextLabel: "Suasana Hati",
+    moodContextFallback: "Menunggu ceritamu",
+    moodBaselineShort: "Suasana dasar",
     miniChat: {
       description:
-        "Pilih profil dari ritual onboarding lalu kirim pesan cepat untuk menunjukkan respon Mirror.",
-      visionSynced: "CV sinkron ⚡ {emotion} ({confidence}%)",
-      visionHint: "Aktifkan kamera di lab supaya chat punya konteks ekspresi real-time.",
-      selectPlaceholder: "Pilih profil",
-      fetchProfilesError: "Mirror belum menemukan profil. Simpan ritual dulu.",
-      emptyNoProfile: "Belum ada profil tersimpan.",
-      emptyChat: "Belum ada chat. Tulis pesan di bawah untuk mulai.",
-      inputPlaceholderNoProfile: "Simpan ritual dulu...",
-      inputPlaceholder: "Ketik pesan ke Mirror di sini...",
-      sendLabel: "Kirim ke Mirror",
-      sendingLabel: "Mirror menulis...",
-      noResponse: "Mirror belum merespons. Coba beberapa detik lagi.",
-      logsLoading: "Memuat log percakapan...",
-      selectProfilePrompt: "Pilih profil dulu untuk memulai.",
+        "Pilih personamu lalu kirim sapaan untuk merasakan bagaimana Mirror merespons.",
+      visionSynced: "Tersinkronisasi ⚡ {emotion} ({confidence}%)",
+      visionHint: "Aktifkan kamera agar Mirror dapat mengerti senyum maupun hela napasmu.",
+      selectPlaceholder: "Pilih persona",
+      fetchProfilesError: "Profil belum ditemukan. Mulailah dari ritual aslimu.",
+      emptyNoProfile: "Belum ada identitas tersimpan.",
+      emptyChat: "Hening. Sapalah untuk memulai.",
+      inputPlaceholderNoProfile: "Bentuk profilmu dulu...",
+      inputPlaceholder: "Ungkapkan sesuatu...",
+      sendLabel: "Kirim",
+      sendingLabel: "Mirror meresapi...",
+      noResponse: "Mirror sedang hening. Tunggu sebentar.",
+      logsLoading: "Mengumpulkan memori...",
+      selectProfilePrompt: "Pilih personamu untuk memulai koneksi.",
     },
-    infoLoadProfiles: "Belum bisa memuat profil. Cek koneksi Supabase.",
-    infoLoadLogs: "Belum bisa memuat log percakapan.",
-    infoSensor: "Sensor emosi belum bisa dimuat. Coba refresh.",
-    infoNoResponse: "Mirror tidak merespons. Coba lagi sebentar.",
+    infoLoadProfiles: "Profil belum bisa dimuat. Periksa koneksimu.",
+    infoLoadLogs: "Riwayat obrolan belum bisa dimuat.",
+    infoSensor: "Jejak perasaan belum bisa dimuat. Coba muat ulang.",
+    infoNoResponse: "Mirror belum merespons. Coba lagi sebentar.",
     warmupMessage:
-      "Hai {nickname}! Aku siap jadi teman curhatmu. Ceritakan saja apa yang ingin kamu uji di sesi demo ini.",
+      "Hai {nickname}! Aku siap mendengarkanmu. Ceritakan saja apa yang ada di hatimu.",
     presetList: [
       "Aku lagi overthinking tugas besok, bisa bantu tenangin?",
-      "Boleh kasih refleksi dari mood baseline ku?",
+      "Boleh kasih refleksi dari suasana hatiku?",
       "Rekomendasi latihan singkat buat malam ini dong",
     ],
   },
   en: {
-    heroBadge: "Camera Studio",
-    heroTitle: "Post check-in chat 💬🪞",
+    heroBadge: "Mirror Room",
+    heroTitle: "Continue your warm conversation with Mirror 💬🪞",
     heroDescription:
-      "Here Mirror already knows your vibe (camera + forms) and chats like a friend. The sensor panel shows where emotions are read so you can explain without opening the backend.",
-    profileLabel: "Active profile",
-    profilePlaceholder: "Choose a profile from onboarding",
+      "Mirror already senses your inner rhythm. Start a conversation and let it guide you, unconditionally.",
+    profileLabel: "Active persona",
+    profilePlaceholder: "Choose your persona",
     profileHint:
-      "Remind testers this profile already used the camera ritual so the logs feel alive.",
-    profileEmpty: "No profile yet? Open the onboarding page first.",
+      "This profile has been through the camera ritual — conversations will feel deeper.",
+    profileEmpty: "No profile yet? Begin with the initial ritual.",
     focusLabel: "Focus",
-    moodBaselineLabel: "Mood baseline",
-    mirrorCamBadge: "Mirror Cam",
-    mirrorCamDescription: "Camera and quick chat live in one column so it feels like an interactive mirror.",
-    sensorBadge: "Emotion sensors",
-    sensorLoading: "Syncing camera & mood data...",
-    cvTitle: "Computer vision",
-    cvEmpty: "No recent camera log. Turn on the mirror cam to refresh.",
-    moodEntryTitle: "Mood entry",
+    moodBaselineLabel: "Baseline mood",
+    mirrorCamBadge: "Inner Mirror",
+    mirrorCamDescription: "Camera and conversation side by side, like a mirror that listens.",
+    sensorBadge: "Emotional traces",
+    sensorLoading: "Weaving emotional connection...",
+    cvTitle: "Mirror's gaze",
+    cvEmpty: "The mirror hasn't read your face yet. Turn on the camera.",
+    moodEntryTitle: "Mood notes",
     noteLabel: "Note",
     confidenceLabel: "Confidence",
-    moodSourceFallback: "demo",
-    moodEmpty: "No mood entry yet. Fill onboarding or log a quick mood.",
-    presetBadge: "Quick presets",
-    presetDescription: "Use these lines to show how Mirror adapts responses to different themes.",
-    logsBadge: "Chat log",
-    logsEmpty: "Pick a profile to start.",
-    logsLoading: "Loading chat logs...",
-    sendPlaceholder: "Write your message",
+    moodSourceFallback: "reflection",
+    moodEmpty: "No mood notes yet. Start sharing how you feel.",
+    presetBadge: "Opening lines",
+    presetDescription: "Begin your conversation with one of these warm greetings.",
+    logsBadge: "Conversation history",
+    logsEmpty: "Choose your persona to begin.",
+    logsLoading: "Gathering conversation memories...",
+    sendPlaceholder: "Express yourself...",
     sendButton: "Send",
     sending: "Sending...",
-    typing: "Mirror is typing...",
+    typing: "Mirror is absorbing...",
+    liveBadge: "Reading Expressions",
+    chatHeading: "Mirror",
+    chatStatus: "Connected to you",
+    expressionLabel: "Expression",
+    expressionFallback: "Awaiting...",
+    moodContextLabel: "Mood",
+    moodContextFallback: "Waiting for your story",
+    moodBaselineShort: "Baseline mood",
     miniChat: {
-      description: "Pick an onboarding profile then send a quick message to demo Mirror’s reply.",
-      visionSynced: "Vision synced ⚡ {emotion} ({confidence}%)",
-      visionHint: "Turn on the lab camera to give chat realtime expression context.",
-      selectPlaceholder: "Choose profile",
-      fetchProfilesError: "No profile found. Save the onboarding ritual first.",
-      emptyNoProfile: "No profile yet.",
-      emptyChat: "No chat yet. Type a message to start.",
-      inputPlaceholderNoProfile: "Save onboarding first...",
-      inputPlaceholder: "Type a message to Mirror...",
-      sendLabel: "Send to Mirror",
-      sendingLabel: "Mirror is typing...",
-      noResponse: "Mirror hasn’t responded yet. Try again shortly.",
-      logsLoading: "Loading chat logs...",
-      selectProfilePrompt: "Pick a profile to start.",
+      description: "Choose your persona and send a greeting to feel how Mirror responds.",
+      visionSynced: "Synced ⚡ {emotion} ({confidence}%)",
+      visionHint: "Turn on the camera so Mirror understands your smiles and sighs.",
+      selectPlaceholder: "Choose persona",
+      fetchProfilesError: "Profile absent. Begin with your authentic ritual.",
+      emptyNoProfile: "No identity saved.",
+      emptyChat: "Silence. Say something to begin.",
+      inputPlaceholderNoProfile: "Shape your profile first...",
+      inputPlaceholder: "Express yourself...",
+      sendLabel: "Send",
+      sendingLabel: "Mirror is absorbing...",
+      noResponse: "Mirror is quiet. Wait a moment.",
+      logsLoading: "Gathering memories...",
+      selectProfilePrompt: "Select your persona to start connecting.",
     },
-    infoLoadProfiles: "Profiles failed to load. Check Supabase connectivity.",
-    infoLoadLogs: "Unable to load chat logs.",
-    infoSensor: "Emotion sensors failed to load. Refresh the page.",
-    infoNoResponse: "Mirror didn’t respond. Please try again.",
+    infoLoadProfiles: "Profiles could not be loaded. Check your connection.",
+    infoLoadLogs: "Conversation history could not be loaded.",
+    infoSensor: "Emotional traces could not be loaded. Try refreshing.",
+    infoNoResponse: "Mirror didn't respond. Please try again.",
     warmupMessage:
-      "Hi {nickname}! I’m ready to chat. Tell me what you want to test in this demo session.",
+      "Hi {nickname}! I'm here to listen. Tell me what's on your heart.",
     presetList: [
-      "I’m overthinking tomorrow’s tasks—help me calm down?",
-      "Can you reflect on my mood baseline?",
+      "I'm overthinking tomorrow's tasks — help me calm down?",
+      "Can you reflect on how I'm feeling?",
       "Give me a quick practice for tonight.",
     ],
   },
@@ -438,7 +454,7 @@ export default function StudioPage() {
         )}
         {activeProfile && (
           <div className="text-xs text-white/60 ml-auto bg-white/5 px-4 py-2 flex items-center gap-2 rounded-full border border-white/10">
-            <span className="uppercase tracking-widest text-[10px] text-white/40">Mood Baseline:</span> {activeProfile.moodBaseline}
+            <span className="uppercase tracking-widest text-[10px] text-white/40">{copy.moodBaselineShort}:</span> {activeProfile.moodBaseline}
           </div>
         )}
       </section>
@@ -450,7 +466,7 @@ export default function StudioPage() {
           <div className="absolute top-6 left-6 right-6 flex justify-between items-start z-10 pointer-events-none">
             <div className="glass-card rounded-full px-4 py-2 flex items-center gap-2 shadow-lg bg-black/40">
               <div className="size-2 rounded-full bg-rose-500 animate-pulse"></div>
-              <span className="text-xs font-semibold uppercase tracking-wider text-white">Live AI Analysis</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-white">{copy.liveBadge}</span>
             </div>
           </div>
 
@@ -463,15 +479,15 @@ export default function StudioPage() {
             <div className="glass-card bg-black/40 rounded-full px-5 py-3 flex items-center gap-3 shadow-lg backdrop-blur-md">
               <span className="text-sky-400 text-xl">👁️</span>
               <div className="flex flex-col">
-                <span className="text-[10px] text-white/60 uppercase tracking-widest font-semibold">Expression</span>
-                <span className="text-sm font-medium text-white">{sensors.camera?.emotion || "Scanning"} <span className="text-sky-400 ml-1">{sensors.camera?.confidence || 0}%</span></span>
+                <span className="text-[10px] text-white/60 uppercase tracking-widest font-semibold">{copy.expressionLabel}</span>
+                <span className="text-sm font-medium text-white">{sensors.camera?.emotion || copy.expressionFallback} <span className="text-sky-400 ml-1">{sensors.camera?.confidence || 0}%</span></span>
               </div>
             </div>
             <div className="glass-card bg-black/40 rounded-full px-5 py-3 flex items-center gap-3 shadow-lg backdrop-blur-md">
               <span className="text-purple-400 text-xl">✨</span>
               <div className="flex flex-col">
-                <span className="text-[10px] text-white/60 uppercase tracking-widest font-semibold">Mood Context</span>
-                <span className="text-sm font-medium text-white">{sensors.mood?.mood || "Awaiting entry"}</span>
+                <span className="text-[10px] text-white/60 uppercase tracking-widest font-semibold">{copy.moodContextLabel}</span>
+                <span className="text-sm font-medium text-white">{sensors.mood?.mood || copy.moodContextFallback}</span>
               </div>
             </div>
           </div>
@@ -486,10 +502,10 @@ export default function StudioPage() {
                 <span className="text-white">✨</span>
               </div>
               <div>
-                <h2 className="text-base font-semibold text-white">Mirror AI</h2>
+                <h2 className="text-base font-semibold text-white">{copy.chatHeading}</h2>
                 <p className="text-xs text-sky-400 flex items-center gap-1">
                   <span className="size-1.5 rounded-full bg-sky-400 animate-pulse"></span>
-                  Active Monitoring
+                  {copy.chatStatus}
                 </p>
               </div>
             </div>
